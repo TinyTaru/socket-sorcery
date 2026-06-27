@@ -1,0 +1,98 @@
+package tinytaru.socketsorcery.loot;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction;
+import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
+import tinytaru.socketsorcery.SocketSorcery;
+import tinytaru.socketsorcery.component.EngravingData;
+import tinytaru.socketsorcery.component.SocketData;
+import tinytaru.socketsorcery.item.AccessoryItem;
+import tinytaru.socketsorcery.pattern.Patterns;
+import tinytaru.socketsorcery.registry.ModComponents;
+import tinytaru.socketsorcery.registry.ModItems;
+
+/**
+ * Loot function that turns a freshly-rolled accessory into a pre-socketed "artifact": it fills the
+ * accessory with a small handful of randomly engraved gems, mirroring exactly what the engraving table +
+ * socketing bench would have produced. Used by {@code ModLoot} to seed treasure chests with the occasional
+ * ready-to-wear necklace / bangle.
+ *
+ * <p>Only the craftable engravable gems are used (never the creative-only custom gems): socketed gems can be
+ * removed at the socketing bench, so seeding a custom gem would be a back-door to obtaining one.
+ */
+public final class SocketArtifactFunction extends LootItemConditionalFunction {
+
+	private static final int MIN_GEMS = 1;
+	private static final int MAX_GEMS = 3;
+
+	/** Pool of gems an artifact may carry — the five craftable engravable gems only. */
+	private static final Item[] ARTIFACT_GEMS = {
+			ModItems.ENGRAVABLE_DIAMOND, ModItems.ENGRAVABLE_REDSTONE, ModItems.ENGRAVABLE_LAPIS,
+			ModItems.ENGRAVABLE_EMERALD, ModItems.ENGRAVABLE_QUARTZ
+	};
+
+	public static final MapCodec<SocketArtifactFunction> CODEC = RecordCodecBuilder.mapCodec(
+			instance -> commonFields(instance).apply(instance, SocketArtifactFunction::new));
+
+	public static final LootItemFunctionType<SocketArtifactFunction> TYPE = Registry.register(
+			BuiltInRegistries.LOOT_FUNCTION_TYPE, SocketSorcery.id("socket_artifact"),
+			new LootItemFunctionType<>(CODEC));
+
+	private SocketArtifactFunction(List<LootItemCondition> predicates) {
+		super(predicates);
+	}
+
+	@Override
+	public LootItemFunctionType<? extends LootItemConditionalFunction> getType() {
+		return TYPE;
+	}
+
+	@Override
+	protected ItemStack run(ItemStack stack, LootContext context) {
+		if (!(stack.getItem() instanceof AccessoryItem accessory)) {
+			return stack;
+		}
+		RandomSource random = context.getRandom();
+		int max = Math.max(MIN_GEMS, Math.min(MAX_GEMS, accessory.capacity()));
+		int count = MIN_GEMS + random.nextInt(max - MIN_GEMS + 1);
+
+		List<ItemStack> gems = new ArrayList<>(count);
+		for (int i = 0; i < count; i++) {
+			Item gemItem = ARTIFACT_GEMS[random.nextInt(ARTIFACT_GEMS.length)];
+			List<ResourceLocation> patterns = List.copyOf(Patterns.patternsFor(gemItem));
+			if (patterns.isEmpty()) {
+				continue;
+			}
+			ResourceLocation pattern = patterns.get(random.nextInt(patterns.size()));
+			ItemStack gem = new ItemStack(gemItem);
+			gem.set(ModComponents.ENGRAVING, new EngravingData(pattern));
+			gems.add(gem);
+		}
+
+		AccessoryItem.setSockets(stack, new SocketData(gems));
+		SocketSorcery.LOGGER.info("Generated pre-socketed artifact with {} gem(s)", gems.size());
+		return stack;
+	}
+
+	/** Builder for use in loot pools, e.g. {@code .apply(SocketArtifactFunction.artifact())}. */
+	public static LootItemConditionalFunction.Builder<?> artifact() {
+		return simpleBuilder(SocketArtifactFunction::new);
+	}
+
+	/** Forces class load so the static {@link #TYPE} registers. */
+	public static void init() {
+	}
+}

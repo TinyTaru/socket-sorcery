@@ -1,0 +1,16 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"category": "tools",
+	"pattern": [
+		"I",
+		"S"
+	],
+	"key": {
+		"I": { "item": "minecraft:iron_ingot" },
+		"S": { "item": "minecraft:stick" }
+	},
+	"result": {
+		"id": "socket-sorcery:chisel",
+		"count": 1
+	}
+}

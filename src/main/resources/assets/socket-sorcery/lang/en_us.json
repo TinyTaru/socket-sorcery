@@ -1,0 +1,67 @@
+{
+	"itemGroup.socket-sorcery.general": "Socket Sorcery",
+
+	"item.socket-sorcery.chisel": "Chisel",
+	"item.socket-sorcery.ruby": "Ruby",
+	"item.socket-sorcery.sapphire": "Sapphire",
+	"item.socket-sorcery.peridot": "Peridot",
+	"item.socket-sorcery.amethyst": "Amethyst",
+	"item.socket-sorcery.topaz": "Topaz",
+	"item.socket-sorcery.engravable_diamond": "Engravable Diamond",
+	"item.socket-sorcery.engravable_redstone": "Engravable Redstone",
+	"item.socket-sorcery.engravable_lapis": "Engravable Lapis",
+	"item.socket-sorcery.engravable_emerald": "Engravable Emerald",
+	"item.socket-sorcery.engravable_quartz": "Engravable Quartz",
+	"item.socket-sorcery.scroll_fire": "Scroll of Fire",
+	"item.socket-sorcery.scroll_frost": "Scroll of Frost",
+	"item.socket-sorcery.scroll_healing": "Scroll of Healing",
+	"item.socket-sorcery.scroll_lightning": "Scroll of Lightning",
+	"item.socket-sorcery.scroll_leaping": "Scroll of Leaping",
+	"item.socket-sorcery.necklace": "Necklace",
+	"item.socket-sorcery.bangle": "Bangle",
+
+	"block.socket-sorcery.engraving_table": "Engraving Table",
+	"block.socket-sorcery.socketing_bench": "Socketing Bench",
+
+	"pattern.socket-sorcery.fire": "Fire",
+	"pattern.socket-sorcery.frost": "Frost",
+	"pattern.socket-sorcery.healing": "Healing",
+	"pattern.socket-sorcery.lightning": "Lightning",
+	"pattern.socket-sorcery.leaping": "Leaping",
+
+	"tooltip.socket-sorcery.chisel": "Used at an Engraving Table",
+	"tooltip.socket-sorcery.engraved_with": "Engraved:",
+	"tooltip.socket-sorcery.supports": "Can be engraved with:",
+	"tooltip.socket-sorcery.scroll_pattern": "Pattern:",
+	"tooltip.socket-sorcery.scroll_hint": "Chisel onto a compatible gem",
+	"tooltip.socket-sorcery.sockets": "Sockets: %s/%s",
+	"tooltip.socket-sorcery.necklace_hint": "Worn: gems act passively",
+	"tooltip.socket-sorcery.bangle_hint": "Worn: gems fire on the bangle key",
+	"tooltip.socket-sorcery.cooldown": "Cooldown: %ss",
+
+	"container.socket-sorcery.engraving_table": "Engraving Table",
+	"container.socket-sorcery.socketing_bench": "Socketing Bench",
+
+	"screen.socket-sorcery.engrave": "Engrave",
+	"screen.socket-sorcery.reset": "Reset",
+	"screen.socket-sorcery.need_scroll": "Place a pattern scroll",
+	"screen.socket-sorcery.need_gem": "Place a gem to engrave",
+	"screen.socket-sorcery.incompatible": "This gem can't hold that pattern",
+	"screen.socket-sorcery.need_chisel": "Place a chisel",
+	"screen.socket-sorcery.place_accessory": "Place an accessory",
+	"screen.socket-sorcery.socket_count": "Sockets: %s/%s",
+	"screen.socket-sorcery.invalid_engraving": "Unrecognized modifier",
+
+	"tooltip.socket-sorcery.modifiers": "Modifiers:",
+
+	"modifier.socket-sorcery.power": "Power",
+	"modifier.socket-sorcery.duration": "Duration",
+	"modifier.socket-sorcery.range": "Range",
+	"modifier.socket-sorcery.direction_up": "Aim: Up",
+	"modifier.socket-sorcery.direction_down": "Aim: Down",
+	"modifier.socket-sorcery.direction_left": "Aim: Left",
+	"modifier.socket-sorcery.direction_right": "Aim: Right",
+
+	"key.category.socket-sorcery": "Socket Sorcery",
+	"key.socket-sorcery.activate_bangle": "Activate Bangle"
+}

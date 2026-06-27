@@ -1,0 +1,16 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"category": "equipment",
+	"pattern": [
+		"GGG",
+		"G G",
+		"GGG"
+	],
+	"key": {
+		"G": { "item": "minecraft:gold_ingot" }
+	},
+	"result": {
+		"id": "socket-sorcery:bangle",
+		"count": 1
+	}
+}

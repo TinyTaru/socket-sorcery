@@ -1,0 +1,17 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"category": "misc",
+	"pattern": [
+		"III",
+		"P P",
+		"P P"
+	],
+	"key": {
+		"I": { "item": "minecraft:iron_ingot" },
+		"P": { "tag": "minecraft:planks" }
+	},
+	"result": {
+		"id": "socket-sorcery:socketing_bench",
+		"count": 1
+	}
+}

@@ -1,0 +1,39 @@
+{
+	"schemaVersion": 1,
+	"id": "socket-sorcery",
+	"version": "${version}",
+	"name": "Socket Sorcery",
+	"description": "Find pattern scrolls, chisel them onto gems, and socket your engraved gems into necklaces and bangles for an array of magical effects.",
+	"authors": [
+		"tinytaru"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/socket-sorcery/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"tinytaru.socketsorcery.SocketSorcery"
+		],
+		"client": [
+			"tinytaru.socketsorcery.client.SocketSorceryClient"
+		]
+	},
+	"mixins": [
+		"socket-sorcery.mixins.json",
+		{
+			"config": "socket-sorcery.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.19.3",
+		"minecraft": "~1.21.1",
+		"java": ">=21",
+		"fabric-api": "*",
+		"trinkets": ">=3.10.0"
+	}
+}

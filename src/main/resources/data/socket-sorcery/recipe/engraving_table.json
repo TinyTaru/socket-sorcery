@@ -1,0 +1,17 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"category": "misc",
+	"pattern": [
+		"SSS",
+		"P P",
+		"P P"
+	],
+	"key": {
+		"S": { "item": "minecraft:smooth_stone" },
+		"P": { "tag": "minecraft:planks" }
+	},
+	"result": {
+		"id": "socket-sorcery:engraving_table",
+		"count": 1
+	}
+}

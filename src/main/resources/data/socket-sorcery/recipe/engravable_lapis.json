@@ -1,0 +1,8 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"category": "misc",
+	"pattern": [ " X ", "XXX", " X " ],
+	"key": { "X": { "item": "minecraft:lapis_lazuli" } },
+	"result": { "id": "socket-sorcery:engravable_lapis", "count": 1 }
+}
+
