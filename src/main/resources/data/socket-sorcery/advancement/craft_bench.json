@@ -1,0 +1,18 @@
+{
+  "parent": "socket-sorcery:craft_table",
+  "display": {
+    "icon": { "id": "socket-sorcery:socketing_bench" },
+    "title": { "translate": "advancements.socket-sorcery.craft_bench.title" },
+    "description": { "translate": "advancements.socket-sorcery.craft_bench.description" },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false
+  },
+  "criteria": {
+    "has_bench": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": { "items": [ { "items": [ "socket-sorcery:socketing_bench" ] } ] }
+    }
+  },
+  "requirements": [ [ "has_bench" ] ]
+}

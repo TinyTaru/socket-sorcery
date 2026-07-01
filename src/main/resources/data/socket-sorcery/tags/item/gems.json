@@ -1,0 +1,19 @@
+{
+  "replace": false,
+  "values": [
+    "socket-sorcery:ruby",
+    "socket-sorcery:sapphire",
+    "socket-sorcery:peridot",
+    "socket-sorcery:amethyst",
+    "socket-sorcery:topaz",
+    "socket-sorcery:engravable_diamond",
+    "socket-sorcery:engravable_redstone",
+    "socket-sorcery:engravable_lapis",
+    "socket-sorcery:engravable_emerald",
+    "socket-sorcery:engravable_quartz",
+    "socket-sorcery:engravable_iron",
+    "socket-sorcery:engravable_gold",
+    "socket-sorcery:engravable_copper",
+    "socket-sorcery:engravable_ender"
+  ]
+}

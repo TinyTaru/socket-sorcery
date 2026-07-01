@@ -1,0 +1,18 @@
+{
+  "display": {
+    "icon": { "id": "socket-sorcery:chisel" },
+    "title": { "translate": "advancements.socket-sorcery.root.title" },
+    "description": { "translate": "advancements.socket-sorcery.root.description" },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "background": "minecraft:textures/gui/advancements/backgrounds/stone.png"
+  },
+  "criteria": {
+    "has_chisel": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": { "items": [ { "items": "#socket-sorcery:chisels" } ] }
+    }
+  },
+  "requirements": [ [ "has_chisel" ] ]
+}

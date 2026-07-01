@@ -17,5 +17,6 @@ public class SocketSorceryClient implements ClientModInitializer {
 		ModModelPredicates.register();
 		ModKeybinds.register();
 		BangleCooldownHud.register();
+		ClientNetworking.registerClient();
 	}
 }

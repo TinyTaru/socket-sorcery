@@ -1,0 +1,18 @@
+{
+  "parent": "socket-sorcery:root",
+  "display": {
+    "icon": { "id": "socket-sorcery:scroll_fire" },
+    "title": { "translate": "advancements.socket-sorcery.first_scroll.title" },
+    "description": { "translate": "advancements.socket-sorcery.first_scroll.description" },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false
+  },
+  "criteria": {
+    "has_scroll": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": { "items": [ { "items": "#socket-sorcery:scrolls" } ] }
+    }
+  },
+  "requirements": [ [ "has_scroll" ] ]
+}

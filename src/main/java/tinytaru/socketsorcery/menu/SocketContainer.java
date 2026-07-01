@@ -2,9 +2,15 @@ package tinytaru.socketsorcery.menu;
 
 import java.util.List;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import tinytaru.socketsorcery.block.SocketingBenchBlockEntity;
 import tinytaru.socketsorcery.component.SocketData;
 import tinytaru.socketsorcery.item.AccessoryItem;
 
@@ -81,6 +87,7 @@ public class SocketContainer implements Container {
 		}
 		ItemStack taken = gems.remove(slot);
 		store(gems);
+		feedback(false);
 		return taken;
 	}
 
@@ -96,6 +103,7 @@ public class SocketContainer implements Container {
 			if (slot >= 0 && slot < gems.size()) {
 				gems.remove(slot);
 				store(gems);
+				feedback(false);
 			}
 			return;
 		}
@@ -107,6 +115,18 @@ public class SocketContainer implements Container {
 			gems.add(one); // append at the next open socket
 		}
 		store(gems);
+		feedback(true);
+	}
+
+	/** A short chime + sparkle at the bench when a gem is socketed (or removed). Server-side only. */
+	private void feedback(boolean inserted) {
+		if (bench instanceof SocketingBenchBlockEntity be && be.getLevel() instanceof ServerLevel level) {
+			BlockPos pos = be.getBlockPos();
+			level.playSound(null, pos, inserted ? SoundEvents.AMETHYST_BLOCK_CHIME : SoundEvents.ITEM_PICKUP,
+					SoundSource.BLOCKS, 0.7F, inserted ? 1.0F : 1.3F);
+			level.sendParticles(inserted ? ParticleTypes.WAX_ON : ParticleTypes.GLOW,
+					pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5, 6, 0.2, 0.2, 0.2, 0.0);
+		}
 	}
 
 	@Override

@@ -1,0 +1,16 @@
+{
+  "replace": false,
+  "values": [
+    "socket-sorcery:scroll_fire",
+    "socket-sorcery:scroll_frost",
+    "socket-sorcery:scroll_healing",
+    "socket-sorcery:scroll_lightning",
+    "socket-sorcery:scroll_leaping",
+    "socket-sorcery:scroll_wind",
+    "socket-sorcery:scroll_earth",
+    "socket-sorcery:scroll_lifesteal",
+    "socket-sorcery:scroll_blink",
+    "socket-sorcery:scroll_haste",
+    "socket-sorcery:scroll_spikes"
+  ]
+}

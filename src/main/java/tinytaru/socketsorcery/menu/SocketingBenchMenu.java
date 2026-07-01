@@ -109,6 +109,11 @@ public class SocketingBenchMenu extends AbstractContainerMenu {
 		return sockets.currentCount();
 	}
 
+	/** The accessory currently in the bench (empty if none) — used by the screen for status text. */
+	public ItemStack accessory() {
+		return bench.getItem(ACCESSORY_SLOT);
+	}
+
 	@Override
 	public ItemStack quickMoveStack(Player player, int index) {
 		ItemStack moved = ItemStack.EMPTY;

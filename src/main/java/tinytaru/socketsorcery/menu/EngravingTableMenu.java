@@ -2,10 +2,15 @@ package tinytaru.socketsorcery.menu;
 
 import java.util.Set;
 
+import org.joml.Vector3f;
+
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -25,6 +30,7 @@ import tinytaru.socketsorcery.pattern.GridBits;
 import tinytaru.socketsorcery.pattern.Modifiers;
 import tinytaru.socketsorcery.pattern.Pattern;
 import tinytaru.socketsorcery.pattern.Patterns;
+import tinytaru.socketsorcery.net.EngraveResult;
 import tinytaru.socketsorcery.registry.ModBlocks;
 import tinytaru.socketsorcery.registry.ModComponents;
 import tinytaru.socketsorcery.registry.ModMenus;
@@ -138,23 +144,34 @@ public class EngravingTableMenu extends AbstractContainerMenu {
 	/**
 	 * Server-side completion of an engraving. {@code carved} is the depth≥1 layer (must equal the
 	 * symbol plus any Direction extension cells) and {@code deep} is the depth-2 layer (must decode to
-	 * a valid modifier set). Consumes a scroll and chisel durability.
+	 * a valid modifier set). Consumes a scroll and chisel durability. Returns the outcome so the
+	 * caller can report it to the client.
 	 */
-	public void tryEngrave(ServerPlayer player, long[] carved, long[] deep) {
-		if (!canEngrave()) {
-			return;
-		}
+	public EngraveResult tryEngrave(ServerPlayer player, long[] carved, long[] deep) {
+		ItemStack gem = gemStack();
 		Pattern pattern = targetPattern();
+		if (pattern == null
+				|| !(gem.getItem() instanceof GemItem)
+				|| gem.has(ModComponents.ENGRAVING)
+				|| !Patterns.canEngrave(gem.getItem(), pattern.id())) {
+			return EngraveResult.NOT_ENGRAVABLE;
+		}
+		if (!(chiselStack().getItem() instanceof ChiselItem)) {
+			return EngraveResult.NO_CHISEL;
+		}
 		Set<ResourceLocation> modifiers = Modifiers.decode(pattern, deep);
 		if (modifiers == null) {
-			return; // stray or incomplete deep cells
+			return EngraveResult.BAD_MODIFIERS; // stray or incomplete deep cells
 		}
 		long[] required = GridBits.or(pattern.maskBits(), deep); // symbol + Direction extension cells
 		if (!GridBits.equal(carved, required)) {
-			return; // missing symbol or stray carved cells
+			return EngraveResult.BAD_SYMBOL; // missing symbol or stray carved cells
 		}
 
-		int cost = GridBits.count(carved) + GridBits.count(deep);
+		int baseCost = GridBits.count(carved) + GridBits.count(deep);
+		int reduction = chiselStack().getItem() instanceof ChiselItem chisel ? chisel.carveCostReduction() : 0;
+		int cost = Math.max(1, baseCost - reduction);
+		int color = pattern.color();
 		access.execute((level, pos) -> {
 			ItemStack engraved = gemStack().copy();
 			engraved.setCount(1);
@@ -176,8 +193,24 @@ public class EngravingTableMenu extends AbstractContainerMenu {
 
 			table.setChanged();
 			level.playSound(null, pos, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, 0.6F, 1.4F);
+			if (level instanceof ServerLevel server) {
+				spawnEngraveBurst(server, pos, color);
+			}
 		});
 		broadcastChanges();
+		return EngraveResult.OK;
+	}
+
+	/** A short celebratory burst in the pattern's colour when an engraving completes. */
+	private static void spawnEngraveBurst(ServerLevel level, BlockPos pos, int color) {
+		double cx = pos.getX() + 0.5;
+		double cy = pos.getY() + 1.0;
+		double cz = pos.getZ() + 0.5;
+		float r = ((color >> 16) & 0xFF) / 255.0F;
+		float g = ((color >> 8) & 0xFF) / 255.0F;
+		float b = (color & 0xFF) / 255.0F;
+		level.sendParticles(new DustParticleOptions(new Vector3f(r, g, b), 1.2F), cx, cy, cz, 16, 0.25, 0.2, 0.25, 0.0);
+		level.sendParticles(ParticleTypes.ENCHANT, cx, cy, cz, 12, 0.3, 0.3, 0.3, 0.05);
 	}
 
 	@Override

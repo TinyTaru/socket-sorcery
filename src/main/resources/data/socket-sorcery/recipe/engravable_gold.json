@@ -1,0 +1,16 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"category": "misc",
+	"pattern": [
+		" X ",
+		"XXX",
+		" X "
+	],
+	"key": {
+		"X": { "item": "minecraft:gold_ingot" }
+	},
+	"result": {
+		"id": "socket-sorcery:engravable_gold",
+		"count": 1
+	}
+}

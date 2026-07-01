@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "socket-sorcery:chisel",
+    "socket-sorcery:diamond_chisel",
+    "socket-sorcery:netherite_chisel"
+  ]
+}

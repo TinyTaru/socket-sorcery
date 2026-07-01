@@ -20,11 +20,13 @@ public final class ModNetworking {
 	public static void registerServer() {
 		PayloadTypeRegistry.playC2S().register(FinishEngravingC2SPayload.ID, FinishEngravingC2SPayload.CODEC);
 		PayloadTypeRegistry.playC2S().register(ActivateBangleC2SPayload.ID, ActivateBangleC2SPayload.CODEC);
+		PayloadTypeRegistry.playS2C().register(EngraveResultS2CPayload.ID, EngraveResultS2CPayload.CODEC);
 
 		ServerPlayNetworking.registerGlobalReceiver(FinishEngravingC2SPayload.ID, (payload, context) -> {
 			ServerPlayer player = context.player();
 			if (player.containerMenu instanceof EngravingTableMenu menu) {
-				menu.tryEngrave(player, payload.carved(), payload.deep());
+				EngraveResult result = menu.tryEngrave(player, payload.carved(), payload.deep());
+				ServerPlayNetworking.send(player, new EngraveResultS2CPayload(result.ordinal()));
 			}
 		});
 

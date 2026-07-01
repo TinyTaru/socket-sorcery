@@ -1,0 +1,18 @@
+{
+  "parent": "socket-sorcery:craft_bench",
+  "display": {
+    "icon": { "id": "socket-sorcery:necklace" },
+    "title": { "translate": "advancements.socket-sorcery.get_accessory.title" },
+    "description": { "translate": "advancements.socket-sorcery.get_accessory.description" },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "has_accessory": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": { "items": [ { "items": "#socket-sorcery:accessories" } ] }
+    }
+  },
+  "requirements": [ [ "has_accessory" ] ]
+}

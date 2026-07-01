@@ -23,6 +23,8 @@ public final class ModItemGroup {
 						output.accept(ModItems.ENGRAVING_TABLE);
 						output.accept(ModItems.SOCKETING_BENCH);
 						output.accept(ModItems.CHISEL);
+						output.accept(ModItems.DIAMOND_CHISEL);
+						output.accept(ModItems.NETHERITE_CHISEL);
 						for (var gem : ModItems.GEMS) {
 							output.accept(gem);
 						}
@@ -31,8 +33,15 @@ public final class ModItemGroup {
 						output.accept(ModItems.SCROLL_HEALING);
 						output.accept(ModItems.SCROLL_LIGHTNING);
 						output.accept(ModItems.SCROLL_LEAPING);
+						output.accept(ModItems.SCROLL_WIND);
+						output.accept(ModItems.SCROLL_EARTH);
+						output.accept(ModItems.SCROLL_LIFESTEAL);
+						output.accept(ModItems.SCROLL_BLINK);
+						output.accept(ModItems.SCROLL_HASTE);
+						output.accept(ModItems.SCROLL_SPIKES);
 						output.accept(ModItems.NECKLACE);
 						output.accept(ModItems.BANGLE);
+						output.accept(ModItems.RING);
 					})
 					.build());
 

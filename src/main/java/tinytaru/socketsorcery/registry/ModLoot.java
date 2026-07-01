@@ -12,6 +12,7 @@ import net.minecraft.world.level.storage.loot.entries.EmptyLootItem;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
+import tinytaru.socketsorcery.Balance;
 import tinytaru.socketsorcery.loot.SocketArtifactFunction;
 
 /**
@@ -49,9 +50,6 @@ public final class ModLoot {
 			BuiltInLootTables.NETHER_BRIDGE,
 			BuiltInLootTables.END_CITY_TREASURE);
 
-	/** Per-chest chance for an accessory to appear in an applicable treasure table. Tune to taste. */
-	private static final float ACCESSORY_CHANCE = 0.10F;
-
 	public static void init() {
 		LootTableEvents.MODIFY.register((key, tableBuilder, source) -> {
 			if (!source.isBuiltin()) {
@@ -60,12 +58,18 @@ public final class ModLoot {
 			if (SCROLL_TARGETS.contains(key)) {
 				tableBuilder.withPool(LootPool.lootPool()
 						.setRolls(ConstantValue.exactly(1.0F))
-						.when(LootItemRandomChanceCondition.randomChance(0.5F))
+						.when(LootItemRandomChanceCondition.randomChance(Balance.LOOT_SCROLL_CHANCE))
 						.add(LootItem.lootTableItem(ModItems.SCROLL_FIRE).setWeight(2))
 						.add(LootItem.lootTableItem(ModItems.SCROLL_FROST).setWeight(2))
 						.add(LootItem.lootTableItem(ModItems.SCROLL_HEALING).setWeight(2))
 						.add(LootItem.lootTableItem(ModItems.SCROLL_LIGHTNING).setWeight(2))
 						.add(LootItem.lootTableItem(ModItems.SCROLL_LEAPING).setWeight(2))
+						.add(LootItem.lootTableItem(ModItems.SCROLL_WIND).setWeight(2))
+						.add(LootItem.lootTableItem(ModItems.SCROLL_EARTH).setWeight(2))
+						.add(LootItem.lootTableItem(ModItems.SCROLL_LIFESTEAL).setWeight(2))
+						.add(LootItem.lootTableItem(ModItems.SCROLL_BLINK).setWeight(2))
+						.add(LootItem.lootTableItem(ModItems.SCROLL_HASTE).setWeight(2))
+						.add(LootItem.lootTableItem(ModItems.SCROLL_SPIKES).setWeight(2))
 						.add(EmptyLootItem.emptyItem().setWeight(10)));
 			}
 			if (NECKLACE_TARGETS.contains(key)) {
@@ -78,14 +82,14 @@ public final class ModLoot {
 	}
 
 	/**
-	 * A single-roll pool that drops one accessory with {@link #ACCESSORY_CHANCE} probability. Every dropped
-	 * accessory is a pre-socketed "artifact" (crafting is how you get blank ones), so a treasure find is
+	 * A single-roll pool that drops one accessory with {@link Balance#LOOT_ACCESSORY_CHANCE} probability. Every
+	 * dropped accessory is a pre-socketed "artifact" (crafting is how you get blank ones), so a treasure find is
 	 * always a ready-to-wear prize.
 	 */
 	private static LootPool.Builder accessoryPool(Item accessory) {
 		return LootPool.lootPool()
 				.setRolls(ConstantValue.exactly(1.0F))
-				.when(LootItemRandomChanceCondition.randomChance(ACCESSORY_CHANCE))
+				.when(LootItemRandomChanceCondition.randomChance(Balance.LOOT_ACCESSORY_CHANCE))
 				.add(LootItem.lootTableItem(accessory).apply(SocketArtifactFunction.artifact()));
 	}
 

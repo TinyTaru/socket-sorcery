@@ -1,0 +1,18 @@
+{
+  "parent": "socket-sorcery:root",
+  "display": {
+    "icon": { "id": "socket-sorcery:engraving_table" },
+    "title": { "translate": "advancements.socket-sorcery.craft_table.title" },
+    "description": { "translate": "advancements.socket-sorcery.craft_table.description" },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false
+  },
+  "criteria": {
+    "has_table": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": { "items": [ { "items": [ "socket-sorcery:engraving_table" ] } ] }
+    }
+  },
+  "requirements": [ [ "has_table" ] ]
+}

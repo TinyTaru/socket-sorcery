@@ -9,6 +9,7 @@ import java.util.Set;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
+import tinytaru.socketsorcery.Balance;
 import tinytaru.socketsorcery.SocketSorcery;
 
 /**
@@ -93,11 +94,11 @@ public final class Modifiers {
 		Vec3 aim = Vec3.ZERO;
 		for (ResourceLocation id : ids) {
 			if (POWER.id().equals(id)) {
-				power = 1;
+				power = Balance.MOD_POWER_AMP;
 			} else if (DURATION.id().equals(id)) {
-				durationMult = 2;
+				durationMult = Balance.MOD_DURATION_MULT;
 			} else if (RANGE.id().equals(id)) {
-				rangeBonus = 3.0;
+				rangeBonus = Balance.MOD_RANGE_BONUS;
 			} else if (UP.id().equals(id)) {
 				aim = aim.add(0.0, 1.0, 0.0);
 			} else if (DOWN.id().equals(id)) {

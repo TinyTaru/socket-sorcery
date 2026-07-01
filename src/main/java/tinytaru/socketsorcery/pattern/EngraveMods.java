@@ -2,6 +2,7 @@ package tinytaru.socketsorcery.pattern;
 
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
+import tinytaru.socketsorcery.Balance;
 
 /**
  * The combined effect adjustments from an engraving's modifier set, passed to {@link PatternEffect}s.
@@ -24,7 +25,7 @@ public record EngraveMods(int power, int durationMult, double rangeBonus, Vec3 a
 	}
 
 	public double magnitude(double base) {
-		return power > 0 ? base * 1.5 : base;
+		return power > 0 ? base * Balance.MOD_MAGNITUDE_POWER_MULT : base;
 	}
 
 	public double radius(double base) {

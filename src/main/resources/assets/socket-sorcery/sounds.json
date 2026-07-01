@@ -1,0 +1,26 @@
+{
+  "cast_fire": {
+    "subtitle": "subtitles.socket-sorcery.cast_fire",
+    "sounds": [
+      { "name": "entity.blaze.shoot", "type": "event" }
+    ]
+  },
+  "cast_frost": {
+    "subtitle": "subtitles.socket-sorcery.cast_frost",
+    "sounds": [
+      { "name": "block.glass.break", "type": "event" }
+    ]
+  },
+  "cast_heal": {
+    "subtitle": "subtitles.socket-sorcery.cast_heal",
+    "sounds": [
+      { "name": "block.amethyst_block.chime", "type": "event" }
+    ]
+  },
+  "cast_leap": {
+    "subtitle": "subtitles.socket-sorcery.cast_leap",
+    "sounds": [
+      { "name": "entity.ender_pearl.throw", "type": "event" }
+    ]
+  }
+}

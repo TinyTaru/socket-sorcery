@@ -27,6 +27,7 @@ public class AccessoryItemRenderer extends DynamicIconRenderer {
 	// Top-left (row, col) where each gem's cropped sprite is drawn, in socket order.
 	private static final int[][] NECKLACE_SLOTS = { { 6, 10 }, { 9, 12 }, { 10, 3 }, { 12, 6 }, { 12, 10 } };
 	private static final int[][] BANGLE_SLOTS = { { 1, 6 }, { 3, 9 }, { 6, 11 } };
+	private static final int[][] RING_SLOTS = { { 6, 6 } };
 
 	private final Map<Item, Pixels> baseCache = new HashMap<>();
 	private final Map<Item, Pixels> gemCache = new HashMap<>();
@@ -38,6 +39,7 @@ public class AccessoryItemRenderer extends DynamicIconRenderer {
 	public static void register() {
 		BuiltinItemRendererRegistry.INSTANCE.register(ModItems.NECKLACE, INSTANCE);
 		BuiltinItemRendererRegistry.INSTANCE.register(ModItems.BANGLE, INSTANCE);
+		BuiltinItemRendererRegistry.INSTANCE.register(ModItems.RING, INSTANCE);
 		ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(INSTANCE);
 	}
 
@@ -59,7 +61,7 @@ public class AccessoryItemRenderer extends DynamicIconRenderer {
 		if (base == null) {
 			return null;
 		}
-		int[][] slots = item == ModItems.NECKLACE ? NECKLACE_SLOTS : BANGLE_SLOTS;
+		int[][] slots = item == ModItems.NECKLACE ? NECKLACE_SLOTS : (item == ModItems.RING ? RING_SLOTS : BANGLE_SLOTS);
 
 		NativeImage image = new NativeImage(SIZE, SIZE, false);
 		for (int row = 0; row < SIZE; row++) {

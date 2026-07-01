@@ -6,8 +6,14 @@ import java.util.Map;
 import java.util.Set;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
@@ -26,6 +32,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import tinytaru.socketsorcery.SocketSorcery;
 import tinytaru.socketsorcery.registry.ModItems;
+import tinytaru.socketsorcery.registry.ModSounds;
 
 /**
  * The registry of engravable patterns plus the gem/scroll compatibility tables.
@@ -36,7 +43,7 @@ import tinytaru.socketsorcery.registry.ModItems;
 public final class Patterns {
 
 	/** How far the bangle's targeting ray reaches. */
-	public static final double BANGLE_REACH = 6.0;
+	public static final double BANGLE_REACH = tinytaru.socketsorcery.Balance.BANGLE_REACH;
 
 	private static final Map<ResourceLocation, Pattern> BY_ID = new LinkedHashMap<>();
 	private static final Map<ResourceLocation, Integer> MODEL_INDEX = new LinkedHashMap<>();
@@ -65,6 +72,7 @@ public final class Patterns {
 			effect(
 					(player, mods, index) -> player.addEffect(buff(MobEffects.FIRE_RESISTANCE, mods)),
 					(player, target, mods, index) -> {
+						cast(player, ModSounds.CAST_FIRE, ParticleTypes.FLAME, target);
 						if (target instanceof EntityHitResult hit) {
 							hit.getEntity().igniteForSeconds((float) mods.magnitude(mods.duration(5)));
 						} else if (target instanceof BlockHitResult hit && target.getType() == HitResult.Type.BLOCK) {
@@ -104,6 +112,7 @@ public final class Patterns {
 						}
 					},
 					(player, target, mods, index) -> {
+						cast(player, ModSounds.CAST_FROST, ParticleTypes.SNOWFLAKE, target);
 						if (target instanceof EntityHitResult hit && hit.getEntity() instanceof LivingEntity living) {
 							living.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, mods.duration(120), mods.amp(3), false, true, true));
 							living.setTicksFrozen(mods.duration(220));
@@ -132,6 +141,7 @@ public final class Patterns {
 			effect(
 					(player, mods, index) -> player.addEffect(buff(MobEffects.REGENERATION, mods)),
 					(player, target, mods, index) -> {
+						cast(player, ModSounds.CAST_HEAL, ParticleTypes.HEART, target);
 						LivingEntity healed = player;
 						if (target instanceof EntityHitResult hit && hit.getEntity() instanceof LivingEntity living) {
 							healed = living;
@@ -165,6 +175,7 @@ public final class Patterns {
 						if (target.getType() == HitResult.Type.MISS) {
 							return;
 						}
+						cast(player, null, ParticleTypes.ELECTRIC_SPARK, target);
 						Vec3 at = target.getLocation();
 						LightningBolt bolt = EntityType.LIGHTNING_BOLT.create(player.level());
 						if (bolt != null) {
@@ -197,6 +208,7 @@ public final class Patterns {
 					(player, mods, index) -> player.addEffect(
 							new MobEffectInstance(MobEffects.JUMP, mods.duration(60), mods.amp(1), true, false, true)),
 					(player, target, mods, index) -> {
+						cast(player, ModSounds.CAST_LEAP, ParticleTypes.CLOUD, target);
 						Vec3 dash = player.getViewVector(1.0F).scale(mods.magnitude(1.6)).add(0.0, 0.35, 0.0);
 						if (mods.hasAim()) {
 							dash = dash.add(mods.worldAim(player).scale(1.2));
@@ -204,6 +216,191 @@ public final class Patterns {
 						player.setDeltaMovement(dash);
 						player.hurtMarked = true; // forces a velocity packet to the client
 						player.fallDistance = 0.0F;
+					})));
+
+	public static final Pattern WIND = register(new Pattern(
+			SocketSorcery.id("wind"), "pattern.socket-sorcery.wind", 0xB3E5FC,
+			Pattern.mask(
+					"................",
+					"................",
+					"................",
+					".......##.......",
+					"......####......",
+					".....######.....",
+					"....########....",
+					"...##########...",
+					"...##########...",
+					"...##########...",
+					"...##########...",
+					"...##########...",
+					"...##########...",
+					"................",
+					"................",
+					"................"),
+			effect(
+					(player, mods, index) -> player.addEffect(buff(MobEffects.SLOW_FALLING, mods)),
+					(player, target, mods, index) -> {
+						cast(player, null, ParticleTypes.CLOUD, target);
+						if (target instanceof EntityHitResult hit && hit.getEntity() instanceof LivingEntity living) {
+							living.addEffect(new MobEffectInstance(MobEffects.LEVITATION, mods.duration(40), mods.amp(0), false, true, true));
+						} else {
+							player.setDeltaMovement(player.getDeltaMovement().add(0.0, mods.magnitude(1.2), 0.0));
+							player.hurtMarked = true;
+							player.fallDistance = 0.0F;
+						}
+					})));
+
+	public static final Pattern EARTH = register(new Pattern(
+			SocketSorcery.id("earth"), "pattern.socket-sorcery.earth", 0x8D6E63,
+			Pattern.mask(
+					"................",
+					"................",
+					"................",
+					"....########....",
+					"....########....",
+					"....########....",
+					"....########....",
+					"...##########...",
+					"...##########...",
+					"....########....",
+					"....########....",
+					"....########....",
+					"....########....",
+					"................",
+					"................",
+					"................"),
+			effect(
+					(player, mods, index) -> player.addEffect(buff(MobEffects.DAMAGE_RESISTANCE, mods)),
+					(player, target, mods, index) -> {
+						cast(player, null, ParticleTypes.CRIT, target);
+						player.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, mods.duration(200), mods.amp(1), false, true, true));
+					})));
+
+	public static final Pattern LIFESTEAL = register(new Pattern(
+			SocketSorcery.id("lifesteal"), "pattern.socket-sorcery.lifesteal", 0xC62828,
+			Pattern.mask(
+					"................",
+					"................",
+					"................",
+					".......##.......",
+					"......####......",
+					".....######.....",
+					"....########....",
+					"...##########...",
+					"...##########...",
+					"....########....",
+					".....######.....",
+					"......####......",
+					".......##.......",
+					"................",
+					"................",
+					"................"),
+			effect(
+					(player, mods, index) -> player.addEffect(buff(MobEffects.HEALTH_BOOST, mods)),
+					(player, target, mods, index) -> {
+						cast(player, null, ParticleTypes.DAMAGE_INDICATOR, target);
+						if (target instanceof EntityHitResult hit && hit.getEntity() instanceof LivingEntity living) {
+							living.hurt(player.level().damageSources().magic(), (float) mods.magnitude(4.0));
+							player.heal((float) mods.magnitude(4.0));
+						}
+					})));
+
+	public static final Pattern BLINK = register(new Pattern(
+			SocketSorcery.id("blink"), "pattern.socket-sorcery.blink", 0xAB47BC,
+			Pattern.mask(
+					"................",
+					"................",
+					"................",
+					"...##......##...",
+					"....##....##....",
+					".....##..##.....",
+					"......####......",
+					"......####......",
+					"......####......",
+					".....##..##.....",
+					"....##....##....",
+					"...##......##...",
+					"................",
+					"................",
+					"................",
+					"................"),
+			effect(
+					(player, mods, index) -> player.addEffect(buff(MobEffects.DOLPHINS_GRACE, mods)),
+					(player, target, mods, index) -> {
+						Vec3 eye = player.getEyePosition();
+						Vec3 destination = target.getType() == HitResult.Type.MISS
+								? eye.add(player.getViewVector(1.0F).scale(BANGLE_REACH))
+								: target.getLocation();
+						if (mods.hasAim()) {
+							destination = destination.add(mods.worldAim(player).scale(1.5));
+						}
+						cast(player, SoundEvents.ENDER_PEARL_THROW, ParticleTypes.PORTAL, target);
+						player.teleportTo(destination.x, destination.y, destination.z);
+						player.fallDistance = 0.0F;
+					})));
+
+	public static final Pattern HASTE = register(new Pattern(
+			SocketSorcery.id("haste"), "pattern.socket-sorcery.haste", 0xFFD54F,
+			Pattern.mask(
+					"................",
+					"................",
+					"................",
+					".......##.......",
+					"......####......",
+					".....######.....",
+					"....###..###....",
+					"...##########...",
+					"...##########...",
+					"....###..###....",
+					".....######.....",
+					"......####......",
+					".......##.......",
+					"................",
+					"................",
+					"................"),
+			effect(
+					(player, mods, index) -> player.addEffect(buff(MobEffects.DIG_SPEED, mods)),
+					(player, target, mods, index) -> {
+						cast(player, SoundEvents.EXPERIENCE_ORB_PICKUP, ParticleTypes.HAPPY_VILLAGER, target);
+						player.addEffect(new MobEffectInstance(MobEffects.DIG_SPEED, mods.duration(200), mods.amp(2), false, true, true));
+						player.addEffect(new MobEffectInstance(MobEffects.LUCK, mods.duration(400), mods.amp(0), false, true, true));
+					})));
+
+	public static final Pattern SPIKES = register(new Pattern(
+			SocketSorcery.id("spikes"), "pattern.socket-sorcery.spikes", 0x607D8B,
+			Pattern.mask(
+					"................",
+					"................",
+					"................",
+					".......##.......",
+					"......####......",
+					".....##..##.....",
+					"....##....##....",
+					"...##......##...",
+					"...##......##...",
+					"....##....##....",
+					".....##..##.....",
+					"......####......",
+					".......##.......",
+					"................",
+					"................",
+					"................"),
+			effect(
+					(player, mods, index) -> {
+						AABB area = player.getBoundingBox().inflate(mods.radius(2.5));
+						for (Monster mob : player.level().getEntitiesOfClass(Monster.class, area, LivingEntity::isAlive)) {
+							mob.hurt(player.level().damageSources().magic(), (float) mods.magnitude(1.0));
+						}
+					},
+					(player, target, mods, index) -> {
+						cast(player, null, ParticleTypes.CRIT, target);
+						AABB area = player.getBoundingBox().inflate(mods.radius(3.0));
+						for (Monster mob : player.level().getEntitiesOfClass(Monster.class, area, LivingEntity::isAlive)) {
+							mob.hurt(player.level().damageSources().magic(), (float) mods.magnitude(3.0));
+							double dx = player.getX() - mob.getX();
+							double dz = player.getZ() - mob.getZ();
+							mob.knockback(0.6, dx, dz);
+						}
 					})));
 
 	/** Wires up the gem/scroll compatibility tables. Call after {@link ModItems} has registered. */
@@ -219,12 +416,22 @@ public final class Patterns {
 		gem(ModItems.ENGRAVABLE_LAPIS, FROST, LEAPING);
 		gem(ModItems.ENGRAVABLE_EMERALD, HEALING, LEAPING);
 		gem(ModItems.ENGRAVABLE_QUARTZ, FIRE, FROST);
+		gem(ModItems.ENGRAVABLE_IRON, EARTH, SPIKES);
+		gem(ModItems.ENGRAVABLE_GOLD, HASTE, HEALING);
+		gem(ModItems.ENGRAVABLE_COPPER, LIFESTEAL, FIRE);
+		gem(ModItems.ENGRAVABLE_ENDER, BLINK, WIND);
 
 		scroll(ModItems.SCROLL_FIRE, FIRE);
 		scroll(ModItems.SCROLL_FROST, FROST);
 		scroll(ModItems.SCROLL_HEALING, HEALING);
 		scroll(ModItems.SCROLL_LIGHTNING, LIGHTNING);
 		scroll(ModItems.SCROLL_LEAPING, LEAPING);
+		scroll(ModItems.SCROLL_WIND, WIND);
+		scroll(ModItems.SCROLL_EARTH, EARTH);
+		scroll(ModItems.SCROLL_LIFESTEAL, LIFESTEAL);
+		scroll(ModItems.SCROLL_BLINK, BLINK);
+		scroll(ModItems.SCROLL_HASTE, HASTE);
+		scroll(ModItems.SCROLL_SPIKES, SPIKES);
 	}
 
 	public static Pattern get(ResourceLocation id) {
@@ -299,7 +506,24 @@ public final class Patterns {
 	/** A standard self-buff used by the passive necklace behaviours: short, refreshed, quiet. */
 	private static MobEffectInstance buff(net.minecraft.core.Holder<net.minecraft.world.effect.MobEffect> effect,
 			EngraveMods mods) {
-		return new MobEffectInstance(effect, mods.duration(60), mods.amp(0), true, false, true);
+		return new MobEffectInstance(effect, mods.duration(tinytaru.socketsorcery.Balance.NECKLACE_BUFF_DURATION),
+				mods.amp(0), true, false, true);
+	}
+
+	/**
+	 * Shared bangle-cast feedback: plays {@code sound} (skipped when null) at the caster and bursts
+	 * {@code particle} at the impact point — the look target, or just ahead of the eyes on a miss.
+	 * Server-side; nearby clients receive both.
+	 */
+	private static void cast(ServerPlayer player, SoundEvent sound, ParticleOptions particle, HitResult target) {
+		ServerLevel level = player.serverLevel();
+		if (sound != null) {
+			level.playSound(null, player.getX(), player.getY(), player.getZ(), sound, SoundSource.PLAYERS, 0.8F, 1.0F);
+		}
+		Vec3 at = target.getType() == HitResult.Type.MISS
+				? player.getEyePosition().add(player.getViewVector(1.0F).scale(2.0))
+				: target.getLocation();
+		level.sendParticles(particle, at.x, at.y, at.z, 12, 0.2, 0.2, 0.2, 0.02);
 	}
 
 	private static PatternEffect effect(NecklaceBehavior necklace, BangleBehavior bangle) {

@@ -9,6 +9,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import tinytaru.socketsorcery.Balance;
 
 /**
  * Necklace — holds up to 5 gems and runs their <em>passive</em> behaviour while worn.
@@ -16,9 +17,6 @@ import net.minecraft.world.item.TooltipFlag;
 public class NecklaceItem extends AccessoryItem {
 
 	public static final int CAPACITY = 5;
-
-	/** Run passive effects every this many ticks (buffs are applied with a longer duration so they persist). */
-	private static final int TICK_INTERVAL = 20;
 
 	public NecklaceItem(Properties properties) {
 		super(properties, CAPACITY);
@@ -29,7 +27,7 @@ public class NecklaceItem extends AccessoryItem {
 		if (entity.level().isClientSide || !(entity instanceof ServerPlayer player)) {
 			return;
 		}
-		if (entity.tickCount % TICK_INTERVAL == 0) {
+		if (entity.tickCount % Balance.NECKLACE_TICK_INTERVAL == 0) {
 			runNecklace(player, stack);
 		}
 	}

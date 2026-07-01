@@ -2,6 +2,7 @@
 	"entities": ["player"],
 	"slots": [
 		"socket_sorcery/necklace",
-		"socket_sorcery/bangle"
+		"socket_sorcery/bangle",
+		"socket_sorcery/ring"
 	]
 }

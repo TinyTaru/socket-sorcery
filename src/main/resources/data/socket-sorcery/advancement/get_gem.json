@@ -1,0 +1,18 @@
+{
+  "parent": "socket-sorcery:first_scroll",
+  "display": {
+    "icon": { "id": "socket-sorcery:engravable_diamond" },
+    "title": { "translate": "advancements.socket-sorcery.get_gem.title" },
+    "description": { "translate": "advancements.socket-sorcery.get_gem.description" },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false
+  },
+  "criteria": {
+    "has_gem": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": { "items": [ { "items": "#socket-sorcery:gems" } ] }
+    }
+  },
+  "requirements": [ [ "has_gem" ] ]
+}

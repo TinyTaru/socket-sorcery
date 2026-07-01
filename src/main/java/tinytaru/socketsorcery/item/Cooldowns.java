@@ -4,6 +4,7 @@ import java.util.Map;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import tinytaru.socketsorcery.Balance;
 import tinytaru.socketsorcery.component.EngravingData;
 import tinytaru.socketsorcery.pattern.Patterns;
 import tinytaru.socketsorcery.registry.ModComponents;
@@ -16,15 +17,18 @@ import tinytaru.socketsorcery.registry.ModComponents;
  */
 public final class Cooldowns {
 
-	private static final int DEFAULT_BASE = 40;
-	private static final double MOD_SURCHARGE = 0.4;
-
-	private static final Map<ResourceLocation, Integer> BASE = Map.of(
-			Patterns.LEAPING.id(), 20,
-			Patterns.FIRE.id(), 40,
-			Patterns.FROST.id(), 50,
-			Patterns.HEALING.id(), 60,
-			Patterns.LIGHTNING.id(), 100);
+	private static final Map<ResourceLocation, Integer> BASE = Map.ofEntries(
+			Map.entry(Patterns.LEAPING.id(), Balance.COOLDOWN_BASE_LEAPING),
+			Map.entry(Patterns.WIND.id(), Balance.COOLDOWN_BASE_WIND),
+			Map.entry(Patterns.FIRE.id(), Balance.COOLDOWN_BASE_FIRE),
+			Map.entry(Patterns.HASTE.id(), Balance.COOLDOWN_BASE_HASTE),
+			Map.entry(Patterns.FROST.id(), Balance.COOLDOWN_BASE_FROST),
+			Map.entry(Patterns.SPIKES.id(), Balance.COOLDOWN_BASE_SPIKES),
+			Map.entry(Patterns.LIFESTEAL.id(), Balance.COOLDOWN_BASE_LIFESTEAL),
+			Map.entry(Patterns.HEALING.id(), Balance.COOLDOWN_BASE_HEALING),
+			Map.entry(Patterns.EARTH.id(), Balance.COOLDOWN_BASE_EARTH),
+			Map.entry(Patterns.BLINK.id(), Balance.COOLDOWN_BASE_BLINK),
+			Map.entry(Patterns.LIGHTNING.id(), Balance.COOLDOWN_BASE_LIGHTNING));
 
 	/** Total activation cooldown (ticks) for a bangle — the sum of each socketed gem's cost. */
 	public static int forBangle(ItemStack bangle) {
@@ -34,8 +38,8 @@ public final class Cooldowns {
 			if (data == null) {
 				continue;
 			}
-			int base = BASE.getOrDefault(data.pattern(), DEFAULT_BASE);
-			double multiplier = 1.0 + MOD_SURCHARGE * data.modifiers().size();
+			int base = BASE.getOrDefault(data.pattern(), Balance.COOLDOWN_DEFAULT_BASE);
+			double multiplier = 1.0 + Balance.COOLDOWN_MOD_SURCHARGE * data.modifiers().size();
 			total += (int) Math.round(base * multiplier);
 		}
 		return total;

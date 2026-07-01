@@ -16,6 +16,7 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
+import tinytaru.socketsorcery.Balance;
 import tinytaru.socketsorcery.SocketSorcery;
 import tinytaru.socketsorcery.component.EngravingData;
 import tinytaru.socketsorcery.component.SocketData;
@@ -35,13 +36,11 @@ import tinytaru.socketsorcery.registry.ModItems;
  */
 public final class SocketArtifactFunction extends LootItemConditionalFunction {
 
-	private static final int MIN_GEMS = 1;
-	private static final int MAX_GEMS = 3;
-
 	/** Pool of gems an artifact may carry — the five craftable engravable gems only. */
 	private static final Item[] ARTIFACT_GEMS = {
 			ModItems.ENGRAVABLE_DIAMOND, ModItems.ENGRAVABLE_REDSTONE, ModItems.ENGRAVABLE_LAPIS,
-			ModItems.ENGRAVABLE_EMERALD, ModItems.ENGRAVABLE_QUARTZ
+			ModItems.ENGRAVABLE_EMERALD, ModItems.ENGRAVABLE_QUARTZ,
+			ModItems.ENGRAVABLE_IRON, ModItems.ENGRAVABLE_GOLD, ModItems.ENGRAVABLE_COPPER, ModItems.ENGRAVABLE_ENDER
 	};
 
 	public static final MapCodec<SocketArtifactFunction> CODEC = RecordCodecBuilder.mapCodec(
@@ -66,8 +65,8 @@ public final class SocketArtifactFunction extends LootItemConditionalFunction {
 			return stack;
 		}
 		RandomSource random = context.getRandom();
-		int max = Math.max(MIN_GEMS, Math.min(MAX_GEMS, accessory.capacity()));
-		int count = MIN_GEMS + random.nextInt(max - MIN_GEMS + 1);
+		int max = Math.max(Balance.ARTIFACT_MIN_GEMS, Math.min(Balance.ARTIFACT_MAX_GEMS, accessory.capacity()));
+		int count = Balance.ARTIFACT_MIN_GEMS + random.nextInt(max - Balance.ARTIFACT_MIN_GEMS + 1);
 
 		List<ItemStack> gems = new ArrayList<>(count);
 		for (int i = 0; i < count; i++) {
