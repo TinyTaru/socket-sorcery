@@ -7,10 +7,10 @@
 		" X "
 	],
 	"key": {
-		"X": { "item": "minecraft:gold_ingot" }
+		"X": { "item": "minecraft:glowstone_dust" }
 	},
 	"result": {
-		"id": "socket-sorcery:engravable_gold",
+		"id": "socket-sorcery:engravable_glowstone",
 		"count": 1
 	}
 }

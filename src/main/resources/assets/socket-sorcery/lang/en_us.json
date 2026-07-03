@@ -14,8 +14,8 @@
 	"item.socket-sorcery.engravable_lapis": "Engravable Lapis",
 	"item.socket-sorcery.engravable_emerald": "Engravable Emerald",
 	"item.socket-sorcery.engravable_quartz": "Engravable Quartz",
-	"item.socket-sorcery.engravable_iron": "Engravable Iron",
-	"item.socket-sorcery.engravable_gold": "Engravable Gold",
+	"item.socket-sorcery.engravable_prismarine": "Engravable Prismarine",
+	"item.socket-sorcery.engravable_glowstone": "Engravable Glowstone",
 	"item.socket-sorcery.engravable_copper": "Engravable Copper",
 	"item.socket-sorcery.engravable_ender": "Engravable Ender Pearl",
 	"item.socket-sorcery.scroll_fire": "Scroll of Fire",
@@ -108,5 +108,9 @@
 	"advancements.socket-sorcery.craft_bench.title": "The Setting",
 	"advancements.socket-sorcery.craft_bench.description": "Craft a Socketing Bench to set your gems",
 	"advancements.socket-sorcery.get_accessory.title": "Adorned",
-	"advancements.socket-sorcery.get_accessory.description": "Obtain a necklace or bangle to socket your engraved gems"
+	"advancements.socket-sorcery.get_accessory.description": "Obtain a necklace or bangle to socket your engraved gems",
+	
+	"trinkets.slots.socket-sorcery.necklace": "Necklace",
+	"trinkets.slots.socket-sorcery.bangle": "Bangle",
+	"trinkets.slots.socket-sorcery.ring": "Ring"
 }

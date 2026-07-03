@@ -40,7 +40,7 @@ public final class SocketArtifactFunction extends LootItemConditionalFunction {
 	private static final Item[] ARTIFACT_GEMS = {
 			ModItems.ENGRAVABLE_DIAMOND, ModItems.ENGRAVABLE_REDSTONE, ModItems.ENGRAVABLE_LAPIS,
 			ModItems.ENGRAVABLE_EMERALD, ModItems.ENGRAVABLE_QUARTZ,
-			ModItems.ENGRAVABLE_IRON, ModItems.ENGRAVABLE_GOLD, ModItems.ENGRAVABLE_COPPER, ModItems.ENGRAVABLE_ENDER
+			ModItems.ENGRAVABLE_PRISMARINE, ModItems.ENGRAVABLE_GLOWSTONE, ModItems.ENGRAVABLE_COPPER, ModItems.ENGRAVABLE_ENDER
 	};
 
 	public static final MapCodec<SocketArtifactFunction> CODEC = RecordCodecBuilder.mapCodec(

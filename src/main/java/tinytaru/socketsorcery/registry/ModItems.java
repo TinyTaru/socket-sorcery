@@ -37,8 +37,8 @@ public final class ModItems {
 	public static final Item ENGRAVABLE_LAPIS = register("engravable_lapis", new GemItem(new Item.Properties()));
 	public static final Item ENGRAVABLE_EMERALD = register("engravable_emerald", new GemItem(new Item.Properties()));
 	public static final Item ENGRAVABLE_QUARTZ = register("engravable_quartz", new GemItem(new Item.Properties()));
-	public static final Item ENGRAVABLE_IRON = register("engravable_iron", new GemItem(new Item.Properties()));
-	public static final Item ENGRAVABLE_GOLD = register("engravable_gold", new GemItem(new Item.Properties()));
+	public static final Item ENGRAVABLE_PRISMARINE = register("engravable_prismarine", new GemItem(new Item.Properties()));
+	public static final Item ENGRAVABLE_GLOWSTONE = register("engravable_glowstone", new GemItem(new Item.Properties()));
 	public static final Item ENGRAVABLE_COPPER = register("engravable_copper", new GemItem(new Item.Properties()));
 	public static final Item ENGRAVABLE_ENDER = register("engravable_ender", new GemItem(new Item.Properties()));
 
@@ -46,7 +46,7 @@ public final class ModItems {
 	public static final Item[] GEMS = {
 			RUBY, SAPPHIRE, PERIDOT, AMETHYST, TOPAZ,
 			ENGRAVABLE_DIAMOND, ENGRAVABLE_REDSTONE, ENGRAVABLE_LAPIS, ENGRAVABLE_EMERALD, ENGRAVABLE_QUARTZ,
-			ENGRAVABLE_IRON, ENGRAVABLE_GOLD, ENGRAVABLE_COPPER, ENGRAVABLE_ENDER
+			ENGRAVABLE_PRISMARINE, ENGRAVABLE_GLOWSTONE, ENGRAVABLE_COPPER, ENGRAVABLE_ENDER
 	};
 
 	// Pattern scrolls (found in loot).

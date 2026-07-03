@@ -7,10 +7,10 @@
 		" X "
 	],
 	"key": {
-		"X": { "item": "minecraft:iron_ingot" }
+		"X": { "item": "minecraft:prismarine_shard" }
 	},
 	"result": {
-		"id": "socket-sorcery:engravable_iron",
+		"id": "socket-sorcery:engravable_prismarine",
 		"count": 1
 	}
 }
