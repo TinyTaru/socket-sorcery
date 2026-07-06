@@ -1,0 +1,22 @@
+{
+  "category": "socket-sorcery:patterns",
+  "name": "Wind",
+  "icon": "socket-sorcery:scroll_wind",
+  "sortnum": 5,
+  "pages": [
+    {
+      "type": "patchouli:image",
+      "images": [
+        "socket-sorcery:textures/patchouli/wind.png"
+      ],
+      "border": true,
+      "title": "Wind",
+      "text": "The Wind symbol, as it must be carved."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Wind",
+      "text": "$(bold)Necklace:$() grants Slow Falling.$(br2)$(bold)Bangle / Ring:$() launches you skyward, or sends a target floating with Levitation.$(br2)$(bold)Cooldown:$() 1.5s per cast.$(br2)$(bold)Held by:$() Engravable Ender Pearl."
+    }
+  ]
+}

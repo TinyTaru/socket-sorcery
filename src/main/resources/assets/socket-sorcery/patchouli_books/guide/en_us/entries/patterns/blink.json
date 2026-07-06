@@ -1,0 +1,22 @@
+{
+  "category": "socket-sorcery:patterns",
+  "name": "Blink",
+  "icon": "socket-sorcery:scroll_blink",
+  "sortnum": 8,
+  "pages": [
+    {
+      "type": "patchouli:image",
+      "images": [
+        "socket-sorcery:textures/patchouli/blink.png"
+      ],
+      "border": true,
+      "title": "Blink",
+      "text": "The Blink symbol, as it must be carved."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Blink",
+      "text": "$(bold)Necklace:$() grants Dolphin's Grace.$(br2)$(bold)Bangle / Ring:$() teleports you to whatever you are looking at.$(br2)$(bold)Cooldown:$() 4.0s per cast.$(br2)$(bold)Held by:$() Engravable Ender Pearl."
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "category": "socket-sorcery:patterns",
+  "name": "Leaping",
+  "icon": "socket-sorcery:scroll_leaping",
+  "sortnum": 4,
+  "pages": [
+    {
+      "type": "patchouli:image",
+      "images": [
+        "socket-sorcery:textures/patchouli/leaping.png"
+      ],
+      "border": true,
+      "title": "Leaping",
+      "text": "The Leaping symbol, as it must be carved."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Leaping",
+      "text": "$(bold)Necklace:$() grants Jump Boost.$(br2)$(bold)Bangle / Ring:$() dashes you forward and upward.$(br2)$(bold)Cooldown:$() 1.0s per cast.$(br2)$(bold)Held by:$() Peridot*, Topaz*, Engravable Lapis, Engravable Emerald. $(o)(* creative only)$()"
+    }
+  ]
+}

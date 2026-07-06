@@ -14,6 +14,7 @@ public class SocketSorceryClient implements ClientModInitializer {
 		MenuScreens.register(ModMenus.SOCKETING_BENCH, SocketingBenchScreen::new);
 		GemItemRenderer.register();
 		AccessoryItemRenderer.register();
+		PatternTooltipRenderer.register();
 		ModModelPredicates.register();
 		ModKeybinds.register();
 		BangleCooldownHud.register();

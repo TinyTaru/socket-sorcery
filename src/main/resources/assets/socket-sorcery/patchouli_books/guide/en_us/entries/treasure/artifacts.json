@@ -1,0 +1,12 @@
+{
+  "category": "socket-sorcery:treasure",
+  "name": "Artifacts",
+  "icon": "socket-sorcery:necklace",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Every accessory found as treasure arrives $(bold)pre-socketed$() — an artifact carrying one to three engraved gems, exactly as some vanished engraver left it. The gems are real: pry them out at the bench, rearrange them, wear the piece as-is.$(br2)$(o)An adventurer before you never made it home.$()"
+    }
+  ]
+}

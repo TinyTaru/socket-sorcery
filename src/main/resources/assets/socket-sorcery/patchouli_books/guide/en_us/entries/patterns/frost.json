@@ -1,0 +1,22 @@
+{
+  "category": "socket-sorcery:patterns",
+  "name": "Frost",
+  "icon": "socket-sorcery:scroll_frost",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:image",
+      "images": [
+        "socket-sorcery:textures/patchouli/frost.png"
+      ],
+      "border": true,
+      "title": "Frost",
+      "text": "The Frost symbol, as it must be carved."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Frost",
+      "text": "$(bold)Necklace:$() slows and chills nearby monsters.$(br2)$(bold)Bangle / Ring:$() deeply freezes and slows the target.$(br2)$(bold)Cooldown:$() 2.5s per cast.$(br2)$(bold)Held by:$() Sapphire*, Amethyst, Engravable Diamond, Engravable Lapis, Engravable Quartz. $(o)(* creative only)$()"
+    }
+  ]
+}

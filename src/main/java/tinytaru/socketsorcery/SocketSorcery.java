@@ -6,6 +6,7 @@ import net.minecraft.resources.ResourceLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import tinytaru.socketsorcery.config.SocketSorceryConfig;
 import tinytaru.socketsorcery.item.RingReactions;
 import tinytaru.socketsorcery.loot.SocketArtifactFunction;
 import tinytaru.socketsorcery.net.ModNetworking;
@@ -34,8 +35,10 @@ public class SocketSorcery implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		// Order matters: components and blocks before the items/block-items that reference them,
-		// patterns last so it can wire up gem/scroll compatibility against the registered items.
+		// Order matters: config first (loot/cooldown code reads it), components and blocks before the
+		// items/block-items that reference them, patterns last so it can wire up gem/scroll
+		// compatibility against the registered items.
+		SocketSorceryConfig.init();
 		ModComponents.init();
 		ModSounds.init();
 		ModBlocks.init();

@@ -36,7 +36,8 @@ public final class ModNetworking {
 
 	private static void activateBangles(ServerPlayer player) {
 		TrinketsApi.getTrinketComponent(player).ifPresent(component -> {
-			HitResult target = Patterns.raycast(player, Patterns.BANGLE_REACH);
+			HitResult target = Patterns.raycast(player,
+					tinytaru.socketsorcery.config.SocketSorceryConfig.get().bangleReach);
 			component.forEach((slot, stack) -> {
 				if (stack.getItem() instanceof BangleItem && !player.getCooldowns().isOnCooldown(stack.getItem())) {
 					AccessoryItem.runBangle(player, stack, target);

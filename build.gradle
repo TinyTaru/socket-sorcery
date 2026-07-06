@@ -22,6 +22,16 @@ repositories {
 		name = "Ladysnake Libs"
 		url = "https://maven.ladysnake.org/releases"
 	}
+	// Patchouli (the in-game guidebook).
+	maven {
+		name = "BlameJared"
+		url = "https://maven.blamejared.com/"
+	}
+	// Cloth Config (the config library).
+	maven {
+		name = "Shedaniel"
+		url = "https://maven.shedaniel.me/"
+	}
 }
 
 loom {
@@ -45,8 +55,22 @@ dependencies {
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
-	// Trinkets provides the worn accessory slots (necklace / bangle).
+	// Trinkets provides the worn accessory slots (necklace / bangle / ring).
 	modImplementation "dev.emi:trinkets:${project.trinkets_version}"
+
+	// Patchouli powers the in-game guidebook (hard dependency).
+	modImplementation "vazkii.patchouli:Patchouli:${project.patchouli_version}"
+
+	// Cloth Config provides the config file + screen (hard dependency).
+	modImplementation("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
+		exclude group: "net.fabricmc.fabric-api"
+	}
+
+	// EMI and ModMenu are optional integrations: compile against them, run them in dev.
+	modCompileOnly "dev.emi:emi-fabric:${project.emi_version}:api"
+	modLocalRuntime "dev.emi:emi-fabric:${project.emi_version}"
+	modCompileOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
+	modLocalRuntime "com.terraformersmc:modmenu:${project.modmenu_version}"
 }
 
 processResources {

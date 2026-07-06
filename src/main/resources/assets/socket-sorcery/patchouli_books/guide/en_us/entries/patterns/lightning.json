@@ -1,0 +1,22 @@
+{
+  "category": "socket-sorcery:patterns",
+  "name": "Lightning",
+  "icon": "socket-sorcery:scroll_lightning",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:image",
+      "images": [
+        "socket-sorcery:textures/patchouli/lightning.png"
+      ],
+      "border": true,
+      "title": "Lightning",
+      "text": "The Lightning symbol, as it must be carved."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Lightning",
+      "text": "$(bold)Necklace:$() grants Speed.$(br2)$(bold)Bangle / Ring:$() calls a lightning bolt down on your target.$(br2)$(bold)Cooldown:$() 5.0s per cast.$(br2)$(bold)Held by:$() Ruby*, Amethyst, Engravable Redstone. $(o)(* creative only)$()"
+    }
+  ]
+}

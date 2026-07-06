@@ -1,0 +1,17 @@
+{
+  "category": "socket-sorcery:engraving",
+  "name": "Table and Chisel",
+  "icon": "socket-sorcery:engraving_table",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The $(item)Engraving Table$() holds three things: the gem, the teaching scroll, and a chisel to do the cutting. All three must be in place before the first cut."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "socket-sorcery:engraving_table",
+      "recipe2": "socket-sorcery:chisel"
+    }
+  ]
+}

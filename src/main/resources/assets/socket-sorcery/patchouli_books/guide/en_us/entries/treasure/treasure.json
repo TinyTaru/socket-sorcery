@@ -1,0 +1,12 @@
+{
+  "category": "socket-sorcery:treasure",
+  "name": "Treasure Hunting",
+  "icon": "socket-sorcery:scroll_lightning",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Beyond scrolls, finished accessories surface rarely in the world's richest chests: heirloom $(item)necklaces$() in end cities, woodland mansions and ancient cities; champions' $(item)bangles$() in bastions, nether fortresses and end cities."
+    }
+  ]
+}

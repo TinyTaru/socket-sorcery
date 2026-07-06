@@ -1,0 +1,17 @@
+{
+  "category": "socket-sorcery:gems",
+  "name": "Engravable Gems",
+  "icon": "socket-sorcery:engravable_diamond",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Ten gems can be cut at a crafting table, each a plus of one material: $(item)diamond$(), $(item)redstone$(), $(item)lapis$(), $(item)emerald$(), $(item)quartz$(), $(item)amethyst$(), $(item)prismarine$(), $(item)glowstone$(), $(item)copper$() and $(item)ender pearl$().$(br2)Each holds two of the eleven patterns."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "socket-sorcery:engravable_prismarine",
+      "recipe2": "socket-sorcery:engravable_ender"
+    }
+  ]
+}

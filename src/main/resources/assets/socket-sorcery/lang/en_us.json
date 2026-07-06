@@ -110,7 +110,20 @@
 	"advancements.socket-sorcery.get_accessory.title": "Adorned",
 	"advancements.socket-sorcery.get_accessory.description": "Obtain a necklace or bangle to socket your engraved gems",
 	
-	"trinkets.slots.socket-sorcery.necklace": "Necklace",
-	"trinkets.slots.socket-sorcery.bangle": "Bangle",
-	"trinkets.slots.socket-sorcery.ring": "Ring"
+	"trinkets.slot.socket_sorcery.necklace": "Necklace",
+	"trinkets.slot.socket_sorcery.bangle": "Bangle",
+	"trinkets.slot.socket_sorcery.ring": "Ring",
+
+	"text.autoconfig.socket-sorcery.title": "Socket Sorcery",
+	"text.autoconfig.socket-sorcery.option.scrollLoot": "Scrolls in structure loot",
+	"text.autoconfig.socket-sorcery.option.scrollDropChance": "Scroll drop chance",
+	"text.autoconfig.socket-sorcery.option.accessoryLoot": "Artifacts in treasure loot",
+	"text.autoconfig.socket-sorcery.option.accessoryChance": "Artifact drop chance",
+	"text.autoconfig.socket-sorcery.option.artifactMinGems": "Artifact minimum gems",
+	"text.autoconfig.socket-sorcery.option.artifactMaxGems": "Artifact maximum gems",
+	"text.autoconfig.socket-sorcery.option.cooldownMultiplier": "Cooldown multiplier",
+	"text.autoconfig.socket-sorcery.option.bangleReach": "Bangle reach (blocks)",
+
+	"emi.category.socket-sorcery.engraving": "Engraving",
+	"emi.category.socket-sorcery.socketing": "Socketing"
 }

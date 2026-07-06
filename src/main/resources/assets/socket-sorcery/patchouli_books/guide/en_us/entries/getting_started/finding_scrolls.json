@@ -1,0 +1,17 @@
+{
+  "category": "socket-sorcery:getting_started",
+  "name": "Finding Scrolls",
+  "icon": "socket-sorcery:scroll_fire",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Pattern scrolls are the mod's knowledge: each teaches exactly one symbol. They cannot be crafted — adventurers before you left them in $(thing)dungeons$(), $(thing)mineshafts$(), $(thing)desert and jungle temples$(), $(thing)strongholds$(), $(thing)woodland mansions$() and $(thing)buried treasure$()."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "socket-sorcery:scroll_fire",
+      "text": "A scroll is consumed when its pattern is successfully engraved, so spend them with care. Its tooltip names the pattern it teaches."
+    }
+  ]
+}

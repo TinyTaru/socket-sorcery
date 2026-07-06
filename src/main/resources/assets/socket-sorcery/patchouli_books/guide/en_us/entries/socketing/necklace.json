@@ -1,0 +1,17 @@
+{
+  "category": "socket-sorcery:socketing",
+  "name": "The Necklace",
+  "icon": "socket-sorcery:necklace",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(bold)Five sockets. Always on.$()$(br2)A worn necklace works each gem's passive art continuously — regeneration, resistance, speed, a chilling aura. The generalist's choice: five quiet blessings at once."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "socket-sorcery:necklace",
+      "text": "A chain clasp over a gold setting."
+    }
+  ]
+}

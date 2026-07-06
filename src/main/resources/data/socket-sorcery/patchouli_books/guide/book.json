@@ -1,0 +1,9 @@
+{
+  "name": "Engraver's Handbook",
+  "landing_text": "Sorcery, chiselled one cell at a time. This handbook covers the whole craft: finding $(l:socket-sorcery:getting_started/finding_scrolls)pattern scrolls$(/l), $(l:socket-sorcery:engraving/chiselling)engraving gems$(/l), cutting $(l:socket-sorcery:modifiers/overview)modifiers$(/l), and $(l:socket-sorcery:socketing/the_bench)socketing$(/l) your work into accessories.",
+  "model": "patchouli:book_purple",
+  "creative_tab": "socket-sorcery:general",
+  "show_progress": false,
+  "use_resource_pack": true,
+  "version": 1
+}

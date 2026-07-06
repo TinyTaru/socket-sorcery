@@ -6,6 +6,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import tinytaru.socketsorcery.Balance;
 import tinytaru.socketsorcery.component.EngravingData;
+import tinytaru.socketsorcery.config.SocketSorceryConfig;
 import tinytaru.socketsorcery.pattern.Patterns;
 import tinytaru.socketsorcery.registry.ModComponents;
 
@@ -42,7 +43,7 @@ public final class Cooldowns {
 			double multiplier = 1.0 + Balance.COOLDOWN_MOD_SURCHARGE * data.modifiers().size();
 			total += (int) Math.round(base * multiplier);
 		}
-		return total;
+		return (int) Math.round(total * SocketSorceryConfig.get().cooldownMultiplier);
 	}
 
 	private Cooldowns() {

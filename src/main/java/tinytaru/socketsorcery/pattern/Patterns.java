@@ -328,8 +328,9 @@ public final class Patterns {
 					(player, mods, index) -> player.addEffect(buff(MobEffects.DOLPHINS_GRACE, mods)),
 					(player, target, mods, index) -> {
 						Vec3 eye = player.getEyePosition();
+						double reach = tinytaru.socketsorcery.config.SocketSorceryConfig.get().bangleReach;
 						Vec3 destination = target.getType() == HitResult.Type.MISS
-								? eye.add(player.getViewVector(1.0F).scale(BANGLE_REACH))
+								? eye.add(player.getViewVector(1.0F).scale(reach))
 								: target.getLocation();
 						if (mods.hasAim()) {
 							destination = destination.add(mods.worldAim(player).scale(1.5));

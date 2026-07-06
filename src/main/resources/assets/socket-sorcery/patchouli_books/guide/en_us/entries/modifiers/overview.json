@@ -1,0 +1,16 @@
+{
+  "category": "socket-sorcery:modifiers",
+  "name": "How Modifiers Work",
+  "icon": "socket-sorcery:amethyst",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Modifiers are deep-cut gestures layered onto a finished symbol. Each modifier claims a small, fixed set of cells derived from the symbol's own shape — so the same gesture works on every pattern.$(br2)Any combination may be stacked, but every deep cell must belong to a complete modifier: stray deep cuts spoil the work."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Modifiers are meant to be $(bold)discovered$(). The table quietly names each one the moment you've formed it correctly, and tints its cells — experiment with symmetric gestures and watch the status line.$(br2)Each modifier also lengthens a bangle's cooldown, so power has a price."
+    }
+  ]
+}

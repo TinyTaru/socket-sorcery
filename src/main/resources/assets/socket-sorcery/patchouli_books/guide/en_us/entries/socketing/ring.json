@@ -1,0 +1,17 @@
+{
+  "category": "socket-sorcery:socketing",
+  "name": "The Ring",
+  "icon": "socket-sorcery:ring",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(bold)One socket. Fights back for you.$()$(br2)The ring watches. Take a hit, and its gem's active art fires on its own — straight at your attacker, when there is one. A retaliatory frost, a burst of spikes, a lifesteal answer. Then it rests on its own cooldown."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "socket-sorcery:ring",
+      "text": "Two golden bands, joined."
+    }
+  ]
+}

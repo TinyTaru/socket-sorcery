@@ -1,0 +1,18 @@
+{
+  "category": "socket-sorcery:gems",
+  "name": "Compatibility",
+  "icon": "socket-sorcery:engravable_quartz",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Craftable gems",
+      "text": "$(item)Diamond$(): Frost, Healing$(br)$(item)Redstone$(): Fire, Lightning$(br)$(item)Lapis$(): Frost, Leaping$(br)$(item)Emerald$(): Healing, Leaping$(br)$(item)Quartz$(): Fire, Frost$(br)$(item)Amethyst$(): Lightning, Frost$(br)$(item)Prismarine$(): Earth, Spikes$(br)$(item)Glowstone$(): Haste, Healing$(br)$(item)Copper$(): Lifesteal, Fire$(br)$(item)Ender Pearl$(): Blink, Wind"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Prestige stones",
+      "text": "$(item)Ruby$(): Fire, Lightning$(br)$(item)Sapphire$(): Frost, Healing$(br)$(item)Peridot$(): Healing, Leaping$(br)$(item)Topaz$(): Leaping, Fire$(br2)Every pattern has at least one craftable home, so the whole craft is open to survival play."
+    }
+  ]
+}

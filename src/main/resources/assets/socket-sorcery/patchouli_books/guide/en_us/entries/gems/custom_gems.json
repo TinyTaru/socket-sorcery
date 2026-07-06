@@ -1,0 +1,13 @@
+{
+  "category": "socket-sorcery:gems",
+  "name": "The Prestige Stones",
+  "icon": "socket-sorcery:ruby",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "socket-sorcery:ruby",
+      "text": "$(item)Ruby$(), $(item)Sapphire$(), $(item)Peridot$() and $(item)Topaz$() are showpieces with no survival recipe — every pattern they hold is also held by a craftable gem, so nothing is locked away. $(item)Amethyst$() alone crossed over: it is craftable like the rest."
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "category": "socket-sorcery:patterns",
+  "name": "Lifesteal",
+  "icon": "socket-sorcery:scroll_lifesteal",
+  "sortnum": 7,
+  "pages": [
+    {
+      "type": "patchouli:image",
+      "images": [
+        "socket-sorcery:textures/patchouli/lifesteal.png"
+      ],
+      "border": true,
+      "title": "Lifesteal",
+      "text": "The Lifesteal symbol, as it must be carved."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Lifesteal",
+      "text": "$(bold)Necklace:$() grants Health Boost.$(br2)$(bold)Bangle / Ring:$() wounds the target and heals you for the same amount.$(br2)$(bold)Cooldown:$() 3.0s per cast.$(br2)$(bold)Held by:$() Engravable Copper."
+    }
+  ]
+}

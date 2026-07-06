@@ -12,7 +12,7 @@ import net.minecraft.world.level.storage.loot.entries.EmptyLootItem;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
-import tinytaru.socketsorcery.Balance;
+import tinytaru.socketsorcery.config.SocketSorceryConfig;
 import tinytaru.socketsorcery.loot.SocketArtifactFunction;
 
 /**
@@ -55,10 +55,12 @@ public final class ModLoot {
 			if (!source.isBuiltin()) {
 				return;
 			}
-			if (SCROLL_TARGETS.contains(key)) {
+			// Config is read here, at datapack load, so changes apply on world (re)load.
+			SocketSorceryConfig config = SocketSorceryConfig.get();
+			if (config.scrollLoot && SCROLL_TARGETS.contains(key)) {
 				tableBuilder.withPool(LootPool.lootPool()
 						.setRolls(ConstantValue.exactly(1.0F))
-						.when(LootItemRandomChanceCondition.randomChance(Balance.LOOT_SCROLL_CHANCE))
+						.when(LootItemRandomChanceCondition.randomChance(config.scrollDropChance))
 						.add(LootItem.lootTableItem(ModItems.SCROLL_FIRE).setWeight(2))
 						.add(LootItem.lootTableItem(ModItems.SCROLL_FROST).setWeight(2))
 						.add(LootItem.lootTableItem(ModItems.SCROLL_HEALING).setWeight(2))
@@ -72,24 +74,24 @@ public final class ModLoot {
 						.add(LootItem.lootTableItem(ModItems.SCROLL_SPIKES).setWeight(2))
 						.add(EmptyLootItem.emptyItem().setWeight(10)));
 			}
-			if (NECKLACE_TARGETS.contains(key)) {
-				tableBuilder.withPool(accessoryPool(ModItems.NECKLACE));
+			if (config.accessoryLoot && NECKLACE_TARGETS.contains(key)) {
+				tableBuilder.withPool(accessoryPool(ModItems.NECKLACE, config.accessoryChance));
 			}
-			if (BANGLE_TARGETS.contains(key)) {
-				tableBuilder.withPool(accessoryPool(ModItems.BANGLE));
+			if (config.accessoryLoot && BANGLE_TARGETS.contains(key)) {
+				tableBuilder.withPool(accessoryPool(ModItems.BANGLE, config.accessoryChance));
 			}
 		});
 	}
 
 	/**
-	 * A single-roll pool that drops one accessory with {@link Balance#LOOT_ACCESSORY_CHANCE} probability. Every
-	 * dropped accessory is a pre-socketed "artifact" (crafting is how you get blank ones), so a treasure find is
+	 * A single-roll pool that drops one accessory with the configured probability. Every dropped
+	 * accessory is a pre-socketed "artifact" (crafting is how you get blank ones), so a treasure find is
 	 * always a ready-to-wear prize.
 	 */
-	private static LootPool.Builder accessoryPool(Item accessory) {
+	private static LootPool.Builder accessoryPool(Item accessory, float chance) {
 		return LootPool.lootPool()
 				.setRolls(ConstantValue.exactly(1.0F))
-				.when(LootItemRandomChanceCondition.randomChance(Balance.LOOT_ACCESSORY_CHANCE))
+				.when(LootItemRandomChanceCondition.randomChance(chance))
 				.add(LootItem.lootTableItem(accessory).apply(SocketArtifactFunction.artifact()));
 	}
 

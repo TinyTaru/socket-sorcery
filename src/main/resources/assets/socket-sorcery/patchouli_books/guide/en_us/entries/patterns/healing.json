@@ -1,0 +1,22 @@
+{
+  "category": "socket-sorcery:patterns",
+  "name": "Healing",
+  "icon": "socket-sorcery:scroll_healing",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:image",
+      "images": [
+        "socket-sorcery:textures/patchouli/healing.png"
+      ],
+      "border": true,
+      "title": "Healing",
+      "text": "The Healing symbol, as it must be carved."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Healing",
+      "text": "$(bold)Necklace:$() grants Regeneration.$(br2)$(bold)Bangle / Ring:$() heals the target (or yourself) and grants Regeneration.$(br2)$(bold)Cooldown:$() 3.0s per cast.$(br2)$(bold)Held by:$() Sapphire*, Peridot*, Engravable Diamond, Engravable Emerald, Engravable Glowstone. $(o)(* creative only)$()"
+    }
+  ]
+}

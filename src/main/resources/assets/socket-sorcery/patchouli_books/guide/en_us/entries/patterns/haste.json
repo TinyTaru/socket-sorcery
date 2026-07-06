@@ -1,0 +1,22 @@
+{
+  "category": "socket-sorcery:patterns",
+  "name": "Haste",
+  "icon": "socket-sorcery:scroll_haste",
+  "sortnum": 9,
+  "pages": [
+    {
+      "type": "patchouli:image",
+      "images": [
+        "socket-sorcery:textures/patchouli/haste.png"
+      ],
+      "border": true,
+      "title": "Haste",
+      "text": "The Haste symbol, as it must be carved."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Haste",
+      "text": "$(bold)Necklace:$() grants Haste.$(br2)$(bold)Bangle / Ring:$() grants a long burst of Haste II and Luck.$(br2)$(bold)Cooldown:$() 2.5s per cast.$(br2)$(bold)Held by:$() Engravable Glowstone."
+    }
+  ]
+}

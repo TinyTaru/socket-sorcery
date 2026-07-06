@@ -1,14 +1,17 @@
 package tinytaru.socketsorcery.item;
 
 import java.util.List;
+import java.util.Optional;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import tinytaru.socketsorcery.pattern.Pattern;
+import tinytaru.socketsorcery.pattern.PatternTooltip;
 import tinytaru.socketsorcery.pattern.Patterns;
 
 /**
@@ -39,5 +42,11 @@ public class ScrollItem extends Item {
 					.withStyle(ChatFormatting.GRAY).append(Component.literal(" ")).append(pattern.coloredName()));
 		}
 		tooltip.add(Component.translatable("tooltip.socket-sorcery.scroll_hint").withStyle(ChatFormatting.DARK_GRAY));
+	}
+
+	@Override
+	public Optional<TooltipComponent> getTooltipImage(ItemStack stack) {
+		Pattern pattern = Patterns.get(patternId());
+		return pattern == null ? Optional.empty() : Optional.of(new PatternTooltip(pattern));
 	}
 }

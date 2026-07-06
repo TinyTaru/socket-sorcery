@@ -1,0 +1,12 @@
+{
+  "category": "socket-sorcery:modifiers",
+  "name": "Power, Duration, Range",
+  "icon": "socket-sorcery:ruby",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(bold)Power$() amplifies the effect — stronger potions, bigger numbers. Its cells sit at the very heart of the grid.$(br2)$(bold)Duration$() doubles how long effects last. Look to the symbol's crown and foot.$(br2)$(bold)Range$() widens auras and reach. Look to the symbol's outermost flanks."
+    }
+  ]
+}

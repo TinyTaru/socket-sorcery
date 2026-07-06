@@ -1,0 +1,17 @@
+{
+  "category": "socket-sorcery:socketing",
+  "name": "The Bangle",
+  "icon": "socket-sorcery:bangle",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(bold)Three sockets. Cast on command.$()$(br2)Press the $(bold)Activate Bangle$() key (default $(bold)R$()) and every socketed gem fires at whatever you're aiming at — fireballs of intent, lightning, a blink. One shared cooldown follows, the sum of every gem's price."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "socket-sorcery:bangle",
+      "text": "A solid ring of gold for the wrist."
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "category": "socket-sorcery:modifiers",
+  "name": "The Four Aims",
+  "icon": "socket-sorcery:scroll_leaping",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Four more gestures cut a single cell just $(bold)beyond$() the symbol's edge — above, below, left or right. Each biases a bangle cast in that direction: a leaping dash angled upward, a blink nudged to the side.$(br2)They may be combined, and opposing aims cancel."
+    }
+  ]
+}

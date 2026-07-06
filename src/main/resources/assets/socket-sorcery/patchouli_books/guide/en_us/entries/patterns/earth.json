@@ -1,0 +1,22 @@
+{
+  "category": "socket-sorcery:patterns",
+  "name": "Earth",
+  "icon": "socket-sorcery:scroll_earth",
+  "sortnum": 6,
+  "pages": [
+    {
+      "type": "patchouli:image",
+      "images": [
+        "socket-sorcery:textures/patchouli/earth.png"
+      ],
+      "border": true,
+      "title": "Earth",
+      "text": "The Earth symbol, as it must be carved."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Earth",
+      "text": "$(bold)Necklace:$() grants Resistance.$(br2)$(bold)Bangle / Ring:$() shields you with Absorption hearts.$(br2)$(bold)Cooldown:$() 3.5s per cast.$(br2)$(bold)Held by:$() Engravable Prismarine."
+    }
+  ]
+}

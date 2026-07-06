@@ -1,0 +1,26 @@
+{
+  "category": "socket-sorcery:engraving",
+  "name": "Chiselling",
+  "icon": "socket-sorcery:chisel",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The gem's face is a 16x16 grid, and the scroll's symbol shows through faintly. $(bold)Left-click$() carves a cell; $(bold)right-click$() smooths it back. Carve the whole symbol — no more, no less — and confirm.$(br2)A live preview shows exactly what your finished gem will look like."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Every carved cell costs one point of chisel durability, so grand symbols wear your tools faster. Better chisels last longer — and a netherite edge cuts so cleanly it wastes less of itself on every engraving."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "socket-sorcery:diamond_chisel",
+      "text": "A diamond chisel holds four times the edge of iron."
+    },
+    {
+      "type": "patchouli:smithing",
+      "recipe": "socket-sorcery:netherite_chisel",
+      "text": "Netherite: sixteen times the durability, and every engraving costs one cell less."
+    }
+  ]
+}

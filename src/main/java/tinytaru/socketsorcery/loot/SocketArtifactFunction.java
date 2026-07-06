@@ -16,9 +16,9 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import tinytaru.socketsorcery.Balance;
 import tinytaru.socketsorcery.SocketSorcery;
 import tinytaru.socketsorcery.component.EngravingData;
+import tinytaru.socketsorcery.config.SocketSorceryConfig;
 import tinytaru.socketsorcery.component.SocketData;
 import tinytaru.socketsorcery.item.AccessoryItem;
 import tinytaru.socketsorcery.pattern.Patterns;
@@ -65,8 +65,10 @@ public final class SocketArtifactFunction extends LootItemConditionalFunction {
 			return stack;
 		}
 		RandomSource random = context.getRandom();
-		int max = Math.max(Balance.ARTIFACT_MIN_GEMS, Math.min(Balance.ARTIFACT_MAX_GEMS, accessory.capacity()));
-		int count = Balance.ARTIFACT_MIN_GEMS + random.nextInt(max - Balance.ARTIFACT_MIN_GEMS + 1);
+		SocketSorceryConfig config = SocketSorceryConfig.get();
+		int min = Math.min(config.artifactMinGems, accessory.capacity());
+		int max = Math.max(min, Math.min(config.artifactMaxGems, accessory.capacity()));
+		int count = min + random.nextInt(max - min + 1);
 
 		List<ItemStack> gems = new ArrayList<>(count);
 		for (int i = 0; i < count; i++) {

@@ -1,0 +1,16 @@
+{
+  "category": "socket-sorcery:socketing",
+  "name": "The Socketing Bench",
+  "icon": "socket-sorcery:socketing_bench",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The $(item)Socketing Bench$() sets engraved gems into accessories. Place the accessory, then slot gems into its sockets — they live inside the accessory itself from then on, and can be pried back out at the bench at any time.$(br2)Order matters: gems act in socket order."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "socket-sorcery:socketing_bench"
+    }
+  ]
+}
