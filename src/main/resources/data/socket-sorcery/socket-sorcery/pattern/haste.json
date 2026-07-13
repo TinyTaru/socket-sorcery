@@ -1,0 +1,58 @@
+{
+  "mask": [
+    "................",
+    "................",
+    "................",
+    ".......##.......",
+    "......####......",
+    ".....######.....",
+    "....###..###....",
+    "...##########...",
+    "...##########...",
+    "....###..###....",
+    ".....######.....",
+    "......####......",
+    ".......##.......",
+    "................",
+    "................",
+    "................"
+  ],
+  "color": "#FFD54F",
+  "cooldown": 50,
+  "cast_feedback": {
+    "sound": "minecraft:entity.experience_orb.pickup",
+    "particle": {
+      "type": "minecraft:happy_villager"
+    }
+  },
+  "gems": [
+    "socket-sorcery:engravable_glowstone"
+  ],
+  "scroll": "socket-sorcery:scroll_haste",
+  "necklace_effects": [
+    {
+      "type": "socket-sorcery:mob_effect",
+      "effect": "minecraft:haste",
+      "duration": 60,
+      "amplifier": 0,
+      "target": "self",
+      "ambient": true,
+      "show_particles": false
+    }
+  ],
+  "bangle_effects": [
+    {
+      "type": "socket-sorcery:mob_effect",
+      "effect": "minecraft:haste",
+      "duration": 200,
+      "amplifier": 2,
+      "target": "self"
+    },
+    {
+      "type": "socket-sorcery:mob_effect",
+      "effect": "minecraft:luck",
+      "duration": 400,
+      "target": "self"
+    }
+  ]
+}

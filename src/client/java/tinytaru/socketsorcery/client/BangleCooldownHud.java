@@ -67,7 +67,7 @@ public final class BangleCooldownHud {
 		graphics.pose().popPose();
 
 		// Remaining-seconds countdown, estimated from the worn bangle's total cooldown.
-		int total = Cooldowns.forBangle(wornBangle(player));
+		int total = Cooldowns.forBangle(wornBangle(player), player.level().registryAccess());
 		if (total > 0) {
 			String text = String.format("%.1f", total * percent / 20.0F);
 			int tw = minecraft.font.width(text);

@@ -1,0 +1,49 @@
+{
+  "mask": [
+    "................",
+    "................",
+    "................",
+    "...##......##...",
+    "....##....##....",
+    ".....##..##.....",
+    "......####......",
+    "......####......",
+    "......####......",
+    ".....##..##.....",
+    "....##....##....",
+    "...##......##...",
+    "................",
+    "................",
+    "................",
+    "................"
+  ],
+  "color": "#AB47BC",
+  "cooldown": 80,
+  "cast_feedback": {
+    "sound": "minecraft:entity.ender_pearl.throw",
+    "particle": {
+      "type": "minecraft:portal"
+    }
+  },
+  "gems": [
+    "socket-sorcery:engravable_ender"
+  ],
+  "scroll": "socket-sorcery:scroll_blink",
+  "necklace_effects": [
+    {
+      "type": "socket-sorcery:mob_effect",
+      "effect": "minecraft:dolphins_grace",
+      "duration": 60,
+      "amplifier": 0,
+      "target": "self",
+      "ambient": true,
+      "show_particles": false
+    }
+  ],
+  "bangle_effects": [
+    {
+      "type": "socket-sorcery:teleport",
+      "aim_scale": 1.5
+    }
+  ]
+}

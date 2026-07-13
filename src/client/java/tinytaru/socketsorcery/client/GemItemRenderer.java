@@ -6,6 +6,9 @@ import java.util.Map;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
@@ -24,6 +27,10 @@ import tinytaru.socketsorcery.registry.ModItems;
  * (bright) + the modifier cells (darker), for the exact pattern and modifier set on the stack.
  * Unengraved gems keep their normal {@code item/generated} model; only engraved stacks (whose model
  * is {@code builtin/entity}) reach this renderer.
+ *
+ * <p>Pattern data comes from the synced dynamic registry via the client level (null-guarded: with no
+ * level, the plain gem texture renders). Other mods can opt their own items into this renderer via
+ * {@code SocketSorceryClientApi#registerEngravableGem}.
  */
 public class GemItemRenderer extends DynamicIconRenderer {
 
@@ -37,9 +44,18 @@ public class GemItemRenderer extends DynamicIconRenderer {
 
 	public static void register() {
 		for (Item gem : ModItems.GEMS) {
-			BuiltinItemRendererRegistry.INSTANCE.register(gem, INSTANCE);
+			registerFor(gem);
 		}
 		ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(INSTANCE);
+	}
+
+	/** Routes the given item's {@code builtin/entity} model through this renderer. */
+	public static void registerFor(Item item) {
+		BuiltinItemRendererRegistry.INSTANCE.register(item, INSTANCE);
+	}
+
+	private static HolderLookup.Provider clientRegistries() {
+		return Minecraft.getInstance().level == null ? null : Minecraft.getInstance().level.registryAccess();
 	}
 
 	@Override
@@ -47,12 +63,12 @@ public class GemItemRenderer extends DynamicIconRenderer {
 		Item item = stack.getItem();
 		ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(item);
 		EngravingData data = stack.get(ModComponents.ENGRAVING);
-		Pattern pattern = data == null ? null : Patterns.get(data.pattern());
+		Holder.Reference<Pattern> pattern = data == null ? null : Patterns.get(clientRegistries(), data.pattern());
 		if (pattern == null) {
-			return itemTexture(itemId); // not engraved / unknown: just the plain gem
+			return itemTexture(itemId); // not engraved / unknown pattern / no level: just the plain gem
 		}
 		String key = itemId + "|" + data.pattern() + "|" + Modifiers.ordered(data.modifiers());
-		ResourceLocation built = composeCached(key, () -> compose(item, itemId, pattern, data));
+		ResourceLocation built = composeCached(key, () -> compose(item, itemId, pattern.value(), data));
 		return built != null ? built : itemTexture(itemId);
 	}
 
@@ -62,7 +78,7 @@ public class GemItemRenderer extends DynamicIconRenderer {
 			return null;
 		}
 		boolean[][] symbol = pattern.mask();
-		long[] deep = Modifiers.cellsFor(pattern, data.modifiers());
+		long[] deep = Modifiers.cellsFor(clientRegistries(), pattern, data.modifiers());
 		int bright = brightAbgr(pattern.color());
 		int dark = darkAbgr(pattern.color());
 

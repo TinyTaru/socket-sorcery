@@ -1,0 +1,57 @@
+{
+  "mask": [
+    "................",
+    "................",
+    "................",
+    ".......##.......",
+    "......####......",
+    ".....######.....",
+    "....########....",
+    "...##########...",
+    "...##########...",
+    "...##########...",
+    "...##########...",
+    "...##########...",
+    "...##########...",
+    "................",
+    "................",
+    "................"
+  ],
+  "color": "#B3E5FC",
+  "cooldown": 30,
+  "cast_feedback": {
+    "particle": {
+      "type": "minecraft:cloud"
+    }
+  },
+  "gems": [
+    "socket-sorcery:engravable_ender"
+  ],
+  "scroll": "socket-sorcery:scroll_wind",
+  "necklace_effects": [
+    {
+      "type": "socket-sorcery:mob_effect",
+      "effect": "minecraft:slow_falling",
+      "duration": 60,
+      "amplifier": 0,
+      "target": "self",
+      "ambient": true,
+      "show_particles": false
+    }
+  ],
+  "bangle_effects": [
+    {
+      "type": "socket-sorcery:mob_effect",
+      "effect": "minecraft:levitation",
+      "duration": 40,
+      "target": "hit_entity",
+      "when": "hit_entity"
+    },
+    {
+      "type": "socket-sorcery:launch",
+      "direction": "up",
+      "magnitude": 1.2,
+      "when": "no_hit_entity"
+    }
+  ]
+}

@@ -32,7 +32,7 @@ public final class RingReactions {
 				component.forEach((slot, stack) -> {
 					if (stack.getItem() instanceof RingItem) {
 						AccessoryItem.runBangle(player, stack, target);
-						int ticks = Cooldowns.forBangle(stack);
+						int ticks = Cooldowns.forBangle(stack, player.registryAccess());
 						if (ticks > 0) {
 							player.getCooldowns().addCooldown(ModItems.RING, ticks);
 						}

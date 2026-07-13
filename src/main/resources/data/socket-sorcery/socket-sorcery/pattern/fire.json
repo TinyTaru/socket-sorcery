@@ -1,0 +1,54 @@
+{
+  "mask": [
+    "................",
+    "................",
+    "................",
+    ".......##.......",
+    "......#..#......",
+    "......#..#......",
+    ".....#....#.....",
+    ".....#....#.....",
+    "....#......#....",
+    "....#......#....",
+    "...#........#...",
+    "...#........#...",
+    "...##########...",
+    "................",
+    "................",
+    "................"
+  ],
+  "color": "#FF5722",
+  "cooldown": 40,
+  "cast_feedback": {
+    "sound": "socket-sorcery:cast_fire",
+    "particle": {
+      "type": "minecraft:flame"
+    }
+  },
+  "gems": [
+    "socket-sorcery:ruby",
+    "socket-sorcery:topaz",
+    "socket-sorcery:engravable_redstone",
+    "socket-sorcery:engravable_quartz",
+    "socket-sorcery:engravable_copper"
+  ],
+  "scroll": "socket-sorcery:scroll_fire",
+  "necklace_effects": [
+    {
+      "type": "socket-sorcery:mob_effect",
+      "effect": "minecraft:fire_resistance",
+      "duration": 60,
+      "amplifier": 0,
+      "target": "self",
+      "ambient": true,
+      "show_particles": false
+    }
+  ],
+  "bangle_effects": [
+    {
+      "type": "socket-sorcery:ignite",
+      "seconds": 5,
+      "place_fire_on_block": true
+    }
+  ]
+}

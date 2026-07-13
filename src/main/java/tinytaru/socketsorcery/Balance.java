@@ -15,23 +15,12 @@ package tinytaru.socketsorcery;
 public final class Balance {
 
 	// --- Bangle activation cooldowns (ticks; 20 ticks = 1 second) ---
+	// Per-pattern cooldown bases live in each pattern's data definition ("cooldown" in the JSON).
 
-	/** Cooldown contributed by a socketed gem whose pattern has no explicit base. */
+	/** Cooldown contributed by a socketed gem whose pattern definition is missing/unloaded. */
 	public static final int COOLDOWN_DEFAULT_BASE = 40;
 	/** Extra fraction of a gem's base cooldown charged per applied modifier. */
 	public static final double COOLDOWN_MOD_SURCHARGE = 0.4;
-
-	public static final int COOLDOWN_BASE_LEAPING = 20;
-	public static final int COOLDOWN_BASE_WIND = 30;
-	public static final int COOLDOWN_BASE_FIRE = 40;
-	public static final int COOLDOWN_BASE_HASTE = 50;
-	public static final int COOLDOWN_BASE_FROST = 50;
-	public static final int COOLDOWN_BASE_SPIKES = 55;
-	public static final int COOLDOWN_BASE_LIFESTEAL = 60;
-	public static final int COOLDOWN_BASE_HEALING = 60;
-	public static final int COOLDOWN_BASE_EARTH = 70;
-	public static final int COOLDOWN_BASE_BLINK = 80;
-	public static final int COOLDOWN_BASE_LIGHTNING = 100;
 
 	// --- Bangle targeting ---
 
@@ -42,18 +31,12 @@ public final class Balance {
 
 	/** Run each necklace gem's passive behaviour every this many ticks. */
 	public static final int NECKLACE_TICK_INTERVAL = 20;
-	/** Duration (ticks) of the short, continuously-refreshed self-buffs the necklace passives apply. */
-	public static final int NECKLACE_BUFF_DURATION = 60;
 
 	// --- Engraving modifier strengths ---
+	// Per-modifier knob values live in each modifier's data definition; this multiplier is engine
+	// behaviour (how any power > 0 scales magnitudes), not per-modifier data.
 
-	/** Amplifier bump applied by the Power modifier. */
-	public static final int MOD_POWER_AMP = 1;
-	/** Duration multiplier applied by the Duration modifier. */
-	public static final int MOD_DURATION_MULT = 2;
-	/** Radius bonus (blocks) applied by the Range modifier. */
-	public static final double MOD_RANGE_BONUS = 3.0;
-	/** Magnitude multiplier applied when an engraving carries the Power modifier. */
+	/** Magnitude multiplier applied when an engraving carries any Power bonus. */
 	public static final double MOD_MAGNITUDE_POWER_MULT = 1.5;
 
 	// --- Treasure loot ---

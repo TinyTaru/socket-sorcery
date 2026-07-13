@@ -1,42 +1,54 @@
 package tinytaru.socketsorcery.client;
 
 import net.fabricmc.fabric.api.client.rendering.v1.TooltipComponentCallback;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.core.Holder;
 import tinytaru.socketsorcery.pattern.Pattern;
 import tinytaru.socketsorcery.pattern.PatternTooltip;
+import tinytaru.socketsorcery.pattern.Patterns;
 
-/** Renders a {@link PatternTooltip} as a miniature version of the engraving grid, tinted with the pattern's colour. */
+/**
+ * Renders a {@link PatternTooltip} as a miniature version of the engraving grid, tinted with the
+ * pattern's colour. The scroll item is resolved to its pattern here, against the client level's
+ * synced registry (no level or no claiming pattern → renders nothing).
+ */
 public class PatternTooltipRenderer implements ClientTooltipComponent {
 
 	private static final int CELL = 6;
 	private static final int SIZE = Pattern.GRID * CELL;
 	private static final int MARGIN = 4;
 
-	private final Pattern pattern;
+	private final Pattern pattern; // null when unresolvable — renders as empty
 
-	public PatternTooltipRenderer(Pattern pattern) {
-		this.pattern = pattern;
+	public PatternTooltipRenderer(PatternTooltip tooltip) {
+		Holder.Reference<Pattern> holder = Minecraft.getInstance().level == null ? null
+				: Patterns.forScroll(Minecraft.getInstance().level.registryAccess(), tooltip.scroll());
+		this.pattern = holder == null ? null : holder.value();
 	}
 
 	public static void register() {
 		TooltipComponentCallback.EVENT.register(data ->
-				data instanceof PatternTooltip tooltip ? new PatternTooltipRenderer(tooltip.pattern()) : null);
+				data instanceof PatternTooltip tooltip ? new PatternTooltipRenderer(tooltip) : null);
 	}
 
 	@Override
 	public int getHeight() {
-		return SIZE + MARGIN * 2;
+		return pattern == null ? 0 : SIZE + MARGIN * 2;
 	}
 
 	@Override
 	public int getWidth(Font font) {
-		return SIZE + MARGIN * 2;
+		return pattern == null ? 0 : SIZE + MARGIN * 2;
 	}
 
 	@Override
 	public void renderImage(Font font, int x, int y, GuiGraphics g) {
+		if (pattern == null) {
+			return;
+		}
 		int ox = x + MARGIN;
 		int oy = y + MARGIN;
 		g.fill(ox - 2, oy - 2, ox + SIZE + 2, oy + SIZE + 2, 0xFF101010);

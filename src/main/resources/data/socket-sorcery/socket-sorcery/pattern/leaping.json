@@ -1,0 +1,55 @@
+{
+  "mask": [
+    "................",
+    "................",
+    "................",
+    ".......##.......",
+    "......####......",
+    ".....######.....",
+    "....########....",
+    "...####..####...",
+    "...##......##...",
+    ".......##.......",
+    ".......##.......",
+    ".......##.......",
+    ".......##.......",
+    "................",
+    "................",
+    "................"
+  ],
+  "color": "#BA68C8",
+  "cooldown": 20,
+  "cast_feedback": {
+    "sound": "socket-sorcery:cast_leap",
+    "particle": {
+      "type": "minecraft:cloud"
+    }
+  },
+  "gems": [
+    "socket-sorcery:peridot",
+    "socket-sorcery:topaz",
+    "socket-sorcery:engravable_lapis",
+    "socket-sorcery:engravable_emerald"
+  ],
+  "scroll": "socket-sorcery:scroll_leaping",
+  "necklace_effects": [
+    {
+      "type": "socket-sorcery:mob_effect",
+      "effect": "minecraft:jump_boost",
+      "duration": 60,
+      "amplifier": 1,
+      "target": "self",
+      "ambient": true,
+      "show_particles": false
+    }
+  ],
+  "bangle_effects": [
+    {
+      "type": "socket-sorcery:launch",
+      "direction": "look",
+      "magnitude": 1.6,
+      "y_boost": 0.35,
+      "aim_scale": 1.2
+    }
+  ]
+}

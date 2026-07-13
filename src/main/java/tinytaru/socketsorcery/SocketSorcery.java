@@ -10,7 +10,6 @@ import tinytaru.socketsorcery.config.SocketSorceryConfig;
 import tinytaru.socketsorcery.item.RingReactions;
 import tinytaru.socketsorcery.loot.SocketArtifactFunction;
 import tinytaru.socketsorcery.net.ModNetworking;
-import tinytaru.socketsorcery.pattern.Patterns;
 import tinytaru.socketsorcery.registry.ModBlockEntities;
 import tinytaru.socketsorcery.registry.ModBlocks;
 import tinytaru.socketsorcery.registry.ModComponents;
@@ -41,6 +40,7 @@ public class SocketSorcery implements ModInitializer {
 		SocketSorceryConfig.init();
 		ModComponents.init();
 		ModSounds.init();
+		tinytaru.socketsorcery.registry.ModRegistries.init();
 		ModBlocks.init();
 		ModBlockEntities.init();
 		ModItems.init();
@@ -50,7 +50,7 @@ public class SocketSorcery implements ModInitializer {
 		ModNetworking.registerServer();
 		SocketArtifactFunction.init();
 		ModLoot.init();
-		Patterns.init();
+		tinytaru.socketsorcery.pattern.RegistryValidation.init();
 
 		LOGGER.info("Socket Sorcery initialized");
 	}

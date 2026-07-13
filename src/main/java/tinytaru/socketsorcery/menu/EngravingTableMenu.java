@@ -5,6 +5,8 @@ import java.util.Set;
 import org.joml.Vector3f;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
@@ -24,8 +26,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import tinytaru.socketsorcery.block.EngravingTableBlockEntity;
 import tinytaru.socketsorcery.component.EngravingData;
 import tinytaru.socketsorcery.item.ChiselItem;
-import tinytaru.socketsorcery.item.GemItem;
-import tinytaru.socketsorcery.item.ScrollItem;
 import tinytaru.socketsorcery.pattern.GridBits;
 import tinytaru.socketsorcery.pattern.Modifiers;
 import tinytaru.socketsorcery.pattern.Pattern;
@@ -49,6 +49,7 @@ public class EngravingTableMenu extends AbstractContainerMenu {
 
 	private final Container table;
 	private final ContainerLevelAccess access;
+	private final HolderLookup.Provider registries;
 
 	public EngravingTableMenu(int syncId, Inventory playerInv, EngravingTableBlockEntity be) {
 		this(syncId, playerInv, be, ContainerLevelAccess.create(be.getLevel(), be.getBlockPos()));
@@ -64,11 +65,12 @@ public class EngravingTableMenu extends AbstractContainerMenu {
 		checkContainerSize(table, TABLE_SLOTS);
 		this.table = table;
 		this.access = access;
+		this.registries = playerInv.player.level().registryAccess();
 
 		this.addSlot(new Slot(table, SLOT_GEM, 20, 20) {
 			@Override
 			public boolean mayPlace(ItemStack stack) {
-				return stack.getItem() instanceof GemItem;
+				return Patterns.isEngravableGem(registries, stack.getItem());
 			}
 
 			@Override
@@ -79,7 +81,7 @@ public class EngravingTableMenu extends AbstractContainerMenu {
 		this.addSlot(new Slot(table, SLOT_SCROLL, 20, 46) {
 			@Override
 			public boolean mayPlace(ItemStack stack) {
-				return stack.getItem() instanceof ScrollItem;
+				return Patterns.forScroll(registries, stack.getItem()) != null;
 			}
 		});
 		this.addSlot(new Slot(table, SLOT_CHISEL, 20, 72) {
@@ -125,19 +127,25 @@ public class EngravingTableMenu extends AbstractContainerMenu {
 		return table.getItem(SLOT_CHISEL);
 	}
 
+	/** The registry view this menu resolves patterns/modifiers against (valid on both sides). */
+	public HolderLookup.Provider registries() {
+		return registries;
+	}
+
 	/** The pattern the loaded scroll teaches, or null if no scroll present. */
-	public Pattern targetPattern() {
-		return scrollStack().getItem() instanceof ScrollItem scroll ? Patterns.get(scroll.patternId()) : null;
+	public Holder.Reference<Pattern> targetPattern() {
+		ItemStack scroll = scrollStack();
+		return scroll.isEmpty() ? null : Patterns.forScroll(registries, scroll.getItem());
 	}
 
 	/** True when a gem, a matching scroll and a chisel are all present and the gem is engravable. */
 	public boolean canEngrave() {
 		ItemStack gem = gemStack();
-		Pattern pattern = targetPattern();
+		Holder.Reference<Pattern> pattern = targetPattern();
 		return pattern != null
-				&& gem.getItem() instanceof GemItem
+				&& !gem.isEmpty()
 				&& !gem.has(ModComponents.ENGRAVING)
-				&& Patterns.canEngrave(gem.getItem(), pattern.id())
+				&& Patterns.canEngrave(registries, gem.getItem(), pattern.key().location())
 				&& chiselStack().getItem() instanceof ChiselItem;
 	}
 
@@ -149,17 +157,18 @@ public class EngravingTableMenu extends AbstractContainerMenu {
 	 */
 	public EngraveResult tryEngrave(ServerPlayer player, long[] carved, long[] deep) {
 		ItemStack gem = gemStack();
-		Pattern pattern = targetPattern();
-		if (pattern == null
-				|| !(gem.getItem() instanceof GemItem)
+		Holder.Reference<Pattern> holder = targetPattern();
+		if (holder == null
+				|| gem.isEmpty()
 				|| gem.has(ModComponents.ENGRAVING)
-				|| !Patterns.canEngrave(gem.getItem(), pattern.id())) {
+				|| !Patterns.canEngrave(registries, gem.getItem(), holder.key().location())) {
 			return EngraveResult.NOT_ENGRAVABLE;
 		}
 		if (!(chiselStack().getItem() instanceof ChiselItem)) {
 			return EngraveResult.NO_CHISEL;
 		}
-		Set<ResourceLocation> modifiers = Modifiers.decode(pattern, deep);
+		Pattern pattern = holder.value();
+		Set<ResourceLocation> modifiers = Modifiers.decode(registries, pattern, deep);
 		if (modifiers == null) {
 			return EngraveResult.BAD_MODIFIERS; // stray or incomplete deep cells
 		}
@@ -175,7 +184,8 @@ public class EngravingTableMenu extends AbstractContainerMenu {
 		access.execute((level, pos) -> {
 			ItemStack engraved = gemStack().copy();
 			engraved.setCount(1);
-			engraved.set(ModComponents.ENGRAVING, new EngravingData(pattern.id(), Modifiers.ordered(modifiers)));
+			engraved.set(ModComponents.ENGRAVING,
+					new EngravingData(holder.key().location(), Modifiers.ordered(modifiers)));
 			table.setItem(SLOT_GEM, engraved);
 
 			scrollStack().shrink(1);
@@ -229,11 +239,11 @@ public class EngravingTableMenu extends AbstractContainerMenu {
 			if (!this.moveItemStackTo(inSlot, invStart, invEnd, true)) {
 				return ItemStack.EMPTY;
 			}
-		} else if (inSlot.getItem() instanceof GemItem) {
+		} else if (Patterns.isEngravableGem(registries, inSlot.getItem())) {
 			if (!this.moveItemStackTo(inSlot, SLOT_GEM, SLOT_GEM + 1, false)) {
 				return ItemStack.EMPTY;
 			}
-		} else if (inSlot.getItem() instanceof ScrollItem) {
+		} else if (Patterns.forScroll(registries, inSlot.getItem()) != null) {
 			if (!this.moveItemStackTo(inSlot, SLOT_SCROLL, SLOT_SCROLL + 1, false)) {
 				return ItemStack.EMPTY;
 			}

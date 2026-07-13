@@ -1,0 +1,55 @@
+{
+  "mask": [
+    "................",
+    "................",
+    "................",
+    ".......##.......",
+    "......####......",
+    ".....######.....",
+    "....########....",
+    "...##########...",
+    "...##########...",
+    "....########....",
+    ".....######.....",
+    "......####......",
+    ".......##.......",
+    "................",
+    "................",
+    "................"
+  ],
+  "color": "#C62828",
+  "cooldown": 60,
+  "cast_feedback": {
+    "particle": {
+      "type": "minecraft:damage_indicator"
+    }
+  },
+  "gems": [
+    "socket-sorcery:engravable_copper"
+  ],
+  "scroll": "socket-sorcery:scroll_lifesteal",
+  "necklace_effects": [
+    {
+      "type": "socket-sorcery:mob_effect",
+      "effect": "minecraft:health_boost",
+      "duration": 60,
+      "amplifier": 0,
+      "target": "self",
+      "ambient": true,
+      "show_particles": false
+    }
+  ],
+  "bangle_effects": [
+    {
+      "type": "socket-sorcery:damage",
+      "amount": 4,
+      "target": "hit_entity"
+    },
+    {
+      "type": "socket-sorcery:heal",
+      "amount": 4,
+      "target": "self",
+      "when": "hit_entity"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "color": "#FF5252",
+  "cell_rule": {
+    "type": "socket-sorcery:center_block"
+  },
+  "power_bonus": 1
+}

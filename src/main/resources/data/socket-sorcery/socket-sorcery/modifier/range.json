@@ -1,0 +1,7 @@
+{
+  "color": "#66BB6A",
+  "cell_rule": {
+    "type": "socket-sorcery:left_right"
+  },
+  "range_bonus": 3
+}

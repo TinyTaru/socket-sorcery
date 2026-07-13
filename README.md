@@ -33,6 +33,13 @@ Eleven patterns, each with a distinct passive and active effect: Fire, Frost, He
 Leaping, Wind, Earth, Lifesteal, Blink, Haste, and Spikes. Which patterns a gem can hold depends
 on the gem — see the in-game guidebook or EMI.
 
+## Data-driven — add your own
+
+Every pattern, modifier, and gem/scroll pairing is JSON, loaded through synced dynamic registries
+(like vanilla enchantments). Datapacks can add new patterns, make vanilla items engravable, and
+register new scrolls — no code. See **[DATA_DRIVEN.md](DATA_DRIVEN.md)** for the full schema
+reference and a worked example.
+
 ## Requirements
 
 - Minecraft **1.21.1**, Fabric Loader ≥ 0.19.3, Java ≥ 21

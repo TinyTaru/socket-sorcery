@@ -1,0 +1,12 @@
+{
+  "category": "socket-sorcery:getting_started",
+  "name": "For Pack Authors",
+  "icon": "minecraft:writable_book",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Every pattern and modifier in this book is a JSON file, and datapacks can add their own: new symbols, new effects, new gems (even vanilla items), new scrolls.$(br2)See $(bold)DATA_DRIVEN.md$() in the mod's repository for the full schema reference and a worked example.$(br2)$(o)Changes load at world start — leave and rejoin after editing.$()"
+    }
+  ]
+}

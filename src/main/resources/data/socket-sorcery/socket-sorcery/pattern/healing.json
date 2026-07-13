@@ -1,0 +1,61 @@
+{
+  "mask": [
+    "................",
+    "................",
+    "................",
+    ".......##.......",
+    ".......##.......",
+    ".......##.......",
+    ".......##.......",
+    "...##########...",
+    "...##########...",
+    ".......##.......",
+    ".......##.......",
+    ".......##.......",
+    ".......##.......",
+    "................",
+    "................",
+    "................"
+  ],
+  "color": "#66BB6A",
+  "cooldown": 60,
+  "cast_feedback": {
+    "sound": "socket-sorcery:cast_heal",
+    "particle": {
+      "type": "minecraft:heart"
+    }
+  },
+  "gems": [
+    "socket-sorcery:sapphire",
+    "socket-sorcery:peridot",
+    "socket-sorcery:engravable_diamond",
+    "socket-sorcery:engravable_emerald",
+    "socket-sorcery:engravable_glowstone"
+  ],
+  "scroll": "socket-sorcery:scroll_healing",
+  "necklace_effects": [
+    {
+      "type": "socket-sorcery:mob_effect",
+      "effect": "minecraft:regeneration",
+      "duration": 60,
+      "amplifier": 0,
+      "target": "self",
+      "ambient": true,
+      "show_particles": false
+    }
+  ],
+  "bangle_effects": [
+    {
+      "type": "socket-sorcery:heal",
+      "amount": 6,
+      "target": "hit_entity_or_self"
+    },
+    {
+      "type": "socket-sorcery:mob_effect",
+      "effect": "minecraft:regeneration",
+      "duration": 100,
+      "amplifier": 1,
+      "target": "hit_entity_or_self"
+    }
+  ]
+}

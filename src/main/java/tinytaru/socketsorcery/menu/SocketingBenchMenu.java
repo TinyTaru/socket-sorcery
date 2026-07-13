@@ -30,6 +30,7 @@ public class SocketingBenchMenu extends AbstractContainerMenu {
 	private final Container bench;
 	private final SocketContainer sockets;
 	private final ContainerLevelAccess access;
+	private final net.minecraft.core.HolderLookup.Provider registries;
 
 	public SocketingBenchMenu(int syncId, Inventory playerInv, SocketingBenchBlockEntity be) {
 		this(syncId, playerInv, be, ContainerLevelAccess.create(be.getLevel(), be.getBlockPos()));
@@ -46,6 +47,7 @@ public class SocketingBenchMenu extends AbstractContainerMenu {
 		this.bench = bench;
 		this.sockets = new SocketContainer(bench);
 		this.access = access;
+		this.registries = playerInv.player.level().registryAccess();
 
 		this.addSlot(new Slot(bench, SocketingBenchBlockEntity.SLOT_ACCESSORY, 80, 18) {
 			@Override
@@ -112,6 +114,11 @@ public class SocketingBenchMenu extends AbstractContainerMenu {
 	/** The accessory currently in the bench (empty if none) — used by the screen for status text. */
 	public ItemStack accessory() {
 		return bench.getItem(ACCESSORY_SLOT);
+	}
+
+	/** The registry view this menu resolves patterns against (valid on both sides). */
+	public net.minecraft.core.HolderLookup.Provider registries() {
+		return registries;
 	}
 
 	@Override

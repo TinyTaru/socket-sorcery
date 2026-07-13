@@ -14,12 +14,18 @@ import tinytaru.socketsorcery.registry.ModItems;
  */
 public final class ModModelPredicates {
 
+	private static final ResourceLocation ENGRAVING = SocketSorcery.id("engraving");
+
 	public static void register() {
-		ResourceLocation id = SocketSorcery.id("engraving");
 		for (Item gem : ModItems.GEMS) {
-			ItemProperties.register(gem, id, (stack, level, entity, seed) ->
-					stack.has(ModComponents.ENGRAVING) ? 1.0F : 0.0F);
+			registerFor(gem);
 		}
+	}
+
+	/** Adds the {@code engraving} predicate to the given item (for other mods' gems). */
+	public static void registerFor(Item item) {
+		ItemProperties.register(item, ENGRAVING, (stack, level, entity, seed) ->
+				stack.has(ModComponents.ENGRAVING) ? 1.0F : 0.0F);
 	}
 
 	private ModModelPredicates() {

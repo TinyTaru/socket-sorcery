@@ -18,7 +18,7 @@ public final class ModBlocks {
 
 	public static final Block SOCKETING_BENCH = register("socketing_bench", new SocketingBenchBlock(
 			BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(2.5F)
-					.sound(SoundType.METAL).requiresCorrectToolForDrops()));
+					.sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
 
 	private static Block register(String name, Block block) {
 		return Registry.register(BuiltInRegistries.BLOCK, SocketSorcery.id(name), block);

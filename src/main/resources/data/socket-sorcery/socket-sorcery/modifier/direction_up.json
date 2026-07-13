@@ -1,0 +1,12 @@
+{
+  "color": "#FFD54F",
+  "cell_rule": {
+    "type": "socket-sorcery:extension",
+    "direction": "up"
+  },
+  "aim": [
+    0,
+    1,
+    0
+  ]
+}

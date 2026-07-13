@@ -41,7 +41,7 @@ public final class ModNetworking {
 			component.forEach((slot, stack) -> {
 				if (stack.getItem() instanceof BangleItem && !player.getCooldowns().isOnCooldown(stack.getItem())) {
 					AccessoryItem.runBangle(player, stack, target);
-					int ticks = Cooldowns.forBangle(stack);
+					int ticks = Cooldowns.forBangle(stack, player.registryAccess());
 					if (ticks > 0) {
 						player.getCooldowns().addCooldown(stack.getItem(), ticks);
 					}

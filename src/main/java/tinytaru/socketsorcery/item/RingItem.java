@@ -23,10 +23,12 @@ public class RingItem extends AccessoryItem {
 	@Override
 	public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
 		super.appendHoverText(stack, context, tooltip, flag);
-		int cooldown = Cooldowns.forBangle(stack);
-		if (cooldown > 0) {
-			String seconds = String.format("%.1f", cooldown / 20.0);
-			tooltip.add(Component.translatable("tooltip.socket-sorcery.cooldown", seconds).withStyle(ChatFormatting.GRAY));
+		if (context.registries() != null) {
+			int cooldown = Cooldowns.forBangle(stack, context.registries());
+			if (cooldown > 0) {
+				String seconds = String.format("%.1f", cooldown / 20.0);
+				tooltip.add(Component.translatable("tooltip.socket-sorcery.cooldown", seconds).withStyle(ChatFormatting.GRAY));
+			}
 		}
 		tooltip.add(Component.translatable("tooltip.socket-sorcery.ring_hint").withStyle(ChatFormatting.DARK_GRAY));
 	}

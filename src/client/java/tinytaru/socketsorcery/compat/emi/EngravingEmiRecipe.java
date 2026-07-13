@@ -8,6 +8,7 @@ import dev.emi.emi.api.render.EmiTexture;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.WidgetHolder;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -30,15 +31,17 @@ public class EngravingEmiRecipe implements EmiRecipe {
 	private final EmiIngredient chisels;
 	private final EmiStack output;
 
-	public EngravingEmiRecipe(Item gem, Item scroll, Pattern pattern) {
+	public EngravingEmiRecipe(Item gem, Item scroll, Holder.Reference<Pattern> pattern) {
 		ResourceLocation gemId = BuiltInRegistries.ITEM.getKey(gem);
-		this.id = SocketSorcery.id("engraving/" + gemId.getPath() + "/" + pattern.id().getPath());
+		ResourceLocation patternId = pattern.key().location();
+		// Leading '/' marks this as a synthetic id (not a real recipe-manager entry) per EMI convention.
+		this.id = SocketSorcery.id("/engraving/" + gemId.getPath() + "/" + patternId.getPath());
 		this.gem = EmiStack.of(gem);
 		this.scroll = EmiStack.of(scroll);
 		this.chisels = EmiIngredient.of(List.of(
 				EmiStack.of(ModItems.CHISEL), EmiStack.of(ModItems.DIAMOND_CHISEL), EmiStack.of(ModItems.NETHERITE_CHISEL)));
 		ItemStack engraved = new ItemStack(gem);
-		engraved.set(ModComponents.ENGRAVING, new EngravingData(pattern.id()));
+		engraved.set(ModComponents.ENGRAVING, new EngravingData(patternId));
 		this.output = EmiStack.of(engraved);
 	}
 

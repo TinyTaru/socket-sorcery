@@ -36,18 +36,25 @@ public class SocketingEmiRecipe implements EmiRecipe {
 
 	public SocketingEmiRecipe(Item accessoryItem, int capacity) {
 		ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(accessoryItem);
-		this.id = SocketSorcery.id("socketing/" + itemId.getPath());
+		// Leading '/' marks this as a synthetic id (not a real recipe-manager entry) per EMI convention.
+		this.id = SocketSorcery.id("/socketing/" + itemId.getPath());
 		this.accessory = EmiStack.of(accessoryItem);
 		this.capacity = capacity;
 
-		// One representative engraved stack per gem (its first supported pattern).
+		// One representative engraved stack per gem (its first supported pattern), read from the
+		// synced pattern registry when in-world (skipped otherwise; EMI re-registers on join).
 		List<ItemStack> examples = new ArrayList<>();
-		for (Item gem : ModItems.GEMS) {
-			for (ResourceLocation patternId : Patterns.patternsFor(gem)) {
-				ItemStack engraved = new ItemStack(gem);
-				engraved.set(ModComponents.ENGRAVING, new EngravingData(patternId));
-				examples.add(engraved);
-				break;
+		net.minecraft.core.HolderLookup.Provider registries =
+				net.minecraft.client.Minecraft.getInstance().level == null ? null
+						: net.minecraft.client.Minecraft.getInstance().level.registryAccess();
+		if (registries != null) {
+			for (Item gem : ModItems.GEMS) {
+				for (ResourceLocation patternId : Patterns.patternsFor(registries, gem)) {
+					ItemStack engraved = new ItemStack(gem);
+					engraved.set(ModComponents.ENGRAVING, new EngravingData(patternId));
+					examples.add(engraved);
+					break;
+				}
 			}
 		}
 		this.engravedGems = EmiIngredient.of(examples.stream().map(EmiStack::of).toList());

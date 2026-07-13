@@ -1,23 +1,54 @@
 package tinytaru.socketsorcery.pattern;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+
+import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ExtraCodecs;
+import tinytaru.socketsorcery.util.ColorCodecs;
 
 /**
- * A single engravable pattern: an identity, a display name, a tint colour, the 16x16 grid of cells
- * that make up its symbol (what the player chisels — one cell per gem pixel), and the
- * {@link PatternEffect} it grants.
+ * A data-driven engravable pattern, loaded from datapack JSON into the synced
+ * {@code socket-sorcery:pattern} dynamic registry (see {@code ModRegistries}). Bundles the 16x16
+ * symbol the player must chisel, a display colour, the bangle cooldown base, optional activation
+ * feedback, the items that can hold/teach it, and its effect components (passive list for the
+ * necklace tick, active list for bangle/ring activation).
+ *
+ * <p>Patterns don't know their own id — the registry provides it (as with vanilla enchantments).
+ * Display names derive from the id: {@code pattern.<namespace>.<path>}.
  */
-public record Pattern(ResourceLocation id, String translationKey, int color, boolean[][] mask, PatternEffect effect) {
+public record Pattern(boolean[][] mask, int color, int cooldown, Optional<CastFeedback> castFeedback,
+		List<ResourceLocation> gems, Optional<ResourceLocation> scroll,
+		List<PatternEffectComponent> necklaceEffects, List<PatternEffectComponent> bangleEffects) {
 
 	/** Edge length of the chiselling grid — one cell per pixel of the 16x16 gem texture. */
 	public static final int GRID = 16;
 
 	/** Number of 64-bit words needed to hold the {@code GRID*GRID}-bit mask. */
 	public static final int WORDS = (GRID * GRID + 63) / 64;
+
+	private static final Codec<boolean[][]> MASK_CODEC =
+			Codec.STRING.listOf().comapFlatMap(Pattern::parseMask, Pattern::formatMask);
+
+	public static final Codec<Pattern> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+			MASK_CODEC.fieldOf("mask").forGetter(Pattern::mask),
+			ColorCodecs.RGB.fieldOf("color").forGetter(Pattern::color),
+			ExtraCodecs.NON_NEGATIVE_INT.fieldOf("cooldown").forGetter(Pattern::cooldown),
+			CastFeedback.CODEC.optionalFieldOf("cast_feedback").forGetter(Pattern::castFeedback),
+			ResourceLocation.CODEC.listOf().optionalFieldOf("gems", List.of()).forGetter(Pattern::gems),
+			ResourceLocation.CODEC.optionalFieldOf("scroll").forGetter(Pattern::scroll),
+			PatternEffectComponent.CODEC.listOf().optionalFieldOf("necklace_effects", List.of()).forGetter(Pattern::necklaceEffects),
+			PatternEffectComponent.CODEC.listOf().optionalFieldOf("bangle_effects", List.of()).forGetter(Pattern::bangleEffects)
+	).apply(instance, Pattern::new));
 
 	/** Builds a {@code GRID x GRID} mask from rows of text where '#' marks a carved cell. */
 	public static boolean[][] mask(String... rows) {
@@ -31,13 +62,57 @@ public record Pattern(ResourceLocation id, String translationKey, int color, boo
 		return m;
 	}
 
-	public Component displayName() {
-		return Component.translatable(translationKey);
+	private static DataResult<boolean[][]> parseMask(List<String> rows) {
+		if (rows.size() != GRID) {
+			return DataResult.error(() -> "Pattern mask must have exactly " + GRID + " rows, got " + rows.size());
+		}
+		boolean any = false;
+		for (int r = 0; r < GRID; r++) {
+			String row = rows.get(r);
+			if (row.length() != GRID) {
+				int index = r;
+				return DataResult.error(() -> "Pattern mask row " + index + " must be exactly " + GRID + " chars");
+			}
+			for (int c = 0; c < GRID; c++) {
+				char ch = row.charAt(c);
+				if (ch == '#') {
+					any = true;
+				} else if (ch != '.') {
+					int index = r;
+					return DataResult.error(() -> "Pattern mask row " + index + " may only contain '.' and '#'");
+				}
+			}
+		}
+		if (!any) {
+			return DataResult.error(() -> "Pattern mask must carve at least one cell");
+		}
+		return DataResult.success(mask(rows.toArray(String[]::new)));
 	}
 
-	/** Display name tinted with this pattern's colour (no alpha). */
-	public MutableComponent coloredName() {
-		return Component.translatable(translationKey).withColor(color);
+	private static List<String> formatMask(boolean[][] mask) {
+		List<String> rows = new ArrayList<>(GRID);
+		for (int r = 0; r < GRID; r++) {
+			StringBuilder row = new StringBuilder(GRID);
+			for (int c = 0; c < GRID; c++) {
+				row.append(mask[r][c] ? '#' : '.');
+			}
+			rows.add(row.toString());
+		}
+		return rows;
+	}
+
+	/** The translation key for a pattern id: {@code pattern.<namespace>.<path>}. */
+	public static String translationKey(ResourceLocation id) {
+		return Util.makeDescriptionId("pattern", id);
+	}
+
+	public static Component displayName(ResourceLocation id) {
+		return Component.translatable(translationKey(id));
+	}
+
+	/** Display name for the given pattern id, tinted with this pattern's colour. */
+	public MutableComponent coloredName(ResourceLocation id) {
+		return Component.translatable(translationKey(id)).withColor(color);
 	}
 
 	public boolean isCellCarved(int row, int col) {

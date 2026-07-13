@@ -1,0 +1,67 @@
+{
+  "mask": [
+    "................",
+    "................",
+    "................",
+    "...##########...",
+    "...#........#...",
+    "....#......#....",
+    "....#......#....",
+    ".....#....#.....",
+    ".....#....#.....",
+    "......#..#......",
+    "......#..#......",
+    ".......##.......",
+    ".......##.......",
+    "................",
+    "................",
+    "................"
+  ],
+  "color": "#4FC3F7",
+  "cooldown": 50,
+  "cast_feedback": {
+    "sound": "socket-sorcery:cast_frost",
+    "particle": {
+      "type": "minecraft:snowflake"
+    }
+  },
+  "gems": [
+    "socket-sorcery:sapphire",
+    "socket-sorcery:amethyst",
+    "socket-sorcery:engravable_diamond",
+    "socket-sorcery:engravable_lapis",
+    "socket-sorcery:engravable_quartz"
+  ],
+  "scroll": "socket-sorcery:scroll_frost",
+  "necklace_effects": [
+    {
+      "type": "socket-sorcery:mob_effect",
+      "effect": "minecraft:slowness",
+      "duration": 60,
+      "amplifier": 1,
+      "target": "area",
+      "radius": 5
+    },
+    {
+      "type": "socket-sorcery:freeze",
+      "target": "area",
+      "radius": 5,
+      "add_ticks": 6,
+      "max_ticks": 140
+    }
+  ],
+  "bangle_effects": [
+    {
+      "type": "socket-sorcery:mob_effect",
+      "effect": "minecraft:slowness",
+      "duration": 120,
+      "amplifier": 3,
+      "target": "hit_entity"
+    },
+    {
+      "type": "socket-sorcery:freeze",
+      "target": "hit_entity",
+      "set_ticks": 220
+    }
+  ]
+}

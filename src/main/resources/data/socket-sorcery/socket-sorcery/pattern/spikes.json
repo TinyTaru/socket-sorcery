@@ -1,0 +1,48 @@
+{
+  "mask": [
+    "................",
+    "................",
+    "................",
+    ".......##.......",
+    "......####......",
+    ".....##..##.....",
+    "....##....##....",
+    "...##......##...",
+    "...##......##...",
+    "....##....##....",
+    ".....##..##.....",
+    "......####......",
+    ".......##.......",
+    "................",
+    "................",
+    "................"
+  ],
+  "color": "#607D8B",
+  "cooldown": 55,
+  "cast_feedback": {
+    "particle": {
+      "type": "minecraft:crit"
+    }
+  },
+  "gems": [
+    "socket-sorcery:engravable_prismarine"
+  ],
+  "scroll": "socket-sorcery:scroll_spikes",
+  "necklace_effects": [
+    {
+      "type": "socket-sorcery:damage",
+      "amount": 1,
+      "target": "area",
+      "radius": 2.5
+    }
+  ],
+  "bangle_effects": [
+    {
+      "type": "socket-sorcery:damage",
+      "amount": 3,
+      "target": "area",
+      "radius": 3,
+      "knockback": 0.6
+    }
+  ]
+}

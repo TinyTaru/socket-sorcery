@@ -73,7 +73,8 @@ public final class SocketArtifactFunction extends LootItemConditionalFunction {
 		List<ItemStack> gems = new ArrayList<>(count);
 		for (int i = 0; i < count; i++) {
 			Item gemItem = ARTIFACT_GEMS[random.nextInt(ARTIFACT_GEMS.length)];
-			List<ResourceLocation> patterns = List.copyOf(Patterns.patternsFor(gemItem));
+			List<ResourceLocation> patterns = List.copyOf(
+					Patterns.patternsFor(context.getLevel().registryAccess(), gemItem));
 			if (patterns.isEmpty()) {
 				continue;
 			}

@@ -1,0 +1,50 @@
+{
+  "mask": [
+    "................",
+    "................",
+    "................",
+    ".........##.....",
+    "........##......",
+    ".......##.......",
+    "......##........",
+    "....######......",
+    "......##........",
+    ".....##.........",
+    "....##..........",
+    "...##...........",
+    "...##...........",
+    "................",
+    "................",
+    "................"
+  ],
+  "color": "#FFEB3B",
+  "cooldown": 100,
+  "cast_feedback": {
+    "particle": {
+      "type": "minecraft:electric_spark"
+    },
+    "skip_on_miss": true
+  },
+  "gems": [
+    "socket-sorcery:ruby",
+    "socket-sorcery:amethyst",
+    "socket-sorcery:engravable_redstone"
+  ],
+  "scroll": "socket-sorcery:scroll_lightning",
+  "necklace_effects": [
+    {
+      "type": "socket-sorcery:mob_effect",
+      "effect": "minecraft:speed",
+      "duration": 60,
+      "amplifier": 0,
+      "target": "self",
+      "ambient": true,
+      "show_particles": false
+    }
+  ],
+  "bangle_effects": [
+    {
+      "type": "socket-sorcery:summon_lightning"
+    }
+  ]
+}

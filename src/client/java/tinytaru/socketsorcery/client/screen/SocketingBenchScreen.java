@@ -96,7 +96,7 @@ public class SocketingBenchScreen extends AbstractContainerScreen<SocketingBench
 		// For a bangle, show its total activation cooldown, summed across socketed gems.
 		ItemStack accessory = this.menu.accessory();
 		if (accessory.getItem() instanceof BangleItem) {
-			int cd = Cooldowns.forBangle(accessory);
+			int cd = Cooldowns.forBangle(accessory, this.menu.registries());
 			if (cd > 0) {
 				Component cool = Component.translatable("tooltip.socket-sorcery.cooldown", String.format("%.1f", cd / 20.0))
 						.withStyle(ChatFormatting.GRAY);

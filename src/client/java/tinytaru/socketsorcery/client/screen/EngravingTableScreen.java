@@ -13,6 +13,7 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -23,7 +24,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import tinytaru.socketsorcery.component.EngravingData;
-import tinytaru.socketsorcery.item.GemItem;
 import tinytaru.socketsorcery.menu.EngravingTableMenu;
 import tinytaru.socketsorcery.net.EngraveResult;
 import tinytaru.socketsorcery.net.FinishEngravingC2SPayload;
@@ -39,6 +39,9 @@ import tinytaru.socketsorcery.registry.ModComponents;
  * pixel; the scroll's symbol is hinted faintly. Left-click chisels an opaque cell deeper (depth 1
  * then 2, capped). Depth 1 carves the base symbol; depth-2 cells form modifiers. There are no
  * modifier hints — the status line just names the modifiers you've correctly formed (learn-by-doing).
+ *
+ * <p>Pattern/modifier definitions come from the synced dynamic registries, resolved through the
+ * menu's captured registry view.
  */
 public class EngravingTableScreen extends AbstractContainerScreen<EngravingTableMenu> {
 
@@ -54,7 +57,7 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 	private int[][] gemPixels;   // [row][col] ARGB, null if no gem loaded
 	private boolean[][] gemOpaque;
 
-	private Pattern shownPattern;
+	private Holder.Reference<Pattern> shownPattern;
 	private Button confirmButton;
 	private Button resetButton;
 
@@ -93,7 +96,7 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 	protected void containerTick() {
 		super.containerTick();
 		ensureGemData();
-		Pattern pattern = this.menu.targetPattern();
+		Holder.Reference<Pattern> pattern = this.menu.targetPattern();
 		if (pattern != shownPattern) {
 			shownPattern = pattern;
 			clearCarving();
@@ -117,10 +120,8 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 	}
 
 	private void ensureGemData() {
-		Item gem = this.menu.gemStack().getItem();
-		if (!(gem instanceof GemItem)) {
-			gem = null;
-		}
+		ItemStack gemStack = this.menu.gemStack();
+		Item gem = gemStack.isEmpty() ? null : gemStack.getItem();
 		if (gem == cachedGemItem) {
 			return;
 		}
@@ -189,13 +190,14 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 
 	/** The applied modifier set if the current carve is a valid engraving, else null. */
 	private Set<ResourceLocation> validModifiers() {
-		Pattern pattern = this.menu.targetPattern();
-		if (pattern == null) {
+		Holder.Reference<Pattern> holder = this.menu.targetPattern();
+		if (holder == null) {
 			return null;
 		}
+		Pattern pattern = holder.value();
 		long[] carved = carvedBits();
 		long[] deep = deepBits();
-		Set<ResourceLocation> modifiers = Modifiers.decode(pattern, deep);
+		Set<ResourceLocation> modifiers = Modifiers.decode(this.menu.registries(), pattern, deep);
 		if (modifiers == null || !GridBits.equal(carved, GridBits.or(pattern.maskBits(), deep))) {
 			return null;
 		}
@@ -302,7 +304,8 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 	}
 
 	private void renderGrid(GuiGraphics g, int mouseX, int mouseY) {
-		Pattern pattern = this.menu.targetPattern();
+		Holder.Reference<Pattern> holder = this.menu.targetPattern();
+		Pattern pattern = holder == null ? null : holder.value();
 		int ox = this.leftPos + GRID_X;
 		int oy = this.topPos + GRID_Y;
 		int size = GRID * CELL;
@@ -336,15 +339,15 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 		Set<ResourceLocation> valid = pattern == null ? null : validModifiers();
 		if (valid != null) {
 			for (ResourceLocation id : valid) {
-				Modifier modifier = Modifiers.get(id);
+				Holder.Reference<Modifier> modifier = Modifiers.get(this.menu.registries(), id);
 				if (modifier == null) {
 					continue;
 				}
-				long[] cells = modifier.cellMask(pattern);
+				long[] cells = modifier.value().cellMask(pattern);
 				if (cells == null) {
 					continue;
 				}
-				int tint = 0x80000000 | (modifier.color() & 0xFFFFFF);
+				int tint = 0x80000000 | (modifier.value().color() & 0xFFFFFF);
 				for (int idx = 0; idx < GRID * GRID; idx++) {
 					if (GridBits.getIndex(cells, idx)) {
 						int x1 = ox + (idx % GRID) * CELL;
@@ -394,14 +397,16 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 			return resultMessage(lastResult);
 		}
 		ItemStack gem = this.menu.gemStack();
-		Pattern pattern = this.menu.targetPattern();
-		if (pattern == null) {
+		Holder.Reference<Pattern> holder = this.menu.targetPattern();
+		if (holder == null) {
 			return Component.translatable("screen.socket-sorcery.need_scroll").withStyle(ChatFormatting.DARK_GRAY);
 		}
-		if (!(gem.getItem() instanceof GemItem)) {
+		Pattern pattern = holder.value();
+		ResourceLocation patternId = holder.key().location();
+		if (gem.isEmpty()) {
 			return Component.translatable("screen.socket-sorcery.need_gem").withStyle(ChatFormatting.DARK_GRAY);
 		}
-		if (!Patterns.canEngrave(gem.getItem(), pattern.id())) {
+		if (!Patterns.canEngrave(this.menu.registries(), gem.getItem(), patternId)) {
 			return Component.translatable("screen.socket-sorcery.incompatible").withStyle(ChatFormatting.DARK_RED);
 		}
 		if (!this.menu.canEngrave()) {
@@ -410,17 +415,18 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 
 		// Base symbol not fully carved yet: still forming the base.
 		if (!GridBits.subset(pattern.maskBits(), carvedBits())) {
-			return pattern.coloredName();
+			return pattern.coloredName(patternId);
 		}
 		Set<ResourceLocation> modifiers = validModifiers();
 		if (modifiers == null) {
 			return Component.translatable("screen.socket-sorcery.invalid_engraving").withStyle(ChatFormatting.DARK_RED);
 		}
-		MutableComponent line = pattern.coloredName();
+		MutableComponent line = pattern.coloredName(patternId);
 		for (ResourceLocation id : modifiers) {
-			Modifier modifier = Modifiers.get(id);
+			Holder.Reference<Modifier> modifier = Modifiers.get(this.menu.registries(), id);
 			if (modifier != null) {
-				line.append(Component.literal(" + ").withStyle(ChatFormatting.DARK_GRAY)).append(modifier.coloredName());
+				line.append(Component.literal(" + ").withStyle(ChatFormatting.DARK_GRAY))
+						.append(modifier.value().coloredName(id));
 			}
 		}
 		return line;
@@ -439,8 +445,8 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 	/** A live preview of the gem as it would look once engraved with the current valid carve. */
 	private ItemStack previewStack() {
 		Set<ResourceLocation> modifiers = validModifiers();
-		Pattern pattern = this.menu.targetPattern();
-		if (modifiers == null || pattern == null) {
+		Holder.Reference<Pattern> holder = this.menu.targetPattern();
+		if (modifiers == null || holder == null) {
 			return null;
 		}
 		ItemStack preview = this.menu.gemStack().copy();
@@ -448,16 +454,18 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 			return null;
 		}
 		preview.setCount(1);
-		preview.set(ModComponents.ENGRAVING, new EngravingData(pattern.id(), Modifiers.ordered(modifiers)));
+		preview.set(ModComponents.ENGRAVING,
+				new EngravingData(holder.key().location(), Modifiers.ordered(modifiers)));
 		return preview;
 	}
 
 	/** Names the hovered cell: a formed modifier's cell, or a base-symbol cell. */
 	private void renderCellTooltip(GuiGraphics g, int mouseX, int mouseY) {
-		Pattern pattern = this.menu.targetPattern();
-		if (pattern == null) {
+		Holder.Reference<Pattern> holder = this.menu.targetPattern();
+		if (holder == null) {
 			return;
 		}
+		Pattern pattern = holder.value();
 		int cell = cellAt(mouseX, mouseY);
 		if (cell < 0) {
 			return;
@@ -465,16 +473,16 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 		Set<ResourceLocation> valid = validModifiers();
 		if (valid != null) {
 			for (ResourceLocation id : valid) {
-				Modifier modifier = Modifiers.get(id);
-				long[] cells = modifier == null ? null : modifier.cellMask(pattern);
+				Holder.Reference<Modifier> modifier = Modifiers.get(this.menu.registries(), id);
+				long[] cells = modifier == null ? null : modifier.value().cellMask(pattern);
 				if (cells != null && GridBits.getIndex(cells, cell)) {
-					g.renderTooltip(this.font, modifier.coloredName(), mouseX, mouseY);
+					g.renderTooltip(this.font, modifier.value().coloredName(id), mouseX, mouseY);
 					return;
 				}
 			}
 		}
 		if (depth[cell / GRID][cell % GRID] >= 1 && pattern.isCellCarved(cell / GRID, cell % GRID)) {
-			g.renderTooltip(this.font, pattern.coloredName(), mouseX, mouseY);
+			g.renderTooltip(this.font, pattern.coloredName(holder.key().location()), mouseX, mouseY);
 		}
 	}
 
