@@ -48,6 +48,7 @@ public class SocketSorcery implements ModInitializer {
 		ModMenus.init();
 		ModItemGroup.init();
 		ModNetworking.registerServer();
+		tinytaru.socketsorcery.advancement.ModCriteria.init();
 		SocketArtifactFunction.init();
 		ModLoot.init();
 		tinytaru.socketsorcery.pattern.RegistryValidation.init();

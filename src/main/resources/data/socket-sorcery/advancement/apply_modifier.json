@@ -1,0 +1,18 @@
+{
+  "parent": "socket-sorcery:first_engraving",
+  "display": {
+    "icon": { "id": "socket-sorcery:ruby" },
+    "title": { "translate": "advancements.socket-sorcery.apply_modifier.title" },
+    "description": { "translate": "advancements.socket-sorcery.apply_modifier.description" },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false
+  },
+  "criteria": {
+    "modified": {
+      "trigger": "socket-sorcery:engrave_pattern",
+      "conditions": { "require_modified": true }
+    }
+  },
+  "requirements": [ [ "modified" ] ]
+}

@@ -1,0 +1,121 @@
+{
+  "parent": "socket-sorcery:apply_modifier",
+  "display": {
+    "icon": {
+      "id": "socket-sorcery:amethyst"
+    },
+    "title": {
+      "translate": "advancements.socket-sorcery.master_engraver.title"
+    },
+    "description": {
+      "translate": "advancements.socket-sorcery.master_engraver.description"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "engrave_fire": {
+      "trigger": "socket-sorcery:engrave_pattern",
+      "conditions": {
+        "pattern": "socket-sorcery:fire"
+      }
+    },
+    "engrave_frost": {
+      "trigger": "socket-sorcery:engrave_pattern",
+      "conditions": {
+        "pattern": "socket-sorcery:frost"
+      }
+    },
+    "engrave_healing": {
+      "trigger": "socket-sorcery:engrave_pattern",
+      "conditions": {
+        "pattern": "socket-sorcery:healing"
+      }
+    },
+    "engrave_lightning": {
+      "trigger": "socket-sorcery:engrave_pattern",
+      "conditions": {
+        "pattern": "socket-sorcery:lightning"
+      }
+    },
+    "engrave_leaping": {
+      "trigger": "socket-sorcery:engrave_pattern",
+      "conditions": {
+        "pattern": "socket-sorcery:leaping"
+      }
+    },
+    "engrave_wind": {
+      "trigger": "socket-sorcery:engrave_pattern",
+      "conditions": {
+        "pattern": "socket-sorcery:wind"
+      }
+    },
+    "engrave_earth": {
+      "trigger": "socket-sorcery:engrave_pattern",
+      "conditions": {
+        "pattern": "socket-sorcery:earth"
+      }
+    },
+    "engrave_lifesteal": {
+      "trigger": "socket-sorcery:engrave_pattern",
+      "conditions": {
+        "pattern": "socket-sorcery:lifesteal"
+      }
+    },
+    "engrave_blink": {
+      "trigger": "socket-sorcery:engrave_pattern",
+      "conditions": {
+        "pattern": "socket-sorcery:blink"
+      }
+    },
+    "engrave_haste": {
+      "trigger": "socket-sorcery:engrave_pattern",
+      "conditions": {
+        "pattern": "socket-sorcery:haste"
+      }
+    },
+    "engrave_spikes": {
+      "trigger": "socket-sorcery:engrave_pattern",
+      "conditions": {
+        "pattern": "socket-sorcery:spikes"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "engrave_fire"
+    ],
+    [
+      "engrave_frost"
+    ],
+    [
+      "engrave_healing"
+    ],
+    [
+      "engrave_lightning"
+    ],
+    [
+      "engrave_leaping"
+    ],
+    [
+      "engrave_wind"
+    ],
+    [
+      "engrave_earth"
+    ],
+    [
+      "engrave_lifesteal"
+    ],
+    [
+      "engrave_blink"
+    ],
+    [
+      "engrave_haste"
+    ],
+    [
+      "engrave_spikes"
+    ]
+  ]
+}

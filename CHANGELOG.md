@@ -5,6 +5,11 @@ All notable changes to Socket Sorcery.
 ## [Unreleased]
 
 ### Added
+- **Data-driven patterns & modifiers**: every pattern, modifier, and gem/scroll pairing is now JSON,
+  loaded through synced dynamic registries (like vanilla enchantments). Datapacks can add patterns,
+  make any item engravable, and register scrolls with no code — see `DATA_DRIVEN.md`.
+- **Advancement progression**: a full engraving branch (First Cut → Deeper Still → Master Engraver)
+  and accessory branch (Well Equipped → Sorcery Unleashed), driven by three custom criteria.
 - **In-game guidebook** (Patchouli): the *Engraver's Handbook*, covering the full loop, every
   pattern's symbol and effects, modifiers, gems, accessories and treasure.
 - **EMI integration**: Engraving and Socketing recipe categories, plus all crafting recipes.

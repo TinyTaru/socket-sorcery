@@ -23,6 +23,7 @@ import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import tinytaru.socketsorcery.advancement.ModCriteria;
 import tinytaru.socketsorcery.block.EngravingTableBlockEntity;
 import tinytaru.socketsorcery.component.EngravingData;
 import tinytaru.socketsorcery.item.ChiselItem;
@@ -208,6 +209,7 @@ public class EngravingTableMenu extends AbstractContainerMenu {
 			}
 		});
 		broadcastChanges();
+		ModCriteria.ENGRAVE.trigger(player, holder.key().location(), !modifiers.isEmpty());
 		return EngraveResult.OK;
 	}
 

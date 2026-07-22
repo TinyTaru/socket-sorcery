@@ -1,0 +1,15 @@
+{
+  "parent": "socket-sorcery:wear_accessory",
+  "display": {
+    "icon": { "id": "socket-sorcery:ring" },
+    "title": { "translate": "advancements.socket-sorcery.activate_ability.title" },
+    "description": { "translate": "advancements.socket-sorcery.activate_ability.description" },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "activated": { "trigger": "socket-sorcery:activate_ability" }
+  },
+  "requirements": [ [ "activated" ] ]
+}

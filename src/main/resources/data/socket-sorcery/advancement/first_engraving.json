@@ -1,0 +1,15 @@
+{
+  "parent": "socket-sorcery:get_gem",
+  "display": {
+    "icon": { "id": "socket-sorcery:engravable_diamond" },
+    "title": { "translate": "advancements.socket-sorcery.first_engraving.title" },
+    "description": { "translate": "advancements.socket-sorcery.first_engraving.description" },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false
+  },
+  "criteria": {
+    "engraved": { "trigger": "socket-sorcery:engrave_pattern" }
+  },
+  "requirements": [ [ "engraved" ] ]
+}

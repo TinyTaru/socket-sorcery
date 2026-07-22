@@ -1,0 +1,15 @@
+{
+  "parent": "socket-sorcery:get_accessory",
+  "display": {
+    "icon": { "id": "socket-sorcery:bangle" },
+    "title": { "translate": "advancements.socket-sorcery.wear_accessory.title" },
+    "description": { "translate": "advancements.socket-sorcery.wear_accessory.description" },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false
+  },
+  "criteria": {
+    "equipped": { "trigger": "socket-sorcery:equip_accessory" }
+  },
+  "requirements": [ [ "equipped" ] ]
+}

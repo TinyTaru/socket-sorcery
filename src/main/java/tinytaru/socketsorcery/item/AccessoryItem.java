@@ -2,6 +2,7 @@ package tinytaru.socketsorcery.item;
 
 import java.util.List;
 
+import dev.emi.trinkets.api.SlotReference;
 import dev.emi.trinkets.api.TrinketItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -10,10 +11,12 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import tinytaru.socketsorcery.advancement.ModCriteria;
 import tinytaru.socketsorcery.component.EngravingData;
 import tinytaru.socketsorcery.component.SocketData;
 import tinytaru.socketsorcery.pattern.EngraveMods;
@@ -89,6 +92,7 @@ public abstract class AccessoryItem extends TrinketItem {
 	 */
 	public static void runBangle(ServerPlayer player, ItemStack bangle, HitResult target) {
 		HolderLookup.Provider registries = player.registryAccess();
+		boolean fired = false;
 		for (ItemStack gem : getSockets(bangle).gems()) {
 			Holder.Reference<Pattern> pattern = patternOf(registries, gem);
 			if (pattern != null) {
@@ -97,7 +101,19 @@ public abstract class AccessoryItem extends TrinketItem {
 				for (PatternEffectComponent component : pattern.value().bangleEffects()) {
 					component.apply(player, target, mods);
 				}
+				fired = true;
 			}
+		}
+		if (fired) {
+			ModCriteria.ACTIVATE_ABILITY.trigger(player);
+		}
+	}
+
+	@Override
+	public void onEquip(ItemStack stack, SlotReference slot, LivingEntity entity) {
+		super.onEquip(stack, slot, entity);
+		if (entity instanceof ServerPlayer player) {
+			ModCriteria.EQUIP_ACCESSORY.trigger(player);
 		}
 	}
 
