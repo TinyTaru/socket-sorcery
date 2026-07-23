@@ -5,13 +5,17 @@ import java.util.List;
 import java.util.Map;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry;
+import com.mojang.serialization.MapCodec;
+
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.minecraft.client.renderer.special.SpecialModelRenderer;
+import net.minecraft.client.renderer.special.SpecialModelRenderers;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import tinytaru.socketsorcery.SocketSorcery;
 import tinytaru.socketsorcery.item.AccessoryItem;
 import tinytaru.socketsorcery.registry.ModItems;
 
@@ -21,6 +25,9 @@ import tinytaru.socketsorcery.registry.ModItems;
  * across the top setting). Cached per (accessory, socketed gem types).
  */
 public class AccessoryItemRenderer extends DynamicIconRenderer {
+
+	/** The special model type id the accessory item model definitions reference. */
+	public static final Identifier ID = SocketSorcery.id("accessory");
 
 	private static final AccessoryItemRenderer INSTANCE = new AccessoryItemRenderer();
 
@@ -36,10 +43,25 @@ public class AccessoryItemRenderer extends DynamicIconRenderer {
 		super("accessory_icon");
 	}
 
+	/** As {@code GemItemRenderer.Unbaked}: no data, unit codec, bakes to the shared instance. */
+	public record Unbaked() implements SpecialModelRenderer.Unbaked<Icon> {
+
+		public static final MapCodec<Unbaked> MAP_CODEC = MapCodec.unit(Unbaked::new);
+
+		@Override
+		public SpecialModelRenderer<Icon> bake(SpecialModelRenderer.BakingContext context) {
+			return INSTANCE;
+		}
+
+		@Override
+		public MapCodec<Unbaked> type() {
+			return MAP_CODEC;
+		}
+	}
+
 	public static void register() {
-		BuiltinItemRendererRegistry.INSTANCE.register(ModItems.NECKLACE, INSTANCE);
-		BuiltinItemRendererRegistry.INSTANCE.register(ModItems.BANGLE, INSTANCE);
-		BuiltinItemRendererRegistry.INSTANCE.register(ModItems.RING, INSTANCE);
+		// Which items use this renderer is declared by their item model definitions, not here.
+		SpecialModelRenderers.ID_MAPPER.put(ID, Unbaked.MAP_CODEC);
 		ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(INSTANCE);
 	}
 
@@ -67,7 +89,7 @@ public class AccessoryItemRenderer extends DynamicIconRenderer {
 		for (int row = 0; row < SIZE; row++) {
 			for (int col = 0; col < SIZE; col++) {
 				int pixel = col < base.width() && row < base.height() ? base.get(col, row) : 0;
-				image.setPixelRGBA(col, row, pixel);
+				image.setPixel(col, row, pixel);
 			}
 		}
 
@@ -84,7 +106,7 @@ public class AccessoryItemRenderer extends DynamicIconRenderer {
 						int x = slotCol + gx;
 						int y = slotRow + gy;
 						if (x >= 0 && x < SIZE && y >= 0 && y < SIZE) {
-							image.setPixelRGBA(x, y, gem.get(gx, gy));
+							image.setPixel(x, y, gem.get(gx, gy));
 						}
 					}
 				}

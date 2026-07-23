@@ -6,8 +6,8 @@
 		"S"
 	],
 	"key": {
-		"D": { "item": "minecraft:diamond" },
-		"S": { "item": "minecraft:stick" }
+		"D": "minecraft:diamond",
+		"S": "minecraft:stick"
 	},
 	"result": {
 		"id": "socket-sorcery:diamond_chisel",

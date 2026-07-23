@@ -7,7 +7,7 @@
 		" X "
 	],
 	"key": {
-		"X": { "item": "minecraft:ender_pearl" }
+		"X": "minecraft:ender_pearl"
 	},
 	"result": {
 		"id": "socket-sorcery:engravable_ender",

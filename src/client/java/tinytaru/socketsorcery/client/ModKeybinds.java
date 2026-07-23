@@ -21,7 +21,7 @@ public final class ModKeybinds {
 	public static KeyMapping activateBangle;
 
 	public static void register() {
-		activateBangle = KeyMappingHelper.registerKeyBinding(new KeyMapping(
+		activateBangle = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 				"key.socket-sorcery.activate_bangle",
 				InputConstants.Type.KEYSYM,
 				GLFW.GLFW_KEY_R,

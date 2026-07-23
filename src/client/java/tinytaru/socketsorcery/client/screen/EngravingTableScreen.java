@@ -13,6 +13,7 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -69,9 +70,8 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 	private int resultTicks;
 
 	public EngravingTableScreen(EngravingTableMenu menu, Inventory inventory, Component title) {
-		super(menu, inventory, title);
-		this.imageWidth = 200;
-		this.imageHeight = 252;
+		// imageWidth/imageHeight are final now and come from the constructor.
+		super(menu, inventory, title, 200, 252);
 		this.titleLabelX = 8;
 		this.titleLabelY = 6;
 		this.inventoryLabelX = 19;
@@ -148,13 +148,10 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 			boolean[][] opaque = new boolean[GRID][GRID];
 			for (int row = 0; row < GRID; row++) {
 				for (int col = 0; col < GRID; col++) {
-					int abgr = image.getPixelRGBA(col, row); // NativeImage packs RGBA as 0xAABBGGRR
-					int a = (abgr >>> 24) & 0xFF;
-					int b = (abgr >>> 16) & 0xFF;
-					int g = (abgr >>> 8) & 0xFF;
-					int r = abgr & 0xFF;
-					opaque[row][col] = a > 16;
-					pixels[row][col] = (a << 24) | (r << 16) | (g << 8) | b;
+					// NativeImage's public accessor is ARGB now, which is already what we store.
+					int argb = image.getPixel(col, row);
+					opaque[row][col] = ((argb >>> 24) & 0xFF) > 16;
+					pixels[row][col] = argb;
 				}
 			}
 			gemPixels = pixels;
@@ -237,11 +234,13 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 		}
 	}
 
+	/** Mouse input arrives as a {@link MouseButtonEvent} now, carrying position and button together. */
 	@Override
-	public boolean mouseClicked(double mouseX, double mouseY, int button) {
+	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+		int button = event.button();
 		// Left-click chisels a cell deeper (0→1→2); right-click eases it back (2→1→0).
 		if ((button == 0 || button == 1) && this.menu.canEngrave() && gemOpaque != null) {
-			int cell = cellAt(mouseX, mouseY);
+			int cell = cellAt(event.x(), event.y());
 			if (cell >= 0) {
 				int row = cell / GRID;
 				int col = cell % GRID;
@@ -259,7 +258,7 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 				return true;
 			}
 		}
-		return super.mouseClicked(mouseX, mouseY, button);
+		return super.mouseClicked(event, doubleClick);
 	}
 
 	private void playCarveSound(int depthNow) {
@@ -278,8 +277,22 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 		return row * GRID + col;
 	}
 
+	/**
+	 * The panel, the carving grid and the engraved-gem preview. {@code renderBg} is gone: the
+	 * background goes at the head of {@code extractContents} and anything that used to be drawn on
+	 * top in {@code render} goes after the super call, since drawing is submission-ordered now.
+	 */
 	@Override
-	protected void renderBg(GuiGraphicsExtractor g, float partialTick, int mouseX, int mouseY) {
+	public void extractContents(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
+		extractPanel(g, mouseX, mouseY);
+		super.extractContents(g, mouseX, mouseY, partialTick);
+		ItemStack preview = previewStack();
+		if (preview != null) {
+			g.item(preview, this.leftPos + 42, this.topPos + 70);
+		}
+	}
+
+	private void extractPanel(GuiGraphicsExtractor g, int mouseX, int mouseY) {
 		int left = this.leftPos;
 		int top = this.topPos;
 		g.fill(left, top, left + this.imageWidth, top + this.imageHeight, 0xFFC6C6C6);
@@ -384,11 +397,11 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 	}
 
 	@Override
-	protected void renderLabels(GuiGraphicsExtractor g, int mouseX, int mouseY) {
-		super.renderLabels(g, mouseX, mouseY);
+	protected void extractLabels(GuiGraphicsExtractor g, int mouseX, int mouseY) {
+		super.extractLabels(g, mouseX, mouseY);
 		Component status = statusLine();
 		if (status != null) {
-			g.drawString(this.font, status, 8, 147, 0xFF555555, false);
+			g.text(this.font, status, 8, 147, 0xFF555555, false);
 		}
 	}
 
@@ -460,14 +473,17 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 	}
 
 	/** Names the hovered cell: a formed modifier's cell, or a base-symbol cell. */
-	private void renderCellTooltip(GuiGraphicsExtractor g, int mouseX, int mouseY) {
+	@Override
+	protected void extractTooltip(GuiGraphicsExtractor g, int mouseX, int mouseY) {
 		Holder.Reference<Pattern> holder = this.menu.targetPattern();
 		if (holder == null) {
+			super.extractTooltip(g, mouseX, mouseY);
 			return;
 		}
 		Pattern pattern = holder.value();
 		int cell = cellAt(mouseX, mouseY);
 		if (cell < 0) {
+			super.extractTooltip(g, mouseX, mouseY);
 			return;
 		}
 		Set<Identifier> valid = validModifiers();
@@ -476,24 +492,15 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 				Holder.Reference<Modifier> modifier = Modifiers.get(this.menu.registries(), id);
 				long[] cells = modifier == null ? null : modifier.value().cellMask(pattern);
 				if (cells != null && GridBits.getIndex(cells, cell)) {
-					g.renderTooltip(this.font, modifier.value().coloredName(id), mouseX, mouseY);
+					g.setTooltipForNextFrame(modifier.value().coloredName(id), mouseX, mouseY);
 					return;
 				}
 			}
 		}
 		if (depth[cell / GRID][cell % GRID] >= 1 && pattern.isCellCarved(cell / GRID, cell % GRID)) {
-			g.renderTooltip(this.font, pattern.coloredName(holder.key().identifier()), mouseX, mouseY);
+			g.setTooltipForNextFrame(pattern.coloredName(holder.key().identifier()), mouseX, mouseY);
+			return;
 		}
-	}
-
-	@Override
-	public void render(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
-		super.render(g, mouseX, mouseY, partialTick);
-		ItemStack preview = previewStack();
-		if (preview != null) {
-			g.renderItem(preview, this.leftPos + 42, this.topPos + 70);
-		}
-		renderCellTooltip(g, mouseX, mouseY);
-		this.renderTooltip(g, mouseX, mouseY);
+		super.extractTooltip(g, mouseX, mouseY);
 	}
 }

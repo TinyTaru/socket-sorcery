@@ -7,8 +7,8 @@
 		"P P"
 	],
 	"key": {
-		"I": { "item": "minecraft:iron_ingot" },
-		"P": { "tag": "minecraft:planks" }
+		"I": "minecraft:iron_ingot",
+		"P": "#minecraft:planks"
 	},
 	"result": {
 		"id": "socket-sorcery:socketing_bench",

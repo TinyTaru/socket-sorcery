@@ -1,8 +1,4 @@
 {
   "parent": "minecraft:item/generated",
-  "textures": { "layer0": "socket-sorcery:item/amethyst" },
-  "overrides": [
-    { "predicate": { "socket-sorcery:engraving": 1 }, "model": "socket-sorcery:item/amethyst_engraved" }
-  ]
+  "textures": { "layer0": "socket-sorcery:item/amethyst" }
 }
-

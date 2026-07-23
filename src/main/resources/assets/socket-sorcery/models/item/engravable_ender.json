@@ -1,7 +1,4 @@
 {
   "parent": "minecraft:item/generated",
-  "textures": { "layer0": "socket-sorcery:item/engravable_ender" },
-  "overrides": [
-    { "predicate": { "socket-sorcery:engraving": 1 }, "model": "socket-sorcery:item/engravable_ender_engraved" }
-  ]
+  "textures": { "layer0": "socket-sorcery:item/engravable_ender" }
 }

@@ -2,8 +2,8 @@
 	"type": "minecraft:crafting_shapeless",
 	"category": "misc",
 	"ingredients": [
-		{ "item": "minecraft:book" },
-		{ "item": "minecraft:amethyst_shard" }
+		"minecraft:book",
+		"minecraft:amethyst_shard"
 	],
 	"result": {
 		"id": "patchouli:guide_book",

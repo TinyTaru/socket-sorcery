@@ -5,37 +5,45 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import tinytaru.socketsorcery.SocketSorcery;
 
 /**
- * Base for {@code builtin/entity} item renderers that composite a 16x16 icon at runtime, cache it as
- * a {@link DynamicTexture} keyed by appearance, and draw it as an extruded icon — a front and back
+ * Base for special item model renderers that composite a 16x16 icon at runtime, cache it as a
+ * {@link DynamicTexture} keyed by appearance, and draw it as an extruded icon — a front and back
  * face separated by {@link #THICKNESS}, plus a thin side face wherever an opaque pixel borders a
  * transparent one, matching the pseudo-3D depth vanilla's {@code item/generated} parent bakes for
- * flat sprites. Everything is drawn with {@code entityCutoutNoCull} and each face carries an outward
- * normal, so depth-testing shows the nearer (always-camera-facing, always-bright) face and the icon
- * looks correct from any side — the inventory GUI and the held / dropped / item-frame views alike.
- * Subclasses supply the per-stack texture (typically via {@link #composeCached}); this class owns the
- * geometry, the texture cache, and reload cleanup.
+ * flat sprites. Everything is drawn with {@code entityCutout} (which is the no-cull variant now) and
+ * each face carries an outward normal, so depth-testing shows the nearer (always-camera-facing,
+ * always-bright) face and the icon looks correct from any side — the inventory GUI and the held /
+ * dropped / item-frame views alike. Subclasses supply the per-stack texture (typically via
+ * {@link #composeCached}); this class owns the geometry, the texture cache, and reload cleanup.
+ *
+ * <p>Rendering is submit-based now: geometry goes through
+ * {@link SubmitNodeCollector#submitCustomGeometry}, whose callback hands back the same
+ * {@code (Pose, VertexConsumer)} pair the old immediate-mode renderer wrote into, so the extrusion
+ * below is unchanged. The per-stack lookup moved into {@link #extractArgument}, which runs before
+ * submission and yields the {@link Icon} that {@link #submit} draws.
  */
 public abstract class DynamicIconRenderer
-		implements BuiltinItemRendererRegistry.DynamicItemRenderer, SimpleSynchronousResourceReloadListener {
+		implements SpecialModelRenderer<DynamicIconRenderer.Icon>, SimpleSynchronousResourceReloadListener {
 
 	protected static final int SIZE = 16;
 
@@ -43,6 +51,10 @@ public abstract class DynamicIconRenderer
 	private static final float THICKNESS = 1.0F / SIZE;
 	private static final float FRONT_Z = 0.5F - THICKNESS / 2.0F;
 	private static final float BACK_Z = 0.5F + THICKNESS / 2.0F;
+
+	/** What a single stack resolves to: the composited texture plus its silhouette mask. */
+	public record Icon(Identifier texture, boolean[][] opaque) {
+	}
 
 	private final String idPrefix;
 	private final Identifier fabricId;
@@ -63,19 +75,34 @@ public abstract class DynamicIconRenderer
 	}
 
 	@Override
-	public final void render(ItemStack stack, ItemDisplayContext context, PoseStack poseStack,
-			MultiBufferSource buffers, int light, int overlay) {
+	public final Icon extractArgument(ItemStack stack) {
 		Identifier texture = texture(stack);
-		if (texture == null) {
+		return texture == null ? null : new Icon(texture, opacityCache.get(texture));
+	}
+
+	@Override
+	public final void submit(Icon icon, PoseStack poseStack, SubmitNodeCollector collector, int light, int overlay,
+			boolean hasFoil, int outlineColor) {
+		if (icon == null) {
 			return;
 		}
-		PoseStack.Pose pose = poseStack.last();
-		VertexConsumer consumer = buffers.getBuffer(RenderType.entityCutoutNoCull(texture));
-		quad(consumer, pose, light, overlay, false);
-		quad(consumer, pose, light, overlay, true);
-		boolean[][] opaque = opacityCache.get(texture);
-		if (opaque != null) {
-			sides(consumer, pose, light, overlay, opaque);
+		collector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(icon.texture()), (pose, consumer) -> {
+			quad(consumer, pose, light, overlay, false);
+			quad(consumer, pose, light, overlay, true);
+			if (icon.opaque() != null) {
+				sides(consumer, pose, light, overlay, icon.opaque());
+			}
+		});
+	}
+
+	/** The corners of the extruded slab, for view culling. */
+	@Override
+	public final void getExtents(Consumer<Vector3fc> consumer) {
+		for (float z : new float[] { FRONT_Z, BACK_Z }) {
+			consumer.accept(new Vector3f(0.0F, 0.0F, z));
+			consumer.accept(new Vector3f(1.0F, 0.0F, z));
+			consumer.accept(new Vector3f(0.0F, 1.0F, z));
+			consumer.accept(new Vector3f(1.0F, 1.0F, z));
 		}
 	}
 
@@ -90,7 +117,7 @@ public abstract class DynamicIconRenderer
 			return null;
 		}
 		Identifier id = SocketSorcery.id(idPrefix + "_" + (counter++));
-		Minecraft.getInstance().getTextureManager().register(id, new DynamicTexture(image));
+		Minecraft.getInstance().getTextureManager().register(id, new DynamicTexture(id::toString, image));
 		cache.put(key, id);
 		opacityCache.put(id, opacityOf(image));
 		return id;
@@ -101,7 +128,7 @@ public abstract class DynamicIconRenderer
 		boolean[][] opaque = new boolean[SIZE][SIZE];
 		for (int row = 0; row < SIZE && row < image.getHeight(); row++) {
 			for (int col = 0; col < SIZE && col < image.getWidth(); col++) {
-				opaque[row][col] = ((image.getPixelRGBA(col, row) >>> 24) & 0xFF) > 16;
+				opaque[row][col] = ((image.getPixel(col, row) >>> 24) & 0xFF) > 16;
 			}
 		}
 		return opaque;
@@ -128,7 +155,7 @@ public abstract class DynamicIconRenderer
 		return Identifier.fromNamespaceAndPath(itemId.getNamespace(), "textures/item/" + itemId.getPath() + ".png");
 	}
 
-	/** Loads a PNG into a pixel buffer (NativeImage ABGR), or null if missing/unreadable. */
+	/** Loads a PNG into a pixel buffer (ARGB), or null if missing/unreadable. */
 	protected static Pixels loadPixels(Identifier textureFile) {
 		Optional<Resource> resource = Minecraft.getInstance().getResourceManager().getResource(textureFile);
 		if (resource.isEmpty()) {
@@ -140,7 +167,7 @@ public abstract class DynamicIconRenderer
 			int[] data = new int[width * height];
 			for (int y = 0; y < height; y++) {
 				for (int x = 0; x < width; x++) {
-					data[y * width + x] = image.getPixelRGBA(x, y);
+					data[y * width + x] = image.getPixel(x, y);
 				}
 			}
 			return new Pixels(data, width, height);
@@ -149,7 +176,10 @@ public abstract class DynamicIconRenderer
 		}
 	}
 
-	/** A loaded image as a flat ABGR pixel array. */
+	/**
+	 * A loaded image as a flat <b>ARGB</b> pixel array. NativeImage's public accessors are ARGB now
+	 * ({@code getPixelABGR} went private), so the composited colours are packed ARGB throughout.
+	 */
 	protected record Pixels(int[] data, int width, int height) {
 		public int get(int x, int y) {
 			return data[y * width + x];
@@ -243,7 +273,7 @@ public abstract class DynamicIconRenderer
 		}
 	}
 
-	/** Emits the quad once; {@code entityCutoutNoCull} (see {@link #quad}) makes winding irrelevant to visibility. */
+	/** Emits the quad once; {@code entityCutout} (see {@link #quad}) makes winding irrelevant to visibility. */
 	private static void sideQuad(VertexConsumer vc, PoseStack.Pose pose, int light, int overlay, float u, float v,
 			float x0, float y0, float z0, float x1, float y1, float z1,
 			float x2, float y2, float z2, float x3, float y3, float z3,

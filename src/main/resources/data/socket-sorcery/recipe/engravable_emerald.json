@@ -2,7 +2,7 @@
 	"type": "minecraft:crafting_shaped",
 	"category": "misc",
 	"pattern": [ " X ", "XXX", " X " ],
-	"key": { "X": { "item": "minecraft:emerald" } },
+	"key": { "X": "minecraft:emerald" },
 	"result": { "id": "socket-sorcery:engravable_emerald", "count": 1 }
 }
 

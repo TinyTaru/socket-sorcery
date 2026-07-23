@@ -4,9 +4,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry;
+import com.mojang.serialization.MapCodec;
+
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.special.SpecialModelRenderer;
+import net.minecraft.client.renderer.special.SpecialModelRenderers;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -14,6 +17,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import tinytaru.socketsorcery.SocketSorcery;
 import tinytaru.socketsorcery.component.EngravingData;
 import tinytaru.socketsorcery.pattern.GridBits;
 import tinytaru.socketsorcery.pattern.Modifiers;
@@ -25,14 +29,17 @@ import tinytaru.socketsorcery.registry.ModItems;
 /**
  * Renders engraved gems by compositing their icon at runtime: base gem texture + the pattern symbol
  * (bright) + the modifier cells (darker), for the exact pattern and modifier set on the stack.
- * Unengraved gems keep their normal {@code item/generated} model; only engraved stacks (whose model
- * is {@code builtin/entity}) reach this renderer.
+ * Unengraved gems keep their plain model; only engraved stacks reach this renderer, selected by the
+ * {@code minecraft:has_component} condition in each gem's item model definition.
  *
  * <p>Pattern data comes from the synced dynamic registry via the client level (null-guarded: with no
- * level, the plain gem texture renders). Other mods can opt their own items into this renderer via
- * {@code SocketSorceryClientApi#registerEngravableGem}.
+ * level, the plain gem texture renders). Other mods opt in by pointing their own item model
+ * definition at {@code socket-sorcery:engraved_gem} — no Java call needed.
  */
 public class GemItemRenderer extends DynamicIconRenderer {
+
+	/** The special model type id gem item model definitions reference. */
+	public static final Identifier ID = SocketSorcery.id("engraved_gem");
 
 	private static final GemItemRenderer INSTANCE = new GemItemRenderer();
 
@@ -42,16 +49,40 @@ public class GemItemRenderer extends DynamicIconRenderer {
 		super("gem_icon");
 	}
 
+	/**
+	 * The unbaked form referenced from item model JSON. It carries no data, so its codec is a unit and
+	 * baking just hands back the shared instance (which owns the texture cache).
+	 */
+	public record Unbaked() implements SpecialModelRenderer.Unbaked<Icon> {
+
+		public static final MapCodec<Unbaked> MAP_CODEC = MapCodec.unit(Unbaked::new);
+
+		@Override
+		public SpecialModelRenderer<Icon> bake(SpecialModelRenderer.BakingContext context) {
+			return INSTANCE;
+		}
+
+		@Override
+		public MapCodec<Unbaked> type() {
+			return MAP_CODEC;
+		}
+	}
+
 	public static void register() {
+		SpecialModelRenderers.ID_MAPPER.put(ID, Unbaked.MAP_CODEC);
 		for (Item gem : ModItems.GEMS) {
 			registerFor(gem);
 		}
 		ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(INSTANCE);
 	}
 
-	/** Routes the given item's {@code builtin/entity} model through this renderer. */
+	/**
+	 * Pre-warms the base-texture cache for an item. Selecting this renderer is data now, so this is
+	 * only a hint — see {@code SocketSorceryClientApi}.
+	 */
 	public static void registerFor(Item item) {
-		BuiltinItemRendererRegistry.INSTANCE.register(item, INSTANCE);
+		INSTANCE.baseCache.computeIfAbsent(item,
+				k -> loadPixels(itemTexture(BuiltInRegistries.ITEM.getKey(k))));
 	}
 
 	private static HolderLookup.Provider clientRegistries() {
@@ -79,21 +110,21 @@ public class GemItemRenderer extends DynamicIconRenderer {
 		}
 		boolean[][] symbol = pattern.mask();
 		long[] deep = Modifiers.cellsFor(clientRegistries(), pattern, data.modifiers());
-		int bright = brightAbgr(pattern.color());
-		int dark = darkAbgr(pattern.color());
+		int bright = brightArgb(pattern.color());
+		int dark = darkArgb(pattern.color());
 
 		NativeImage image = new NativeImage(SIZE, SIZE, false);
 		for (int row = 0; row < SIZE; row++) {
 			for (int col = 0; col < SIZE; col++) {
 				int pixel = base.get(col, row);
 				if (((pixel >>> 24) & 0xFF) <= 16) {
-					image.setPixelRGBA(col, row, 0);
+					image.setPixel(col, row, 0);
 				} else if (GridBits.get(deep, row, col)) {
-					image.setPixelRGBA(col, row, dark);
+					image.setPixel(col, row, dark);
 				} else if (symbol[row][col]) {
-					image.setPixelRGBA(col, row, bright);
+					image.setPixel(col, row, bright);
 				} else {
-					image.setPixelRGBA(col, row, pixel);
+					image.setPixel(col, row, pixel);
 				}
 			}
 		}
@@ -105,17 +136,19 @@ public class GemItemRenderer extends DynamicIconRenderer {
 		baseCache.clear();
 	}
 
-	private static int brightAbgr(int rgb) {
+	// NativeImage's public accessors are ARGB now, so these pack ARGB (they used to pack ABGR).
+
+	private static int brightArgb(int rgb) {
 		int r = (int) (((rgb >> 16) & 0xFF) * 0.8 + 255 * 0.2);
 		int g = (int) (((rgb >> 8) & 0xFF) * 0.8 + 255 * 0.2);
 		int b = (int) ((rgb & 0xFF) * 0.8 + 255 * 0.2);
-		return (0xFF << 24) | (b << 16) | (g << 8) | r;
+		return (0xFF << 24) | (r << 16) | (g << 8) | b;
 	}
 
-	private static int darkAbgr(int rgb) {
+	private static int darkArgb(int rgb) {
 		int r = (int) (((rgb >> 16) & 0xFF) * 0.45);
 		int g = (int) (((rgb >> 8) & 0xFF) * 0.45);
 		int b = (int) ((rgb & 0xFF) * 0.45);
-		return (0xFF << 24) | (b << 16) | (g << 8) | r;
+		return (0xFF << 24) | (r << 16) | (g << 8) | b;
 	}
 }

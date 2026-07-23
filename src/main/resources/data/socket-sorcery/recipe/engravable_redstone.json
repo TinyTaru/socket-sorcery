@@ -2,7 +2,7 @@
 	"type": "minecraft:crafting_shaped",
 	"category": "misc",
 	"pattern": [ " X ", "XXX", " X " ],
-	"key": { "X": { "item": "minecraft:redstone" } },
+	"key": { "X": "minecraft:redstone" },
 	"result": { "id": "socket-sorcery:engravable_redstone", "count": 1 }
 }
 

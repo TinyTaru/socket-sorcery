@@ -2,7 +2,7 @@
 	"type": "minecraft:crafting_shaped",
 	"category": "misc",
 	"pattern": [ " X ", "XXX", " X " ],
-	"key": { "X": { "item": "minecraft:quartz" } },
+	"key": { "X": "minecraft:quartz" },
 	"result": { "id": "socket-sorcery:engravable_quartz", "count": 1 }
 }
 

@@ -1,0 +1,9 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "socket-sorcery:item/necklace",
+    "model": {
+      "type": "socket-sorcery:accessory"
+    }
+  }
+}

@@ -7,7 +7,7 @@
 		"GGG"
 	],
 	"key": {
-		"G": { "item": "minecraft:gold_ingot" }
+		"G": "minecraft:gold_ingot"
 	},
 	"result": {
 		"id": "socket-sorcery:bangle",

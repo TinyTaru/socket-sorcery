@@ -1,7 +1,4 @@
 {
   "parent": "minecraft:item/generated",
-  "textures": { "layer0": "socket-sorcery:item/engravable_glowstone" },
-  "overrides": [
-    { "predicate": { "socket-sorcery:engraving": 1 }, "model": "socket-sorcery:item/engravable_glowstone_engraved" }
-  ]
+  "textures": { "layer0": "socket-sorcery:item/engravable_glowstone" }
 }

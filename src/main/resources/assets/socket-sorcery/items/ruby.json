@@ -1,0 +1,18 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "property": "minecraft:has_component",
+    "component": "socket-sorcery:engraving",
+    "on_false": {
+      "type": "minecraft:model",
+      "model": "socket-sorcery:item/ruby"
+    },
+    "on_true": {
+      "type": "minecraft:special",
+      "base": "socket-sorcery:item/ruby",
+      "model": {
+        "type": "socket-sorcery:engraved_gem"
+      }
+    }
+  }
+}

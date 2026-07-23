@@ -1,7 +1,9 @@
 package tinytaru.socketsorcery.client;
 
-import dev.emi.trinkets.api.TrinketsApi;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import eu.pb4.trinkets.api.TrinketSlotAccess;
+import eu.pb4.trinkets.api.TrinketsApi;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -9,6 +11,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.ItemStack;
+import tinytaru.socketsorcery.SocketSorcery;
 import tinytaru.socketsorcery.item.BangleItem;
 import tinytaru.socketsorcery.item.Cooldowns;
 import tinytaru.socketsorcery.registry.ModItems;
@@ -17,6 +20,10 @@ import tinytaru.socketsorcery.registry.ModItems;
  * Draws a small bangle cooldown indicator near the hotbar while the bangle ability is recharging
  * (a worn bangle gets no vanilla cooldown overlay). The icon is the worn bangle — rendered through
  * {@link AccessoryItemRenderer}, so it shows its gems — with a vanilla-style draining sweep.
+ *
+ * <p>The HUD is a registry of named elements now rather than a single render callback, so this
+ * attaches itself just after the vanilla hotbar. Drawing is deferred, so layering follows submission
+ * order and the old z-translates are gone (the 2D pose stack has no z anyway).
  */
 public final class BangleCooldownHud {
 
@@ -25,7 +32,8 @@ public final class BangleCooldownHud {
 	private static long readyFlashUntil;
 
 	public static void register() {
-		HudRenderCallback.EVENT.register(BangleCooldownHud::render);
+		HudElementRegistry.attachElementAfter(VanillaHudElements.HOTBAR,
+				SocketSorcery.id("bangle_cooldown"), BangleCooldownHud::render);
 	}
 
 	private static void render(GuiGraphicsExtractor graphics, DeltaTracker delta) {
@@ -35,7 +43,8 @@ public final class BangleCooldownHud {
 			return;
 		}
 
-		boolean onCooldown = player.getCooldowns().isOnCooldown(ModItems.BANGLE);
+		ItemStack bangle = wornBangle(player);
+		boolean onCooldown = player.getCooldowns().isOnCooldown(bangle);
 		long now = player.level().getGameTime();
 		if (wasOnCooldown && !onCooldown) {
 			readyFlashUntil = now + 12;
@@ -49,44 +58,34 @@ public final class BangleCooldownHud {
 		if (!onCooldown) {
 			// Brief "ready" flash right after the cooldown ends, then nothing.
 			if (now < readyFlashUntil) {
-				graphics.renderItem(wornBangle(player), x, y);
+				graphics.item(bangle, x, y);
 				int a = (int) (0x80 * ((readyFlashUntil - now) / 12.0));
 				graphics.fill(x - 1, y - 1, x + 17, y + 17, (a << 24) | 0x55FF55);
 			}
 			return;
 		}
 
-		float percent = player.getCooldowns().getCooldownPercent(ModItems.BANGLE, delta.getGameTimeDeltaPartialTick(true));
-		graphics.renderItem(wornBangle(player), x, y);
+		float percent = player.getCooldowns().getCooldownPercent(bangle, delta.getGameTimeDeltaPartialTick(true));
+		graphics.item(bangle, x, y);
 
 		// Draining sweep on top of the item: overlay covers the bottom `percent` fraction.
 		int filled = Math.round(16 * percent);
-		graphics.pose().pushPose();
-		graphics.pose().translate(0.0F, 0.0F, 250.0F);
 		graphics.fill(x, y + 16 - filled, x + 16, y + 16, 0x9AFFFFFF);
-		graphics.pose().popPose();
 
 		// Remaining-seconds countdown, estimated from the worn bangle's total cooldown.
-		int total = Cooldowns.forBangle(wornBangle(player), player.level().registryAccess());
+		int total = Cooldowns.forBangle(bangle, player.level().registryAccess());
 		if (total > 0) {
 			String text = String.format("%.1f", total * percent / 20.0F);
 			int tw = minecraft.font.width(text);
-			graphics.pose().pushPose();
-			graphics.pose().translate(0.0F, 0.0F, 260.0F);
-			graphics.drawString(minecraft.font, text, x + 8 - tw / 2, y + 4, 0xFFFFFFFF, true);
-			graphics.pose().popPose();
+			graphics.text(minecraft.font, text, x + 8 - tw / 2, y + 4, 0xFFFFFFFF, true);
 		}
 	}
 
 	private static ItemStack wornBangle(LocalPlayer player) {
-		ItemStack[] found = { new ItemStack(ModItems.BANGLE) };
-		TrinketsApi.getTrinketComponent(player).ifPresent(component ->
-				component.forEach((reference, stack) -> {
-					if (stack.getItem() instanceof BangleItem) {
-						found[0] = stack;
-					}
-				}));
-		return found[0];
+		return TrinketsApi.getAttachment(player)
+				.findFirst(stack -> stack.getItem() instanceof BangleItem, false)
+				.map(TrinketSlotAccess::get)
+				.orElseGet(ModItems.BANGLE::getDefaultInstance);
 	}
 
 	private BangleCooldownHud() {
