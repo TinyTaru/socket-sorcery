@@ -1,20 +1,21 @@
 package tinytaru.socketsorcery.block;
 
-import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
+import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.Containers;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import tinytaru.socketsorcery.menu.EngravingTableMenu;
 import tinytaru.socketsorcery.registry.ModBlockEntities;
 import tinytaru.socketsorcery.util.ImplementedInventory;
@@ -24,7 +25,7 @@ import tinytaru.socketsorcery.util.ImplementedInventory;
  * the screen; on completion the gem in {@link #SLOT_GEM} is engraved in place.
  */
 public class EngravingTableBlockEntity extends BlockEntity
-		implements ImplementedInventory, ExtendedScreenHandlerFactory<BlockPos> {
+		implements ImplementedInventory, ExtendedMenuProvider<BlockPos> {
 
 	public static final int SLOT_GEM = 0;
 	public static final int SLOT_SCROLL = 1;
@@ -62,15 +63,23 @@ public class EngravingTableBlockEntity extends BlockEntity
 		return this.worldPosition;
 	}
 
+	/** Drops the placed gem / scroll / chisel when the table is broken (see {@link StationBlock}). */
 	@Override
-	protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-		super.loadAdditional(tag, registries);
-		ContainerHelper.loadAllItems(tag, this.items, registries);
+	public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+		if (this.level != null) {
+			Containers.dropContents(this.level, pos, this);
+		}
 	}
 
 	@Override
-	protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-		super.saveAdditional(tag, registries);
-		ContainerHelper.saveAllItems(tag, this.items, registries);
+	protected void loadAdditional(ValueInput input) {
+		super.loadAdditional(input);
+		ContainerHelper.loadAllItems(input, this.items);
+	}
+
+	@Override
+	protected void saveAdditional(ValueOutput output) {
+		super.saveAdditional(output);
+		ContainerHelper.saveAllItems(output, this.items);
 	}
 }

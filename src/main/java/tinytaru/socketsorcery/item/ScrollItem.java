@@ -1,17 +1,18 @@
 package tinytaru.socketsorcery.item;
 
-import java.util.List;
+import java.util.function.Consumer;
 import java.util.Optional;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import tinytaru.socketsorcery.pattern.Pattern;
 import tinytaru.socketsorcery.pattern.PatternTooltip;
 import tinytaru.socketsorcery.pattern.Patterns;
@@ -28,9 +29,9 @@ public class ScrollItem extends Item {
 	}
 
 	/** The pattern id this scroll teaches, or null when no pattern claims it / registries unavailable. */
-	public ResourceLocation patternId(HolderLookup.Provider registries) {
+	public Identifier patternId(HolderLookup.Provider registries) {
 		Holder.Reference<Pattern> pattern = Patterns.forScroll(registries, this);
-		return pattern == null ? null : pattern.key().location();
+		return pattern == null ? null : pattern.key().identifier();
 	}
 
 	@Override
@@ -39,14 +40,15 @@ public class ScrollItem extends Item {
 	}
 
 	@Override
-	public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+	public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display,
+			Consumer<Component> tooltip, TooltipFlag flag) {
 		Holder.Reference<Pattern> pattern = Patterns.forScroll(context.registries(), this);
 		if (pattern != null) {
-			tooltip.add(Component.translatable("tooltip.socket-sorcery.scroll_pattern")
+			tooltip.accept(Component.translatable("tooltip.socket-sorcery.scroll_pattern")
 					.withStyle(ChatFormatting.GRAY).append(Component.literal(" "))
-					.append(pattern.value().coloredName(pattern.key().location())));
+					.append(pattern.value().coloredName(pattern.key().identifier())));
 		}
-		tooltip.add(Component.translatable("tooltip.socket-sorcery.scroll_hint").withStyle(ChatFormatting.DARK_GRAY));
+		tooltip.accept(Component.translatable("tooltip.socket-sorcery.scroll_hint").withStyle(ChatFormatting.DARK_GRAY));
 	}
 
 	@Override

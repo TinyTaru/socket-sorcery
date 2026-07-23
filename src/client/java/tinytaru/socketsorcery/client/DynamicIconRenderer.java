@@ -14,9 +14,9 @@ import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -45,9 +45,9 @@ public abstract class DynamicIconRenderer
 	private static final float BACK_Z = 0.5F + THICKNESS / 2.0F;
 
 	private final String idPrefix;
-	private final ResourceLocation fabricId;
-	private final Map<String, ResourceLocation> cache = new HashMap<>();
-	private final Map<ResourceLocation, boolean[][]> opacityCache = new HashMap<>();
+	private final Identifier fabricId;
+	private final Map<String, Identifier> cache = new HashMap<>();
+	private final Map<Identifier, boolean[][]> opacityCache = new HashMap<>();
 	private int counter;
 
 	protected DynamicIconRenderer(String idPrefix) {
@@ -56,7 +56,7 @@ public abstract class DynamicIconRenderer
 	}
 
 	/** The texture to draw for the stack, or null to skip. Usually built via {@link #composeCached}. */
-	protected abstract ResourceLocation texture(ItemStack stack);
+	protected abstract Identifier texture(ItemStack stack);
 
 	/** Hook for subclasses to clear their own caches on resource reload. */
 	protected void onReload() {
@@ -65,7 +65,7 @@ public abstract class DynamicIconRenderer
 	@Override
 	public final void render(ItemStack stack, ItemDisplayContext context, PoseStack poseStack,
 			MultiBufferSource buffers, int light, int overlay) {
-		ResourceLocation texture = texture(stack);
+		Identifier texture = texture(stack);
 		if (texture == null) {
 			return;
 		}
@@ -80,8 +80,8 @@ public abstract class DynamicIconRenderer
 	}
 
 	/** Returns a cached dynamic texture for {@code key}, building it once; null if the builder yields null. */
-	protected final ResourceLocation composeCached(String key, Supplier<NativeImage> builder) {
-		ResourceLocation cached = cache.get(key);
+	protected final Identifier composeCached(String key, Supplier<NativeImage> builder) {
+		Identifier cached = cache.get(key);
 		if (cached != null) {
 			return cached;
 		}
@@ -89,7 +89,7 @@ public abstract class DynamicIconRenderer
 		if (image == null) {
 			return null;
 		}
-		ResourceLocation id = SocketSorcery.id(idPrefix + "_" + (counter++));
+		Identifier id = SocketSorcery.id(idPrefix + "_" + (counter++));
 		Minecraft.getInstance().getTextureManager().register(id, new DynamicTexture(image));
 		cache.put(key, id);
 		opacityCache.put(id, opacityOf(image));
@@ -108,13 +108,13 @@ public abstract class DynamicIconRenderer
 	}
 
 	@Override
-	public final ResourceLocation getFabricId() {
+	public final Identifier getFabricId() {
 		return fabricId;
 	}
 
 	@Override
 	public final void onResourceManagerReload(ResourceManager resourceManager) {
-		for (ResourceLocation id : cache.values()) {
+		for (Identifier id : cache.values()) {
 			Minecraft.getInstance().getTextureManager().release(id);
 		}
 		cache.clear();
@@ -124,12 +124,12 @@ public abstract class DynamicIconRenderer
 	}
 
 	/** The {@code textures/item/<path>.png} location for an item id. */
-	protected static ResourceLocation itemTexture(ResourceLocation itemId) {
-		return ResourceLocation.fromNamespaceAndPath(itemId.getNamespace(), "textures/item/" + itemId.getPath() + ".png");
+	protected static Identifier itemTexture(Identifier itemId) {
+		return Identifier.fromNamespaceAndPath(itemId.getNamespace(), "textures/item/" + itemId.getPath() + ".png");
 	}
 
 	/** Loads a PNG into a pixel buffer (NativeImage ABGR), or null if missing/unreadable. */
-	protected static Pixels loadPixels(ResourceLocation textureFile) {
+	protected static Pixels loadPixels(Identifier textureFile) {
 		Optional<Resource> resource = Minecraft.getInstance().getResourceManager().getResource(textureFile);
 		if (resource.isEmpty()) {
 			return null;

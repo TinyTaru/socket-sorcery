@@ -1,9 +1,9 @@
 package tinytaru.socketsorcery.item;
 
-import java.util.List;
+import java.util.function.Consumer;
 
-import dev.emi.trinkets.api.SlotReference;
-import dev.emi.trinkets.api.TrinketItem;
+import eu.pb4.trinkets.api.TrinketSlotAccess;
+import eu.pb4.trinkets.api.callback.TrinketCallback;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -12,8 +12,10 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import tinytaru.socketsorcery.advancement.ModCriteria;
@@ -27,14 +29,17 @@ import tinytaru.socketsorcery.pattern.Patterns;
 import tinytaru.socketsorcery.registry.ModComponents;
 
 /**
- * Base class for worn accessories that hold socketed gems. A {@link dev.emi.trinkets.api.Trinket},
- * via {@link TrinketItem}, so it can be equipped through Trinkets' accessory slots.
+ * Base class for worn accessories that hold socketed gems. Each is its own
+ * {@link TrinketCallback}, bound to the item in {@code ModItems.init()}, so it can be equipped
+ * through Trinkets' accessory slots. (Trinkets 4 dropped the {@code TrinketItem} base class in
+ * favour of tags/components plus a callback, so equipability is declared by the item tags under
+ * {@code data/trinkets/tags/item/socket_sorcery/} rather than by inheritance.)
  *
  * <p>The same engraved gem produces different behaviour depending on the accessory: a necklace runs
  * each gem's passive effect components every tick; a bangle (or reacting ring) runs its active
  * components on activation. Both iterate the sockets in order, so socket order is the cast order.
  */
-public abstract class AccessoryItem extends TrinketItem {
+public abstract class AccessoryItem extends Item implements TrinketCallback {
 
 	private final int capacity;
 
@@ -110,8 +115,8 @@ public abstract class AccessoryItem extends TrinketItem {
 	}
 
 	@Override
-	public void onEquip(ItemStack stack, SlotReference slot, LivingEntity entity) {
-		super.onEquip(stack, slot, entity);
+	public void onEquip(ItemStack stack, TrinketSlotAccess slot, LivingEntity entity) {
+		TrinketCallback.super.onEquip(stack, slot, entity);
 		if (entity instanceof ServerPlayer player) {
 			ModCriteria.EQUIP_ACCESSORY.trigger(player);
 		}
@@ -123,17 +128,18 @@ public abstract class AccessoryItem extends TrinketItem {
 	}
 
 	@Override
-	public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+	public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display,
+			Consumer<Component> tooltip, TooltipFlag flag) {
 		SocketData data = getSockets(stack);
-		tooltip.add(Component.translatable("tooltip.socket-sorcery.sockets", data.size(), capacity)
+		tooltip.accept(Component.translatable("tooltip.socket-sorcery.sockets", data.size(), capacity)
 				.withStyle(ChatFormatting.GRAY));
 		HolderLookup.Provider registries = context.registries(); // may be null; patternOf tolerates it
 		for (ItemStack gem : data.gems()) {
 			Holder.Reference<Pattern> pattern = patternOf(registries, gem);
 			Component label = pattern != null
-					? pattern.value().coloredName(pattern.key().location())
+					? pattern.value().coloredName(pattern.key().identifier())
 					: gem.getHoverName();
-			tooltip.add(Component.literal(" - ").withStyle(ChatFormatting.DARK_GRAY).append(label));
+			tooltip.accept(Component.literal(" - ").withStyle(ChatFormatting.DARK_GRAY).append(label));
 		}
 	}
 }

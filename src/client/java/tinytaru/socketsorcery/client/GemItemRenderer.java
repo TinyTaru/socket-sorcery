@@ -10,7 +10,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -59,20 +59,20 @@ public class GemItemRenderer extends DynamicIconRenderer {
 	}
 
 	@Override
-	protected ResourceLocation texture(ItemStack stack) {
+	protected Identifier texture(ItemStack stack) {
 		Item item = stack.getItem();
-		ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(item);
+		Identifier itemId = BuiltInRegistries.ITEM.getKey(item);
 		EngravingData data = stack.get(ModComponents.ENGRAVING);
 		Holder.Reference<Pattern> pattern = data == null ? null : Patterns.get(clientRegistries(), data.pattern());
 		if (pattern == null) {
 			return itemTexture(itemId); // not engraved / unknown pattern / no level: just the plain gem
 		}
 		String key = itemId + "|" + data.pattern() + "|" + Modifiers.ordered(data.modifiers());
-		ResourceLocation built = composeCached(key, () -> compose(item, itemId, pattern.value(), data));
+		Identifier built = composeCached(key, () -> compose(item, itemId, pattern.value(), data));
 		return built != null ? built : itemTexture(itemId);
 	}
 
-	private NativeImage compose(Item item, ResourceLocation itemId, Pattern pattern, EngravingData data) {
+	private NativeImage compose(Item item, Identifier itemId, Pattern pattern, EngravingData data) {
 		Pixels base = baseCache.computeIfAbsent(item, k -> loadPixels(itemTexture(itemId)));
 		if (base == null || base.width() != SIZE || base.height() != SIZE) {
 			return null;

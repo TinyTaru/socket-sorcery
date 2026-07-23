@@ -50,12 +50,12 @@ public final class ModRegistries {
 	public static final ResourceKey<Registry<MapCodec<? extends PatternEffectComponent>>> EFFECT_TYPE_KEY =
 			ResourceKey.createRegistryKey(SocketSorcery.id("pattern_effect_type"));
 	public static final Registry<MapCodec<? extends PatternEffectComponent>> EFFECT_TYPE =
-			FabricRegistryBuilder.createSimple(EFFECT_TYPE_KEY).buildAndRegister();
+			FabricRegistryBuilder.create(EFFECT_TYPE_KEY).buildAndRegister();
 
 	public static final ResourceKey<Registry<MapCodec<? extends ModifierCellRule>>> CELL_RULE_TYPE_KEY =
 			ResourceKey.createRegistryKey(SocketSorcery.id("modifier_cell_rule_type"));
 	public static final Registry<MapCodec<? extends ModifierCellRule>> CELL_RULE_TYPE =
-			FabricRegistryBuilder.createSimple(CELL_RULE_TYPE_KEY).buildAndRegister();
+			FabricRegistryBuilder.create(CELL_RULE_TYPE_KEY).buildAndRegister();
 
 	public static void init() {
 		Registry.register(EFFECT_TYPE, SocketSorcery.id("mob_effect"), MobEffectComponent.CODEC);

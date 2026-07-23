@@ -2,7 +2,7 @@ package tinytaru.socketsorcery.registry;
 
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import tinytaru.socketsorcery.SocketSorcery;
 
@@ -27,7 +27,7 @@ public final class ModSounds {
 	}
 
 	private static SoundEvent register(String path) {
-		ResourceLocation id = SocketSorcery.id(path);
+		Identifier id = SocketSorcery.id(path);
 		return Registry.register(BuiltInRegistries.SOUND_EVENT, id, SoundEvent.createVariableRangeEvent(id));
 	}
 

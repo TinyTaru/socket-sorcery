@@ -3,6 +3,7 @@ package tinytaru.socketsorcery.pattern.effect;
 import com.mojang.serialization.MapCodec;
 
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.phys.HitResult;
@@ -27,9 +28,9 @@ public record SummonLightningComponent() implements PatternEffectComponent {
 			return;
 		}
 		Vec3 at = target.getLocation();
-		LightningBolt bolt = EntityType.LIGHTNING_BOLT.create(player.level());
+		LightningBolt bolt = EntityType.LIGHTNING_BOLT.create(player.level(), EntitySpawnReason.TRIGGERED);
 		if (bolt != null) {
-			bolt.moveTo(at.x, at.y, at.z);
+			bolt.snapTo(at.x, at.y, at.z);
 			bolt.setCause(player);
 			player.level().addFreshEntity(bolt);
 		}

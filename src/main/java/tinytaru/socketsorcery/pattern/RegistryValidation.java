@@ -10,7 +10,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import tinytaru.socketsorcery.SocketSorcery;
 
 /**
@@ -30,15 +30,15 @@ public final class RegistryValidation {
 		SocketSorcery.LOGGER.info("Loaded {} pattern(s) and {} modifier(s)", patternCount, modifierCount);
 
 		List<Holder.Reference<Modifier>> modifiers = Modifiers.all(registries).toList();
-		Map<ResourceLocation, ResourceLocation> scrollClaims = new HashMap<>();
+		Map<Identifier, Identifier> scrollClaims = new HashMap<>();
 		int[] checkedCombos = { 0 };
 		int[] brokenPatterns = { 0 };
 
 		Patterns.all(registries).forEach(holder -> {
-			ResourceLocation id = holder.key().location();
+			Identifier id = holder.key().identifier();
 			Pattern pattern = holder.value();
 
-			for (ResourceLocation gemId : pattern.gems()) {
+			for (Identifier gemId : pattern.gems()) {
 				if (!BuiltInRegistries.ITEM.containsKey(gemId)) {
 					SocketSorcery.LOGGER.warn("Pattern {} lists unknown gem item {} (mod not installed?)", id, gemId);
 				}
@@ -47,7 +47,7 @@ public final class RegistryValidation {
 				if (!BuiltInRegistries.ITEM.containsKey(scrollId)) {
 					SocketSorcery.LOGGER.warn("Pattern {} declares unknown scroll item {}", id, scrollId);
 				} else {
-					ResourceLocation previous = scrollClaims.put(scrollId, id);
+					Identifier previous = scrollClaims.put(scrollId, id);
 					if (previous != null) {
 						SocketSorcery.LOGGER.warn(
 								"Patterns {} and {} both claim scroll item {} — the first found wins at the table",
@@ -74,7 +74,7 @@ public final class RegistryValidation {
 	 * "do any two modifiers share a cell" test would false-positive on harmless overlaps. Returns true
 	 * if this pattern had any broken combination.
 	 */
-	private static boolean checkRoundTrips(HolderLookup.Provider registries, ResourceLocation id, Pattern pattern,
+	private static boolean checkRoundTrips(HolderLookup.Provider registries, Identifier id, Pattern pattern,
 			List<Holder.Reference<Modifier>> modifiers, int[] checkedCombos) {
 		List<Holder.Reference<Modifier>> applicable = modifiers.stream()
 				.filter(m -> m.value().cellMask(pattern) != null)
@@ -86,14 +86,14 @@ public final class RegistryValidation {
 		}
 		int problems = 0;
 		for (int subset = 0; subset < (1 << n); subset++) {
-			Set<ResourceLocation> want = new LinkedHashSet<>();
+			Set<Identifier> want = new LinkedHashSet<>();
 			for (int i = 0; i < n; i++) {
 				if ((subset & (1 << i)) != 0) {
-					want.add(applicable.get(i).key().location());
+					want.add(applicable.get(i).key().identifier());
 				}
 			}
 			long[] deep = Modifiers.cellsFor(registries, pattern, want);
-			Set<ResourceLocation> got = Modifiers.decode(registries, pattern, deep);
+			Set<Identifier> got = Modifiers.decode(registries, pattern, deep);
 			checkedCombos[0]++;
 			if (got == null || !got.equals(want)) {
 				problems++;

@@ -2,7 +2,7 @@ package tinytaru.socketsorcery.client;
 
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
-import me.shedaniel.autoconfig.AutoConfig;
+import me.shedaniel.autoconfig.AutoConfigClient;
 import tinytaru.socketsorcery.config.SocketSorceryConfig;
 
 /**
@@ -13,6 +13,7 @@ public class SocketSorceryModMenu implements ModMenuApi {
 
 	@Override
 	public ConfigScreenFactory<?> getModConfigScreenFactory() {
-		return parent -> AutoConfig.getConfigScreen(SocketSorceryConfig.class, parent).get();
+		// The screen factory moved to AutoConfigClient (AutoConfig itself is now common-side only).
+		return parent -> AutoConfigClient.getConfigScreen(SocketSorceryConfig.class, parent).get();
 	}
 }

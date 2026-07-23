@@ -1,9 +1,11 @@
 package tinytaru.socketsorcery.net;
 
-import dev.emi.trinkets.api.TrinketsApi;
+import eu.pb4.trinkets.api.TrinketSlotAccess;
+import eu.pb4.trinkets.api.TrinketsApi;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.HitResult;
 import tinytaru.socketsorcery.item.AccessoryItem;
 import tinytaru.socketsorcery.item.BangleItem;
@@ -18,9 +20,9 @@ import tinytaru.socketsorcery.pattern.Patterns;
 public final class ModNetworking {
 
 	public static void registerServer() {
-		PayloadTypeRegistry.playC2S().register(FinishEngravingC2SPayload.ID, FinishEngravingC2SPayload.CODEC);
-		PayloadTypeRegistry.playC2S().register(ActivateBangleC2SPayload.ID, ActivateBangleC2SPayload.CODEC);
-		PayloadTypeRegistry.playS2C().register(EngraveResultS2CPayload.ID, EngraveResultS2CPayload.CODEC);
+		PayloadTypeRegistry.serverboundPlay().register(FinishEngravingC2SPayload.ID, FinishEngravingC2SPayload.CODEC);
+		PayloadTypeRegistry.serverboundPlay().register(ActivateBangleC2SPayload.ID, ActivateBangleC2SPayload.CODEC);
+		PayloadTypeRegistry.clientboundPlay().register(EngraveResultS2CPayload.ID, EngraveResultS2CPayload.CODEC);
 
 		ServerPlayNetworking.registerGlobalReceiver(FinishEngravingC2SPayload.ID, (payload, context) -> {
 			ServerPlayer player = context.player();
@@ -35,19 +37,20 @@ public final class ModNetworking {
 	}
 
 	private static void activateBangles(ServerPlayer player) {
-		TrinketsApi.getTrinketComponent(player).ifPresent(component -> {
-			HitResult target = Patterns.raycast(player,
-					tinytaru.socketsorcery.config.SocketSorceryConfig.get().bangleReach);
-			component.forEach((slot, stack) -> {
-				if (stack.getItem() instanceof BangleItem && !player.getCooldowns().isOnCooldown(stack.getItem())) {
-					AccessoryItem.runBangle(player, stack, target);
-					int ticks = Cooldowns.forBangle(stack, player.registryAccess());
-					if (ticks > 0) {
-						player.getCooldowns().addCooldown(stack.getItem(), ticks);
-					}
-				}
-			});
-		});
+		HitResult target = Patterns.raycast(player,
+				tinytaru.socketsorcery.config.SocketSorceryConfig.get().bangleReach);
+		for (TrinketSlotAccess slot : TrinketsApi.getAttachment(player)
+				.equipped(stack -> stack.getItem() instanceof BangleItem, false)) {
+			ItemStack stack = slot.get();
+			if (player.getCooldowns().isOnCooldown(stack)) {
+				continue;
+			}
+			AccessoryItem.runBangle(player, stack, target);
+			int ticks = Cooldowns.forBangle(stack, player.registryAccess());
+			if (ticks > 0) {
+				player.getCooldowns().addCooldown(stack, ticks);
+			}
+		}
 	}
 
 	private ModNetworking() {

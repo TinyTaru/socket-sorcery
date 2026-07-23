@@ -3,10 +3,10 @@ package tinytaru.socketsorcery.pattern;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
 import tinytaru.socketsorcery.util.ColorCodecs;
 
@@ -48,16 +48,16 @@ public record Modifier(int color, ModifierCellRule cellRule,
 	}
 
 	/** The translation key for a modifier id: {@code modifier.<namespace>.<path>}. */
-	public static String translationKey(ResourceLocation id) {
+	public static String translationKey(Identifier id) {
 		return Util.makeDescriptionId("modifier", id);
 	}
 
-	public static Component displayName(ResourceLocation id) {
+	public static Component displayName(Identifier id) {
 		return Component.translatable(translationKey(id));
 	}
 
 	/** Display name for the given modifier id, tinted with this modifier's colour. */
-	public MutableComponent coloredName(ResourceLocation id) {
+	public MutableComponent coloredName(Identifier id) {
 		return Component.translatable(translationKey(id)).withColor(color);
 	}
 }

@@ -5,10 +5,10 @@ import java.util.Optional;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import net.minecraft.advancements.critereon.ContextAwarePredicate;
-import net.minecraft.advancements.critereon.EntityPredicate;
-import net.minecraft.advancements.critereon.SimpleCriterionTrigger;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.advancements.criterion.ContextAwarePredicate;
+import net.minecraft.advancements.criterion.EntityPredicate;
+import net.minecraft.advancements.criterion.SimpleCriterionTrigger;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
@@ -23,20 +23,20 @@ public class EngravePatternTrigger extends SimpleCriterionTrigger<EngravePattern
 		return Instance.CODEC;
 	}
 
-	public void trigger(ServerPlayer player, ResourceLocation pattern, boolean modified) {
+	public void trigger(ServerPlayer player, Identifier pattern, boolean modified) {
 		this.trigger(player, instance -> instance.matches(pattern, modified));
 	}
 
-	public record Instance(Optional<ContextAwarePredicate> player, Optional<ResourceLocation> pattern,
+	public record Instance(Optional<ContextAwarePredicate> player, Optional<Identifier> pattern,
 			boolean requireModified) implements SimpleCriterionTrigger.SimpleInstance {
 
 		public static final Codec<Instance> CODEC = RecordCodecBuilder.create(i -> i.group(
 				EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(Instance::player),
-				ResourceLocation.CODEC.optionalFieldOf("pattern").forGetter(Instance::pattern),
+				Identifier.CODEC.optionalFieldOf("pattern").forGetter(Instance::pattern),
 				Codec.BOOL.optionalFieldOf("require_modified", false).forGetter(Instance::requireModified)
 		).apply(i, Instance::new));
 
-		public boolean matches(ResourceLocation engravedPattern, boolean modified) {
+		public boolean matches(Identifier engravedPattern, boolean modified) {
 			if (pattern.isPresent() && !pattern.get().equals(engravedPattern)) {
 				return false;
 			}

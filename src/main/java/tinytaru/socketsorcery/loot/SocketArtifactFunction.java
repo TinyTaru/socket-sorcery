@@ -8,13 +8,12 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction;
-import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import tinytaru.socketsorcery.SocketSorcery;
 import tinytaru.socketsorcery.component.EngravingData;
@@ -43,19 +42,22 @@ public final class SocketArtifactFunction extends LootItemConditionalFunction {
 			ModItems.ENGRAVABLE_PRISMARINE, ModItems.ENGRAVABLE_GLOWSTONE, ModItems.ENGRAVABLE_COPPER, ModItems.ENGRAVABLE_ENDER
 	};
 
+	/**
+	 * The {@code LootItemFunctionType} wrapper is gone: the registry now holds the {@link MapCodec}
+	 * directly, and the per-instance hook is {@code codec()} rather than {@code getType()}.
+	 */
 	public static final MapCodec<SocketArtifactFunction> CODEC = RecordCodecBuilder.mapCodec(
 			instance -> commonFields(instance).apply(instance, SocketArtifactFunction::new));
 
-	public static final LootItemFunctionType<SocketArtifactFunction> TYPE = Registry.register(
-			BuiltInRegistries.LOOT_FUNCTION_TYPE, SocketSorcery.id("socket_artifact"),
-			new LootItemFunctionType<>(CODEC));
+	public static final MapCodec<SocketArtifactFunction> TYPE = Registry.register(
+			BuiltInRegistries.LOOT_FUNCTION_TYPE, SocketSorcery.id("socket_artifact"), CODEC);
 
 	private SocketArtifactFunction(List<LootItemCondition> predicates) {
 		super(predicates);
 	}
 
 	@Override
-	public LootItemFunctionType<? extends LootItemConditionalFunction> getType() {
+	public MapCodec<? extends LootItemConditionalFunction> codec() {
 		return TYPE;
 	}
 
@@ -73,12 +75,12 @@ public final class SocketArtifactFunction extends LootItemConditionalFunction {
 		List<ItemStack> gems = new ArrayList<>(count);
 		for (int i = 0; i < count; i++) {
 			Item gemItem = ARTIFACT_GEMS[random.nextInt(ARTIFACT_GEMS.length)];
-			List<ResourceLocation> patterns = List.copyOf(
+			List<Identifier> patterns = List.copyOf(
 					Patterns.patternsFor(context.getLevel().registryAccess(), gemItem));
 			if (patterns.isEmpty()) {
 				continue;
 			}
-			ResourceLocation pattern = patterns.get(random.nextInt(patterns.size()));
+			Identifier pattern = patterns.get(random.nextInt(patterns.size()));
 			ItemStack gem = new ItemStack(gemItem);
 			gem.set(ModComponents.ENGRAVING, new EngravingData(pattern));
 			gems.add(gem);

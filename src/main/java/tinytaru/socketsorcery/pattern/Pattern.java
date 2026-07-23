@@ -9,10 +9,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ExtraCodecs;
 import tinytaru.socketsorcery.util.ColorCodecs;
 
@@ -27,7 +27,7 @@ import tinytaru.socketsorcery.util.ColorCodecs;
  * Display names derive from the id: {@code pattern.<namespace>.<path>}.
  */
 public record Pattern(boolean[][] mask, int color, int cooldown, Optional<CastFeedback> castFeedback,
-		List<ResourceLocation> gems, Optional<ResourceLocation> scroll,
+		List<Identifier> gems, Optional<Identifier> scroll,
 		List<PatternEffectComponent> necklaceEffects, List<PatternEffectComponent> bangleEffects) {
 
 	/** Edge length of the chiselling grid — one cell per pixel of the 16x16 gem texture. */
@@ -44,8 +44,8 @@ public record Pattern(boolean[][] mask, int color, int cooldown, Optional<CastFe
 			ColorCodecs.RGB.fieldOf("color").forGetter(Pattern::color),
 			ExtraCodecs.NON_NEGATIVE_INT.fieldOf("cooldown").forGetter(Pattern::cooldown),
 			CastFeedback.CODEC.optionalFieldOf("cast_feedback").forGetter(Pattern::castFeedback),
-			ResourceLocation.CODEC.listOf().optionalFieldOf("gems", List.of()).forGetter(Pattern::gems),
-			ResourceLocation.CODEC.optionalFieldOf("scroll").forGetter(Pattern::scroll),
+			Identifier.CODEC.listOf().optionalFieldOf("gems", List.of()).forGetter(Pattern::gems),
+			Identifier.CODEC.optionalFieldOf("scroll").forGetter(Pattern::scroll),
 			PatternEffectComponent.CODEC.listOf().optionalFieldOf("necklace_effects", List.of()).forGetter(Pattern::necklaceEffects),
 			PatternEffectComponent.CODEC.listOf().optionalFieldOf("bangle_effects", List.of()).forGetter(Pattern::bangleEffects)
 	).apply(instance, Pattern::new));
@@ -102,16 +102,16 @@ public record Pattern(boolean[][] mask, int color, int cooldown, Optional<CastFe
 	}
 
 	/** The translation key for a pattern id: {@code pattern.<namespace>.<path>}. */
-	public static String translationKey(ResourceLocation id) {
+	public static String translationKey(Identifier id) {
 		return Util.makeDescriptionId("pattern", id);
 	}
 
-	public static Component displayName(ResourceLocation id) {
+	public static Component displayName(Identifier id) {
 		return Component.translatable(translationKey(id));
 	}
 
 	/** Display name for the given pattern id, tinted with this pattern's colour. */
-	public MutableComponent coloredName(ResourceLocation id) {
+	public MutableComponent coloredName(Identifier id) {
 		return Component.translatable(translationKey(id)).withColor(color);
 	}
 

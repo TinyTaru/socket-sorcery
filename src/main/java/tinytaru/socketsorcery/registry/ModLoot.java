@@ -2,7 +2,7 @@ package tinytaru.socketsorcery.registry;
 
 import java.util.Set;
 
-import net.fabricmc.fabric.api.loot.v2.LootTableEvents;
+import net.fabricmc.fabric.api.loot.v3.LootTableEvents;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
@@ -51,7 +51,7 @@ public final class ModLoot {
 			BuiltInLootTables.END_CITY_TREASURE);
 
 	public static void init() {
-		LootTableEvents.MODIFY.register((key, tableBuilder, source) -> {
+		LootTableEvents.MODIFY.register((key, tableBuilder, source, registries) -> {
 			if (!source.isBuiltin()) {
 				return;
 			}

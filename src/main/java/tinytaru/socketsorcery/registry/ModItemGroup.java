@@ -1,6 +1,6 @@
 package tinytaru.socketsorcery.registry;
 
-import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
+import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -16,7 +16,7 @@ public final class ModItemGroup {
 			ResourceKey.create(Registries.CREATIVE_MODE_TAB, SocketSorcery.id("general"));
 
 	public static final CreativeModeTab TAB = Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, KEY,
-			FabricItemGroup.builder()
+			FabricCreativeModeTab.builder()
 					.icon(() -> new ItemStack(ModItems.RUBY))
 					.title(Component.translatable("itemGroup.socket-sorcery.general"))
 					.displayItems((params, output) -> {

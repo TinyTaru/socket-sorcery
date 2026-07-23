@@ -8,7 +8,7 @@ import com.mojang.blaze3d.platform.NativeImage;
 import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -44,19 +44,19 @@ public class AccessoryItemRenderer extends DynamicIconRenderer {
 	}
 
 	@Override
-	protected ResourceLocation texture(ItemStack stack) {
+	protected Identifier texture(ItemStack stack) {
 		Item item = stack.getItem();
-		ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(item);
+		Identifier itemId = BuiltInRegistries.ITEM.getKey(item);
 		List<ItemStack> gems = AccessoryItem.getSockets(stack).gems();
 		StringBuilder key = new StringBuilder(itemId.toString());
 		for (ItemStack gem : gems) {
 			key.append('|').append(BuiltInRegistries.ITEM.getKey(gem.getItem()));
 		}
-		ResourceLocation built = composeCached(key.toString(), () -> compose(item, itemId, gems));
+		Identifier built = composeCached(key.toString(), () -> compose(item, itemId, gems));
 		return built != null ? built : itemTexture(itemId);
 	}
 
-	private NativeImage compose(Item item, ResourceLocation itemId, List<ItemStack> gems) {
+	private NativeImage compose(Item item, Identifier itemId, List<ItemStack> gems) {
 		Pixels base = baseCache.computeIfAbsent(item, k -> loadPixels(itemTexture(itemId)));
 		if (base == null) {
 			return null;
@@ -95,8 +95,8 @@ public class AccessoryItemRenderer extends DynamicIconRenderer {
 
 	private Pixels gemSprite(Item gem) {
 		return gemCache.computeIfAbsent(gem, k -> {
-			ResourceLocation id = BuiltInRegistries.ITEM.getKey(gem);
-			Pixels raw = loadPixels(ResourceLocation.fromNamespaceAndPath(
+			Identifier id = BuiltInRegistries.ITEM.getKey(gem);
+			Pixels raw = loadPixels(Identifier.fromNamespaceAndPath(
 					id.getNamespace(), "textures/accessory_gem/" + id.getPath() + ".png"));
 			return raw == null ? null : raw.cropToOpaque();
 		});

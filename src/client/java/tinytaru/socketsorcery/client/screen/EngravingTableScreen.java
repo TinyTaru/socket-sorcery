@@ -10,14 +10,14 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Inventory;
@@ -133,8 +133,8 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 			return;
 		}
 
-		ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(gem);
-		ResourceLocation texture = ResourceLocation.fromNamespaceAndPath(
+		Identifier itemId = BuiltInRegistries.ITEM.getKey(gem);
+		Identifier texture = Identifier.fromNamespaceAndPath(
 				itemId.getNamespace(), "textures/item/" + itemId.getPath() + ".png");
 		Optional<Resource> resource = Minecraft.getInstance().getResourceManager().getResource(texture);
 		if (resource.isEmpty()) {
@@ -189,7 +189,7 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 	}
 
 	/** The applied modifier set if the current carve is a valid engraving, else null. */
-	private Set<ResourceLocation> validModifiers() {
+	private Set<Identifier> validModifiers() {
 		Holder.Reference<Pattern> holder = this.menu.targetPattern();
 		if (holder == null) {
 			return null;
@@ -197,7 +197,7 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 		Pattern pattern = holder.value();
 		long[] carved = carvedBits();
 		long[] deep = deepBits();
-		Set<ResourceLocation> modifiers = Modifiers.decode(this.menu.registries(), pattern, deep);
+		Set<Identifier> modifiers = Modifiers.decode(this.menu.registries(), pattern, deep);
 		if (modifiers == null || !GridBits.equal(carved, GridBits.or(pattern.maskBits(), deep))) {
 			return null;
 		}
@@ -279,7 +279,7 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 	}
 
 	@Override
-	protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
+	protected void renderBg(GuiGraphicsExtractor g, float partialTick, int mouseX, int mouseY) {
 		int left = this.leftPos;
 		int top = this.topPos;
 		g.fill(left, top, left + this.imageWidth, top + this.imageHeight, 0xFFC6C6C6);
@@ -297,13 +297,13 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 		renderGrid(g, mouseX, mouseY);
 	}
 
-	private static void drawSlot(GuiGraphics g, int x, int y) {
+	private static void drawSlot(GuiGraphicsExtractor g, int x, int y) {
 		g.fill(x - 1, y - 1, x + 17, y + 17, 0xFF373737);
 		g.fill(x - 1, y - 1, x + 17, y, 0xFF8B8B8B);
 		g.fill(x - 1, y - 1, x, y + 17, 0xFF8B8B8B);
 	}
 
-	private void renderGrid(GuiGraphics g, int mouseX, int mouseY) {
+	private void renderGrid(GuiGraphicsExtractor g, int mouseX, int mouseY) {
 		Holder.Reference<Pattern> holder = this.menu.targetPattern();
 		Pattern pattern = holder == null ? null : holder.value();
 		int ox = this.leftPos + GRID_X;
@@ -336,9 +336,9 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 
 		// Tint the cells of each correctly-formed modifier in its own colour: feedback on what you've
 		// shaped, without revealing where unformed modifiers live (the discovery is the point).
-		Set<ResourceLocation> valid = pattern == null ? null : validModifiers();
+		Set<Identifier> valid = pattern == null ? null : validModifiers();
 		if (valid != null) {
-			for (ResourceLocation id : valid) {
+			for (Identifier id : valid) {
 				Holder.Reference<Modifier> modifier = Modifiers.get(this.menu.registries(), id);
 				if (modifier == null) {
 					continue;
@@ -384,7 +384,7 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 	}
 
 	@Override
-	protected void renderLabels(GuiGraphics g, int mouseX, int mouseY) {
+	protected void renderLabels(GuiGraphicsExtractor g, int mouseX, int mouseY) {
 		super.renderLabels(g, mouseX, mouseY);
 		Component status = statusLine();
 		if (status != null) {
@@ -402,7 +402,7 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 			return Component.translatable("screen.socket-sorcery.need_scroll").withStyle(ChatFormatting.DARK_GRAY);
 		}
 		Pattern pattern = holder.value();
-		ResourceLocation patternId = holder.key().location();
+		Identifier patternId = holder.key().identifier();
 		if (gem.isEmpty()) {
 			return Component.translatable("screen.socket-sorcery.need_gem").withStyle(ChatFormatting.DARK_GRAY);
 		}
@@ -417,12 +417,12 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 		if (!GridBits.subset(pattern.maskBits(), carvedBits())) {
 			return pattern.coloredName(patternId);
 		}
-		Set<ResourceLocation> modifiers = validModifiers();
+		Set<Identifier> modifiers = validModifiers();
 		if (modifiers == null) {
 			return Component.translatable("screen.socket-sorcery.invalid_engraving").withStyle(ChatFormatting.DARK_RED);
 		}
 		MutableComponent line = pattern.coloredName(patternId);
-		for (ResourceLocation id : modifiers) {
+		for (Identifier id : modifiers) {
 			Holder.Reference<Modifier> modifier = Modifiers.get(this.menu.registries(), id);
 			if (modifier != null) {
 				line.append(Component.literal(" + ").withStyle(ChatFormatting.DARK_GRAY))
@@ -444,7 +444,7 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 
 	/** A live preview of the gem as it would look once engraved with the current valid carve. */
 	private ItemStack previewStack() {
-		Set<ResourceLocation> modifiers = validModifiers();
+		Set<Identifier> modifiers = validModifiers();
 		Holder.Reference<Pattern> holder = this.menu.targetPattern();
 		if (modifiers == null || holder == null) {
 			return null;
@@ -455,12 +455,12 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 		}
 		preview.setCount(1);
 		preview.set(ModComponents.ENGRAVING,
-				new EngravingData(holder.key().location(), Modifiers.ordered(modifiers)));
+				new EngravingData(holder.key().identifier(), Modifiers.ordered(modifiers)));
 		return preview;
 	}
 
 	/** Names the hovered cell: a formed modifier's cell, or a base-symbol cell. */
-	private void renderCellTooltip(GuiGraphics g, int mouseX, int mouseY) {
+	private void renderCellTooltip(GuiGraphicsExtractor g, int mouseX, int mouseY) {
 		Holder.Reference<Pattern> holder = this.menu.targetPattern();
 		if (holder == null) {
 			return;
@@ -470,9 +470,9 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 		if (cell < 0) {
 			return;
 		}
-		Set<ResourceLocation> valid = validModifiers();
+		Set<Identifier> valid = validModifiers();
 		if (valid != null) {
-			for (ResourceLocation id : valid) {
+			for (Identifier id : valid) {
 				Holder.Reference<Modifier> modifier = Modifiers.get(this.menu.registries(), id);
 				long[] cells = modifier == null ? null : modifier.value().cellMask(pattern);
 				if (cells != null && GridBits.getIndex(cells, cell)) {
@@ -482,12 +482,12 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 			}
 		}
 		if (depth[cell / GRID][cell % GRID] >= 1 && pattern.isCellCarved(cell / GRID, cell % GRID)) {
-			g.renderTooltip(this.font, pattern.coloredName(holder.key().location()), mouseX, mouseY);
+			g.renderTooltip(this.font, pattern.coloredName(holder.key().identifier()), mouseX, mouseY);
 		}
 	}
 
 	@Override
-	public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+	public void render(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
 		super.render(g, mouseX, mouseY, partialTick);
 		ItemStack preview = previewStack();
 		if (preview != null) {

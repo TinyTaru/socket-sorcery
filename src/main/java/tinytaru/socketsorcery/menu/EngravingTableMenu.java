@@ -9,7 +9,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.server.level.ServerLevel;
@@ -146,7 +146,7 @@ public class EngravingTableMenu extends AbstractContainerMenu {
 		return pattern != null
 				&& !gem.isEmpty()
 				&& !gem.has(ModComponents.ENGRAVING)
-				&& Patterns.canEngrave(registries, gem.getItem(), pattern.key().location())
+				&& Patterns.canEngrave(registries, gem.getItem(), pattern.key().identifier())
 				&& chiselStack().getItem() instanceof ChiselItem;
 	}
 
@@ -162,14 +162,14 @@ public class EngravingTableMenu extends AbstractContainerMenu {
 		if (holder == null
 				|| gem.isEmpty()
 				|| gem.has(ModComponents.ENGRAVING)
-				|| !Patterns.canEngrave(registries, gem.getItem(), holder.key().location())) {
+				|| !Patterns.canEngrave(registries, gem.getItem(), holder.key().identifier())) {
 			return EngraveResult.NOT_ENGRAVABLE;
 		}
 		if (!(chiselStack().getItem() instanceof ChiselItem)) {
 			return EngraveResult.NO_CHISEL;
 		}
 		Pattern pattern = holder.value();
-		Set<ResourceLocation> modifiers = Modifiers.decode(registries, pattern, deep);
+		Set<Identifier> modifiers = Modifiers.decode(registries, pattern, deep);
 		if (modifiers == null) {
 			return EngraveResult.BAD_MODIFIERS; // stray or incomplete deep cells
 		}
@@ -186,7 +186,7 @@ public class EngravingTableMenu extends AbstractContainerMenu {
 			ItemStack engraved = gemStack().copy();
 			engraved.setCount(1);
 			engraved.set(ModComponents.ENGRAVING,
-					new EngravingData(holder.key().location(), Modifiers.ordered(modifiers)));
+					new EngravingData(holder.key().identifier(), Modifiers.ordered(modifiers)));
 			table.setItem(SLOT_GEM, engraved);
 
 			scrollStack().shrink(1);
@@ -196,7 +196,7 @@ public class EngravingTableMenu extends AbstractContainerMenu {
 				int damage = chisel.getDamageValue() + cost;
 				if (damage >= chisel.getMaxDamage()) {
 					table.setItem(SLOT_CHISEL, ItemStack.EMPTY);
-					level.playSound(null, pos, SoundEvents.ITEM_BREAK, SoundSource.BLOCKS, 0.7F, 1.0F);
+					level.playSound(null, pos, SoundEvents.ITEM_BREAK.value(), SoundSource.BLOCKS, 0.7F, 1.0F);
 				} else {
 					chisel.setDamageValue(damage);
 				}
@@ -209,7 +209,7 @@ public class EngravingTableMenu extends AbstractContainerMenu {
 			}
 		});
 		broadcastChanges();
-		ModCriteria.ENGRAVE.trigger(player, holder.key().location(), !modifiers.isEmpty());
+		ModCriteria.ENGRAVE.trigger(player, holder.key().identifier(), !modifiers.isEmpty());
 		return EngraveResult.OK;
 	}
 
@@ -218,10 +218,8 @@ public class EngravingTableMenu extends AbstractContainerMenu {
 		double cx = pos.getX() + 0.5;
 		double cy = pos.getY() + 1.0;
 		double cz = pos.getZ() + 0.5;
-		float r = ((color >> 16) & 0xFF) / 255.0F;
-		float g = ((color >> 8) & 0xFF) / 255.0F;
-		float b = (color & 0xFF) / 255.0F;
-		level.sendParticles(new DustParticleOptions(new Vector3f(r, g, b), 1.2F), cx, cy, cz, 16, 0.25, 0.2, 0.25, 0.0);
+		// DustParticleOptions takes the packed RGB directly now (it used to need a Vector3f).
+		level.sendParticles(new DustParticleOptions(color, 1.2F), cx, cy, cz, 16, 0.25, 0.2, 0.25, 0.0);
 		level.sendParticles(ParticleTypes.ENCHANT, cx, cy, cz, 12, 0.3, 0.3, 0.3, 0.05);
 	}
 

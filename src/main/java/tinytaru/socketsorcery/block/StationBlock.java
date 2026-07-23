@@ -1,7 +1,7 @@
 package tinytaru.socketsorcery.block;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.Container;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
@@ -30,18 +30,19 @@ public abstract class StationBlock extends BaseEntityBlock {
 	@Override
 	protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
 			BlockHitResult hit) {
-		if (!level.isClientSide && level.getBlockEntity(pos) instanceof MenuProvider provider) {
+		if (!level.isClientSide() && level.getBlockEntity(pos) instanceof MenuProvider provider) {
 			player.openMenu(provider);
 		}
-		return InteractionResult.sidedSuccess(level.isClientSide);
+		return InteractionResult.SUCCESS;
 	}
 
+	/**
+	 * {@code onRemove} split in two: neighbour updates land here (after the block is gone), while
+	 * dropping the contents moved onto the block entity's {@code preRemoveSideEffects}, which still
+	 * runs while the block entity exists. This mirrors what vanilla's containers now do.
+	 */
 	@Override
-	protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moved) {
-		if (!state.is(newState.getBlock()) && level.getBlockEntity(pos) instanceof Container container) {
-			Containers.dropContents(level, pos, container);
-			level.updateNeighbourForOutputSignal(pos, this);
-		}
-		super.onRemove(state, level, pos, newState, moved);
+	protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean moved) {
+		Containers.updateNeighboursAfterDestroy(state, level, pos);
 	}
 }

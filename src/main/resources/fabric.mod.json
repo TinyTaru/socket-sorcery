@@ -17,31 +17,21 @@
 		"client": [
 			"tinytaru.socketsorcery.client.SocketSorceryClient"
 		],
-		"emi": [
-			"tinytaru.socketsorcery.compat.emi.SocketSorceryEmiPlugin"
-		],
 		"modmenu": [
 			"tinytaru.socketsorcery.client.SocketSorceryModMenu"
 		]
 	},
-	"mixins": [
-		"socket-sorcery.mixins.json",
-		{
-			"config": "socket-sorcery.client.mixins.json",
-			"environment": "client"
-		}
-	],
 	"depends": {
-		"fabricloader": ">=0.19.3",
-		"minecraft": "~1.21.1",
-		"java": ">=21",
+		"fabricloader": ">=0.18.4",
+		"minecraft": "~26.1",
+		"java": ">=25",
 		"fabric-api": "*",
-		"trinkets": ">=3.10.0",
-		"patchouli": ">=1.21.1-90",
-		"cloth-config": ">=15.0.0"
+		"trinkets_updated": ">=4.0.0-beta.3",
+		"patchouli": "*",
+		"cloth-config": ">=26.1.0"
 	},
 	"recommends": {
-		"emi": "*",
+		"jei": "*",
 		"modmenu": "*"
 	}
 }

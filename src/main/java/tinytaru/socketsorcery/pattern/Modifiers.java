@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
 import tinytaru.socketsorcery.registry.ModRegistries;
 
@@ -21,7 +21,7 @@ import tinytaru.socketsorcery.registry.ModRegistries;
 public final class Modifiers {
 
 	/** The modifier holder for an id, or null if unavailable. */
-	public static Holder.Reference<Modifier> get(HolderLookup.Provider registries, ResourceLocation id) {
+	public static Holder.Reference<Modifier> get(HolderLookup.Provider registries, Identifier id) {
 		if (registries == null || id == null) {
 			return null;
 		}
@@ -45,13 +45,13 @@ public final class Modifiers {
 	 * the mask isn't an exact disjoint union of complete modifier cell sets. Empty decodes to empty
 	 * (a plain base engraving).
 	 */
-	public static Set<ResourceLocation> decode(HolderLookup.Provider registries, Pattern pattern, long[] deep) {
-		Set<ResourceLocation> applied = new LinkedHashSet<>();
+	public static Set<Identifier> decode(HolderLookup.Provider registries, Pattern pattern, long[] deep) {
+		Set<Identifier> applied = new LinkedHashSet<>();
 		long[] union = GridBits.empty();
 		all(registries).forEach(holder -> {
 			long[] cells = holder.value().cellMask(pattern);
 			if (cells != null && GridBits.subset(cells, deep)) {
-				applied.add(holder.key().location());
+				applied.add(holder.key().identifier());
 				GridBits.orInto(union, cells);
 			}
 		});
@@ -59,9 +59,9 @@ public final class Modifiers {
 	}
 
 	/** The full deep mask an applied modifier set occupies for a pattern. */
-	public static long[] cellsFor(HolderLookup.Provider registries, Pattern pattern, Collection<ResourceLocation> ids) {
+	public static long[] cellsFor(HolderLookup.Provider registries, Pattern pattern, Collection<Identifier> ids) {
 		long[] mask = GridBits.empty();
-		for (ResourceLocation id : ids) {
+		for (Identifier id : ids) {
 			Holder.Reference<Modifier> modifier = get(registries, id);
 			if (modifier != null) {
 				long[] cells = modifier.value().cellMask(pattern);
@@ -74,12 +74,12 @@ public final class Modifiers {
 	}
 
 	/** Folds a modifier set into the effect knobs. Unknown ids are skipped. */
-	public static EngraveMods toMods(HolderLookup.Provider registries, Collection<ResourceLocation> ids) {
+	public static EngraveMods toMods(HolderLookup.Provider registries, Collection<Identifier> ids) {
 		int power = 0;
 		int durationMult = 1;
 		double rangeBonus = 0.0;
 		Vec3 aim = Vec3.ZERO;
-		for (ResourceLocation id : ids) {
+		for (Identifier id : ids) {
 			Holder.Reference<Modifier> holder = get(registries, id);
 			if (holder == null) {
 				continue;
@@ -97,7 +97,7 @@ public final class Modifiers {
 	 * Canonical display/storage order for a modifier set: sorted by id. Stable across any datapack
 	 * combination (unlike the old Java-registration order).
 	 */
-	public static List<ResourceLocation> ordered(Collection<ResourceLocation> ids) {
+	public static List<Identifier> ordered(Collection<Identifier> ids) {
 		return ids.stream().distinct().sorted().toList();
 	}
 

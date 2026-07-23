@@ -4,7 +4,7 @@ import dev.emi.trinkets.api.TrinketsApi;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvents;
@@ -28,7 +28,7 @@ public final class BangleCooldownHud {
 		HudRenderCallback.EVENT.register(BangleCooldownHud::render);
 	}
 
-	private static void render(GuiGraphics graphics, DeltaTracker delta) {
+	private static void render(GuiGraphicsExtractor graphics, DeltaTracker delta) {
 		Minecraft minecraft = Minecraft.getInstance();
 		LocalPlayer player = minecraft.player;
 		if (player == null || minecraft.options.hideGui) {

@@ -1,5 +1,5 @@
 plugins {
-	id 'net.fabricmc.fabric-loom-remap' version "${loom_version}"
+	id 'net.fabricmc.fabric-loom' version "${loom_version}"
 	id 'maven-publish'
 }
 
@@ -13,16 +13,12 @@ repositories {
 	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
 	// for more information about repositories.
 
-	// Trinkets (accessory slots) and its dependencies.
+	// Trinkets Updated (accessory slots) — the maintained eu.pb4 fork.
 	maven {
-		name = "TerraformersMC"
-		url = "https://maven.terraformersmc.com/"
+		name = "Nucleoid"
+		url = "https://maven.nucleoid.xyz/releases"
 	}
-	maven {
-		name = "Ladysnake Libs"
-		url = "https://maven.ladysnake.org/releases"
-	}
-	// Patchouli (the in-game guidebook).
+	// JEI (the recipe viewer).
 	maven {
 		name = "BlameJared"
 		url = "https://maven.blamejared.com/"
@@ -31,6 +27,15 @@ repositories {
 	maven {
 		name = "Shedaniel"
 		url = "https://maven.shedaniel.me/"
+	}
+	// Patchouli publishes only a snapshot for 26.1 to its own maven, and TerraformersMC's maven has
+	// not seen a ModMenu release since May 2026 — both come from Modrinth instead.
+	maven {
+		name = "Modrinth"
+		url = "https://api.modrinth.com/maven"
+		content {
+			includeGroup "maven.modrinth"
+		}
 	}
 }
 
@@ -48,29 +53,30 @@ loom {
 
 dependencies {
 	// To change the versions see the gradle.properties file
+	// Minecraft 26.1 ships unobfuscated, so there is no mappings declaration and no remapping:
+	// mod dependencies use the plain Gradle configurations, not the old mod* ones.
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings loom.officialMojangMappings()
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
 	// Trinkets provides the worn accessory slots (necklace / bangle / ring).
-	modImplementation "dev.emi:trinkets:${project.trinkets_version}"
+	implementation "eu.pb4:trinkets:${project.trinkets_version}"
 
 	// Patchouli powers the in-game guidebook (hard dependency).
-	modImplementation "vazkii.patchouli:Patchouli:${project.patchouli_version}"
+	implementation "maven.modrinth:patchouli:${project.patchouli_version}"
 
 	// Cloth Config provides the config file + screen (hard dependency).
-	modImplementation("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
+	implementation("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
 		exclude group: "net.fabricmc.fabric-api"
 	}
 
-	// EMI and ModMenu are optional integrations: compile against them, run them in dev.
-	modCompileOnly "dev.emi:emi-fabric:${project.emi_version}:api"
-	modLocalRuntime "dev.emi:emi-fabric:${project.emi_version}"
-	modCompileOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
-	modLocalRuntime "com.terraformersmc:modmenu:${project.modmenu_version}"
+	// JEI and ModMenu are optional integrations: compile against them, run them in dev.
+	compileOnly "mezz.jei:jei-${project.jei_mc}-fabric-api:${project.jei_version}"
+	localRuntime "mezz.jei:jei-${project.jei_mc}-fabric:${project.jei_version}"
+	compileOnly "maven.modrinth:modmenu:${project.modmenu_version}"
+	localRuntime "maven.modrinth:modmenu:${project.modmenu_version}"
 }
 
 processResources {
@@ -83,7 +89,7 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 21
+	it.options.release = 25
 }
 
 java {
@@ -92,8 +98,8 @@ java {
 	// If you remove this line, sources will not be generated.
 	withSourcesJar()
 
-	sourceCompatibility = JavaVersion.VERSION_21
-	targetCompatibility = JavaVersion.VERSION_21
+	sourceCompatibility = JavaVersion.VERSION_25
+	targetCompatibility = JavaVersion.VERSION_25
 }
 
 jar {

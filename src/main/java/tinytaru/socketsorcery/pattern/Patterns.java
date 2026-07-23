@@ -8,7 +8,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.Item;
@@ -30,7 +30,7 @@ import tinytaru.socketsorcery.registry.ModRegistries;
 public final class Patterns {
 
 	/** The pattern holder for an id, or null if unavailable. */
-	public static Holder.Reference<Pattern> get(HolderLookup.Provider registries, ResourceLocation id) {
+	public static Holder.Reference<Pattern> get(HolderLookup.Provider registries, Identifier id) {
 		if (registries == null || id == null) {
 			return null;
 		}
@@ -50,31 +50,31 @@ public final class Patterns {
 	}
 
 	/** Patterns the given gem item is able to receive. */
-	public static Set<ResourceLocation> patternsFor(HolderLookup.Provider registries, Item gem) {
-		ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(gem);
-		Set<ResourceLocation> ids = new LinkedHashSet<>();
+	public static Set<Identifier> patternsFor(HolderLookup.Provider registries, Item gem) {
+		Identifier itemId = BuiltInRegistries.ITEM.getKey(gem);
+		Set<Identifier> ids = new LinkedHashSet<>();
 		all(registries).forEach(holder -> {
 			if (holder.value().gems().contains(itemId)) {
-				ids.add(holder.key().location());
+				ids.add(holder.key().identifier());
 			}
 		});
 		return ids;
 	}
 
-	public static boolean canEngrave(HolderLookup.Provider registries, Item gem, ResourceLocation patternId) {
+	public static boolean canEngrave(HolderLookup.Provider registries, Item gem, Identifier patternId) {
 		Holder.Reference<Pattern> pattern = get(registries, patternId);
 		return pattern != null && pattern.value().gems().contains(BuiltInRegistries.ITEM.getKey(gem));
 	}
 
 	/** True if the item appears in ANY pattern's gems list — the "can go in the gem slot" gate. */
 	public static boolean isEngravableGem(HolderLookup.Provider registries, Item item) {
-		ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(item);
+		Identifier itemId = BuiltInRegistries.ITEM.getKey(item);
 		return all(registries).anyMatch(holder -> holder.value().gems().contains(itemId));
 	}
 
 	/** The pattern the given scroll item teaches, or null if no pattern claims it. */
 	public static Holder.Reference<Pattern> forScroll(HolderLookup.Provider registries, Item scroll) {
-		ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(scroll);
+		Identifier itemId = BuiltInRegistries.ITEM.getKey(scroll);
 		return all(registries)
 				.filter(holder -> holder.value().scroll().map(itemId::equals).orElse(false))
 				.findFirst()

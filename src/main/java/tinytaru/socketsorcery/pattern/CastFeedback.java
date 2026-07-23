@@ -33,7 +33,7 @@ public record CastFeedback(Optional<SoundEvent> sound, Optional<ParticleOptions>
 		if (skipOnMiss && target.getType() == HitResult.Type.MISS) {
 			return;
 		}
-		ServerLevel level = player.serverLevel();
+		ServerLevel level = player.level();
 		sound.ifPresent(event -> level.playSound(null, player.getX(), player.getY(), player.getZ(),
 				event, SoundSource.PLAYERS, 0.8F, 1.0F));
 		particle.ifPresent(options -> {

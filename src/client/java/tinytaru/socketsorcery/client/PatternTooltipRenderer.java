@@ -1,9 +1,9 @@
 package tinytaru.socketsorcery.client;
 
-import net.fabricmc.fabric.api.client.rendering.v1.TooltipComponentCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.ClientTooltipComponentCallback;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.core.Holder;
 import tinytaru.socketsorcery.pattern.Pattern;
@@ -30,12 +30,12 @@ public class PatternTooltipRenderer implements ClientTooltipComponent {
 	}
 
 	public static void register() {
-		TooltipComponentCallback.EVENT.register(data ->
+		ClientTooltipComponentCallback.EVENT.register(data ->
 				data instanceof PatternTooltip tooltip ? new PatternTooltipRenderer(tooltip) : null);
 	}
 
 	@Override
-	public int getHeight() {
+	public int getHeight(Font font) {
 		return pattern == null ? 0 : SIZE + MARGIN * 2;
 	}
 
@@ -44,8 +44,9 @@ public class PatternTooltipRenderer implements ClientTooltipComponent {
 		return pattern == null ? 0 : SIZE + MARGIN * 2;
 	}
 
+	/** {@code renderImage} became {@code extractImage}, with width/height passed in and g moved last. */
 	@Override
-	public void renderImage(Font font, int x, int y, GuiGraphics g) {
+	public void extractImage(Font font, int x, int y, int width, int height, GuiGraphicsExtractor g) {
 		if (pattern == null) {
 			return;
 		}

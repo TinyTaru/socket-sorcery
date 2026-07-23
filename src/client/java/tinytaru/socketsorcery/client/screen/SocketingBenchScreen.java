@@ -1,7 +1,7 @@
 package tinytaru.socketsorcery.client.screen;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -22,15 +22,24 @@ public class SocketingBenchScreen extends AbstractContainerScreen<SocketingBench
 	private static final int SOCKET_SLOT_START = 1;
 
 	public SocketingBenchScreen(SocketingBenchMenu menu, Inventory inventory, Component title) {
-		super(menu, inventory, title);
-		this.imageWidth = 176;
-		this.imageHeight = 184;
+		// imageWidth/imageHeight are final now and come from the constructor.
+		super(menu, inventory, title, 176, 184);
 		this.inventoryLabelY = this.imageHeight - 94;
 		this.titleLabelY = 6;
 	}
 
+	/**
+	 * Draws the panel behind the slots. Screen rendering is extract-then-draw now: {@code renderBg}
+	 * is gone, so the background goes at the head of {@code extractContents}, before super extracts
+	 * the slots and their contents on top of it.
+	 */
 	@Override
-	protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
+	public void extractContents(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
+		extractPanel(g);
+		super.extractContents(g, mouseX, mouseY, partialTick);
+	}
+
+	private void extractPanel(GuiGraphicsExtractor g) {
 		g.fill(this.leftPos, this.topPos, this.leftPos + this.imageWidth, this.topPos + this.imageHeight, 0xFFC6C6C6);
 		g.fill(this.leftPos, this.topPos, this.leftPos + this.imageWidth, this.topPos + 1, 0xFFFFFFFF);
 		g.fill(this.leftPos, this.topPos, this.leftPos + 1, this.topPos + this.imageHeight, 0xFFFFFFFF);
@@ -63,7 +72,7 @@ public class SocketingBenchScreen extends AbstractContainerScreen<SocketingBench
 		}
 	}
 
-	private static void drawSlot(GuiGraphics g, int x, int y, boolean locked) {
+	private static void drawSlot(GuiGraphicsExtractor g, int x, int y, boolean locked) {
 		if (locked) {
 			g.fill(x - 1, y - 1, x + 17, y + 17, 0xFF4A4A4A);
 			g.fill(x + 3, y + 7, x + 13, y + 9, 0xFF2A2A2A); // a dash, hinting "locked"
@@ -75,8 +84,8 @@ public class SocketingBenchScreen extends AbstractContainerScreen<SocketingBench
 	}
 
 	@Override
-	protected void renderLabels(GuiGraphics g, int mouseX, int mouseY) {
-		super.renderLabels(g, mouseX, mouseY);
+	protected void extractLabels(GuiGraphicsExtractor g, int mouseX, int mouseY) {
+		super.extractLabels(g, mouseX, mouseY);
 		int capacity = this.menu.capacity();
 		Component status;
 		if (capacity == 0) {
@@ -91,7 +100,7 @@ public class SocketingBenchScreen extends AbstractContainerScreen<SocketingBench
 			}
 			status = line;
 		}
-		g.drawString(this.font, status, 8, 40, 0xFF555555, false);
+		g.text(this.font, status, 8, 40, 0xFF555555, false);
 
 		// For a bangle, show its total activation cooldown, summed across socketed gems.
 		ItemStack accessory = this.menu.accessory();
@@ -100,27 +109,23 @@ public class SocketingBenchScreen extends AbstractContainerScreen<SocketingBench
 			if (cd > 0) {
 				Component cool = Component.translatable("tooltip.socket-sorcery.cooldown", String.format("%.1f", cd / 20.0))
 						.withStyle(ChatFormatting.GRAY);
-				g.drawString(this.font, cool, 8, 49, 0xFF555555, false);
+				g.text(this.font, cool, 8, 49, 0xFF555555, false);
 			}
 		}
 	}
 
-	private void renderLockedTooltip(GuiGraphics g, int mouseX, int mouseY) {
+	/** Explains why the slots past the accessory's capacity are greyed out. */
+	@Override
+	protected void extractTooltip(GuiGraphicsExtractor g, int mouseX, int mouseY) {
 		for (int i = this.menu.capacity(); i < SocketContainer.MAX_SLOTS; i++) {
 			Slot slot = this.menu.slots.get(SOCKET_SLOT_START + i);
 			int x = this.leftPos + slot.x;
 			int y = this.topPos + slot.y;
 			if (mouseX >= x - 1 && mouseX < x + 17 && mouseY >= y - 1 && mouseY < y + 17) {
-				g.renderTooltip(this.font, Component.translatable("screen.socket-sorcery.socket_locked"), mouseX, mouseY);
+				g.setTooltipForNextFrame(Component.translatable("screen.socket-sorcery.socket_locked"), mouseX, mouseY);
 				return;
 			}
 		}
-	}
-
-	@Override
-	public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-		super.render(g, mouseX, mouseY, partialTick);
-		renderLockedTooltip(g, mouseX, mouseY);
-		this.renderTooltip(g, mouseX, mouseY);
+		super.extractTooltip(g, mouseX, mouseY);
 	}
 }
