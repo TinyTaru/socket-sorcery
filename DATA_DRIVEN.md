@@ -137,13 +137,34 @@ combinations uncarvable (the server logs a warning per conflict at startup).
 
 With just this file: slime balls slot into the table's scroll slot, emeralds into its gem slot, the
 venom symbol is chiselled (with all seven modifiers available), and the engraved emerald sockets
-into any accessory. Everything appears in EMI automatically.
+into any accessory. Everything appears in JEI automatically.
+
+## Engraved-icon rendering
+
+The composited engraved icon is data-driven too. Give the item a model definition at
+`assets/<your-namespace>/items/<item>.json` that switches on the engraving component:
+
+```json
+{
+  "model": {
+    "type": "minecraft:condition",
+    "property": "minecraft:has_component",
+    "component": "socket-sorcery:engraving",
+    "on_false": { "type": "minecraft:model", "model": "<your plain model>" },
+    "on_true": {
+      "type": "minecraft:special",
+      "base": "<your plain model>",
+      "model": { "type": "socket-sorcery:engraved_gem" }
+    }
+  }
+}
+```
+
+Copy any of this mod's `assets/socket-sorcery/items/*.json` gem files as a template. No Java is
+needed — `SocketSorceryClientApi.registerEngravableGem` is deprecated and does nothing. Without a
+definition an engraved foreign gem still works; it just keeps its plain icon.
 
 ## Limitations
 
-- **Engraved-icon rendering** for items that aren't Socket Sorcery gems can't be data-driven: the
-  engraved emerald above works fully but keeps its plain emerald icon. A Java mod can opt items in
-  via `SocketSorceryClientApi.registerEngravableGem(item)` plus a model override on the
-  `socket-sorcery:engraving` predicate (copy any `*_engraved.json` model).
 - **The guidebook** documents built-in patterns only; datapack patterns won't get book pages.
 - **`/reload` doesn't apply** — re-enter the world.

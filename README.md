@@ -31,7 +31,7 @@ All three are craftable, and pre-socketed **artifacts** appear rarely in high-ti
 
 Eleven patterns, each with a distinct passive and active effect: Fire, Frost, Healing, Lightning,
 Leaping, Wind, Earth, Lifesteal, Blink, Haste, and Spikes. Which patterns a gem can hold depends
-on the gem — see the in-game guidebook or EMI.
+on the gem — see the in-game guidebook or JEI.
 
 ## Data-driven — add your own
 
@@ -42,13 +42,14 @@ reference and a worked example.
 
 ## Requirements
 
-- Minecraft **1.21.1**, Fabric Loader ≥ 0.19.3, Java ≥ 21
+- Minecraft **26.1**, Fabric Loader ≥ 0.18.4, Java ≥ 25
 - [Fabric API](https://modrinth.com/mod/fabric-api)
-- [Trinkets](https://modrinth.com/mod/trinkets) ≥ 3.10.0
+- [Trinkets (Updated)](https://modrinth.com/mod/trinkets-updated) ≥ 4.0.0-beta.3 — the maintained
+  fork; the original Trinkets has no 26.x build
 - [Patchouli](https://modrinth.com/mod/patchouli) (in-game guidebook)
 - [Cloth Config](https://modrinth.com/mod/cloth-config) (configuration)
 
-Optional but recommended: [EMI](https://modrinth.com/mod/emi) (recipe viewer integration) and
+Optional but recommended: [JEI](https://modrinth.com/mod/jei) (recipe viewer integration) and
 [Mod Menu](https://modrinth.com/mod/modmenu) (config screen access).
 
 ## Building

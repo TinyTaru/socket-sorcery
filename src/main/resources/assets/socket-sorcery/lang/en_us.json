@@ -90,6 +90,7 @@
 	"modifier.socket-sorcery.direction_right": "Aim: Right",
 
 	"key.category.socket-sorcery": "Socket Sorcery",
+	"key.category.socket-sorcery.main": "Socket Sorcery",
 	"key.socket-sorcery.activate_bangle": "Activate Bangle",
 
 	"subtitles.socket-sorcery.cast_fire": "Bangle ignites",
@@ -143,6 +144,6 @@
 	"text.autoconfig.socket-sorcery.option.cooldownMultiplier": "Cooldown multiplier",
 	"text.autoconfig.socket-sorcery.option.bangleReach": "Bangle reach (blocks)",
 
-	"emi.category.socket-sorcery.engraving": "Engraving",
-	"emi.category.socket-sorcery.socketing": "Socketing"
+	"category.socket-sorcery.engraving": "Engraving",
+	"category.socket-sorcery.socketing": "Socketing"
 }

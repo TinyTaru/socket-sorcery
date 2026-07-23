@@ -69,20 +69,16 @@ public class GemItemRenderer extends DynamicIconRenderer {
 	}
 
 	public static void register() {
+		// Which items use this renderer is declared by their item model definitions, not here.
 		SpecialModelRenderers.ID_MAPPER.put(ID, Unbaked.MAP_CODEC);
-		for (Item gem : ModItems.GEMS) {
-			registerFor(gem);
-		}
 		ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(INSTANCE);
 	}
 
 	/**
-	 * Pre-warms the base-texture cache for an item. Selecting this renderer is data now, so this is
-	 * only a hint — see {@code SocketSorceryClientApi}.
+	 * No-op. Base textures load lazily on first render — eagerly touching the resource manager here
+	 * would run before it exists. Kept only for the deprecated client API shim.
 	 */
 	public static void registerFor(Item item) {
-		INSTANCE.baseCache.computeIfAbsent(item,
-				k -> loadPixels(itemTexture(BuiltInRegistries.ITEM.getKey(k))));
 	}
 
 	private static HolderLookup.Provider clientRegistries() {

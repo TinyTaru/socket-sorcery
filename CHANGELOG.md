@@ -4,6 +4,20 @@ All notable changes to Socket Sorcery.
 
 ## [Unreleased]
 
+### Changed
+- **Ported to Minecraft 26.1** (from 1.21.1). Requires Java 25 and Fabric Loader ≥ 0.18.4.
+- **Trinkets → Trinkets (Updated)**: the original has no 26.x build, so accessories now depend on
+  the maintained `trinkets_updated` fork (≥ 4.0.0-beta.3).
+- **EMI → JEI**: EMI has no 26.1 build. The Engraving and Socketing categories carry over
+  unchanged, still generated from the synced pattern registry so datapack content appears
+  automatically.
+- **Engraved-gem icons are now data-driven.** Opting a modded item into the composited engraved icon
+  no longer needs a Java call — point its item model definition at `socket-sorcery:engraved_gem`
+  (see `DATA_DRIVEN.md`). `SocketSorceryClientApi.registerEngravableGem` is deprecated and does
+  nothing.
+- Recipe ingredients moved to the current format, and `minecraft:chain` became
+  `minecraft:iron_chain` — the necklace recipe is unchanged in substance.
+
 ### Added
 - **Data-driven patterns & modifiers**: every pattern, modifier, and gem/scroll pairing is now JSON,
   loaded through synced dynamic registries (like vanilla enchantments). Datapacks can add patterns,
@@ -12,7 +26,7 @@ All notable changes to Socket Sorcery.
   and accessory branch (Well Equipped → Sorcery Unleashed), driven by three custom criteria.
 - **In-game guidebook** (Patchouli): the *Engraver's Handbook*, covering the full loop, every
   pattern's symbol and effects, modifiers, gems, accessories and treasure.
-- **EMI integration**: Engraving and Socketing recipe categories, plus all crafting recipes.
+- **Recipe viewer integration**: Engraving and Socketing recipe categories, plus all crafting recipes.
 - **Configuration** (Cloth Config + Mod Menu): loot chances, artifact gem counts, cooldown
   multiplier, bangle reach.
 - **6 new patterns**: Wind, Earth, Lifesteal, Blink, Haste, Spikes.
