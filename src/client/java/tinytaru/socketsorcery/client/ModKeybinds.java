@@ -1,16 +1,19 @@
 package tinytaru.socketsorcery.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import eu.pb4.trinkets.api.TrinketSlotAccess;
+import eu.pb4.trinkets.api.TrinketsApi;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.item.ItemStack;
 import org.lwjgl.glfw.GLFW;
 import tinytaru.socketsorcery.SocketSorcery;
+import tinytaru.socketsorcery.item.BangleItem;
 import tinytaru.socketsorcery.net.ActivateBangleC2SPayload;
-import tinytaru.socketsorcery.registry.ModItems;
 
 /** Client keybinds. The Activate Bangle key fires every socketed bangle gem's active behaviour. */
 public final class ModKeybinds {
@@ -32,7 +35,11 @@ public final class ModKeybinds {
 				if (client.player == null) {
 					continue;
 				}
-				if (client.player.getCooldowns().isOnCooldown(ModItems.BANGLE.getDefaultInstance())) {
+				ItemStack bangle = TrinketsApi.getAttachment(client.player)
+						.findFirst(stack -> stack.getItem() instanceof BangleItem, false)
+						.map(TrinketSlotAccess::get)
+						.orElse(ItemStack.EMPTY);
+				if (!bangle.isEmpty() && client.player.getCooldowns().isOnCooldown(bangle)) {
 					client.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.DISPENSER_FAIL, 1.0F));
 				} else {
 					ClientPlayNetworking.send(ActivateBangleC2SPayload.INSTANCE);

@@ -9,9 +9,23 @@
       "text": "$(bold)Three sockets. Cast on command.$()$(br2)Press the $(bold)Activate Bangle$() key (default $(bold)R$()) and every socketed gem fires at whatever you're aiming at — fireballs of intent, lightning, a blink. One shared cooldown follows, the sum of every gem's price."
     },
     {
+      "type": "patchouli:text",
+      "text": "$(bold)Three tiers.$()$(br2)Copper is the baseline. The gold bangle shaves $(bold)10%$() off that cooldown, and a netherite upgrade shaves $(bold)20%$()."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "socket-sorcery:copper_bangle",
+      "text": "A plain ring of copper for the wrist."
+    },
+    {
       "type": "patchouli:crafting",
       "recipe": "socket-sorcery:bangle",
-      "text": "A solid ring of gold for the wrist."
+      "text": "A solid ring of gold, cast faster."
+    },
+    {
+      "type": "patchouli:smithing",
+      "recipe": "socket-sorcery:netherite_bangle",
+      "text": "Upgrade a gold bangle at a smithing table for the fastest cooldown."
     }
   ]
 }

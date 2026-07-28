@@ -1,0 +1,11 @@
+{
+	"type": "minecraft:crafting_shapeless",
+	"category": "misc",
+	"ingredients": [
+		"socket-sorcery:engravable_emerald"
+	],
+	"result": {
+		"id": "socket-sorcery:emerald_dust",
+		"count": 9
+	}
+}

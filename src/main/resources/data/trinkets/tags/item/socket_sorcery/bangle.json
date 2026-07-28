@@ -1,6 +1,8 @@
 {
 	"replace": false,
 	"values": [
-		"socket-sorcery:bangle"
+		"socket-sorcery:copper_bangle",
+		"socket-sorcery:bangle",
+		"socket-sorcery:netherite_bangle"
 	]
 }

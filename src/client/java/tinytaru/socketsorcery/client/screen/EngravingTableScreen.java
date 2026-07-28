@@ -5,6 +5,8 @@ import java.io.InputStream;
 import java.util.Optional;
 import java.util.Set;
 
+import org.lwjgl.glfw.GLFW;
+
 import com.mojang.blaze3d.platform.NativeImage;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.ChatFormatting;
@@ -38,8 +40,11 @@ import tinytaru.socketsorcery.registry.ModComponents;
 /**
  * The Engraving Table screen. The gem is shown in the background of a 16x16 grid, one cell per gem
  * pixel; the scroll's symbol is hinted faintly. Left-click chisels an opaque cell deeper (depth 1
- * then 2, capped). Depth 1 carves the base symbol; depth-2 cells form modifiers. There are no
- * modifier hints — the status line just names the modifiers you've correctly formed (learn-by-doing).
+ * then 2, capped). Depth 1 carves the base symbol; depth-2 cells form modifiers. Right-click eases a
+ * cut back, but each such downgrade costs a gem dust matching the placed gem — charged for real when
+ * the engraving is confirmed, and blocked here if the player doesn't have enough left to spend. There
+ * are no modifier hints — the status line just names the modifiers you've correctly formed
+ * (learn-by-doing).
  *
  * <p>Pattern/modifier definitions come from the synced dynamic registries, resolved through the
  * menu's captured registry view.
@@ -62,12 +67,26 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 	private Button confirmButton;
 	private Button resetButton;
 
+	// How many times a cut has been eased back (right-click) this session — each one owes a gem dust,
+	// settled against the player's inventory when the engraving is confirmed.
+	private int downgrades;
+
+	// Click-and-drag state: which button is being dragged and the last cell it acted on, so a
+	// continuous drag chisels each cell it crosses exactly once rather than flickering back and forth.
+	private int dragButton = -1;
+	private int lastDragRow = -1;
+	private int lastDragCol = -1;
+
 	// Feedback state: a short cell flash after a chisel stroke, and the last engrave result banner.
 	private int carveFlashRow = -1;
 	private int carveFlashCol = -1;
 	private int carveFlashTicks;
 	private EngraveResult lastResult;
 	private int resultTicks;
+
+	// Whether the OS cursor is currently hidden in favour of drawing the equipped chisel over it —
+	// active only while hovering an engravable grid, so it never masks buttons or slots.
+	private boolean chiselCursorActive;
 
 	public EngravingTableScreen(EngravingTableMenu menu, Inventory inventory, Component title) {
 		// imageWidth/imageHeight are final now and come from the constructor.
@@ -90,6 +109,13 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 				.bounds(this.leftPos + 8, this.topPos + 122, 48, 18)
 				.build());
 		updateButtons();
+	}
+
+	/** Restores the real OS cursor if this screen closes (or the game quits to it) while it's hidden. */
+	@Override
+	public void removed() {
+		setChiselCursorActive(false);
+		super.removed();
 	}
 
 	@Override
@@ -216,6 +242,7 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 		for (int[] row : depth) {
 			java.util.Arrays.fill(row, 0);
 		}
+		downgrades = 0;
 		updateButtons();
 	}
 
@@ -230,40 +257,114 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 
 	private void sendEngrave() {
 		if (this.menu.canEngrave() && validModifiers() != null) {
-			ClientPlayNetworking.send(new FinishEngravingC2SPayload(carvedBits(), deepBits()));
+			ClientPlayNetworking.send(new FinishEngravingC2SPayload(carvedBits(), deepBits(), downgrades));
 		}
+	}
+
+	/** True if easing another cut back is still affordable — dust owed so far is below what's on hand. */
+	private boolean canAffordDowngrade() {
+		Item dust = this.menu.currentGemDust();
+		return dust == null || this.menu.countDust(dust) > downgrades;
 	}
 
 	/** Mouse input arrives as a {@link MouseButtonEvent} now, carrying position and button together. */
 	@Override
 	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
 		int button = event.button();
-		// Left-click chisels a cell deeper (0→1→2); right-click eases it back (2→1→0).
+		// Left-click chisels a cell deeper (0→1→2); right-click eases it back (2→1→0), at a dust cost.
 		if ((button == 0 || button == 1) && this.menu.canEngrave() && gemOpaque != null) {
 			int cell = cellAt(event.x(), event.y());
 			if (cell >= 0) {
 				int row = cell / GRID;
 				int col = cell % GRID;
-				if (gemOpaque[row][col]) { // can't chisel transparent pixels
-					int before = depth[row][col];
-					depth[row][col] = button == 0 ? Math.min(before + 1, 2) : Math.max(before - 1, 0);
-					if (depth[row][col] != before) {
-						carveFlashRow = row;
-						carveFlashCol = col;
-						carveFlashTicks = 4;
-						playCarveSound(depth[row][col]);
-					}
-					updateButtons();
-				}
+				applyChisel(button, row, col);
+				dragButton = button;
+				lastDragRow = row;
+				lastDragCol = col;
 				return true;
 			}
 		}
 		return super.mouseClicked(event, doubleClick);
 	}
 
+	/**
+	 * Click-and-drag: as the mouse is dragged with a button held, chisel every new cell it crosses the
+	 * same way the initial click did, so a stroke can carve or ease back many pixels in one drag.
+	 */
+	@Override
+	public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
+		int button = event.button();
+		if (button == dragButton && this.menu.canEngrave() && gemOpaque != null) {
+			int cell = cellAt(event.x(), event.y());
+			if (cell >= 0) {
+				int row = cell / GRID;
+				int col = cell % GRID;
+				if (row != lastDragRow || col != lastDragCol) {
+					lastDragRow = row;
+					lastDragCol = col;
+					applyChisel(button, row, col);
+				}
+				return true;
+			}
+		}
+		return super.mouseDragged(event, dragX, dragY);
+	}
+
+	@Override
+	public boolean mouseReleased(MouseButtonEvent event) {
+		if (event.button() == dragButton) {
+			dragButton = -1;
+			lastDragRow = -1;
+			lastDragCol = -1;
+		}
+		return super.mouseReleased(event);
+	}
+
+	/** Chisels a single cell one step deeper (left) or eases it back one step (right), at a dust cost. */
+	private void applyChisel(int button, int row, int col) {
+		if (!gemOpaque[row][col]) { // can't chisel transparent pixels
+			return;
+		}
+		int before = depth[row][col];
+		if (button == 1) {
+			if (before > 0 && !canAffordDowngrade()) {
+				playDeniedSound();
+				return;
+			}
+			depth[row][col] = Math.max(before - 1, 0);
+			if (depth[row][col] != before) {
+				downgrades++;
+			}
+		} else {
+			depth[row][col] = Math.min(before + 1, 2);
+		}
+		if (depth[row][col] != before) {
+			carveFlashRow = row;
+			carveFlashCol = col;
+			carveFlashTicks = 4;
+			playCarveSound(depth[row][col]);
+		}
+		updateButtons();
+	}
+
 	private void playCarveSound(int depthNow) {
 		float pitch = depthNow >= 2 ? 1.5F : (depthNow == 1 ? 1.1F : 0.8F);
 		Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.STONE_HIT, pitch));
+	}
+
+	private void playDeniedSound() {
+		Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.DISPENSER_FAIL, 1.0F));
+	}
+
+	/** Hides (or restores) the real OS cursor, swapping it for the equipped chisel drawn each frame. */
+	private void setChiselCursorActive(boolean active) {
+		if (active == chiselCursorActive) {
+			return;
+		}
+		chiselCursorActive = active;
+		long window = Minecraft.getInstance().getWindow().handle();
+		GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR,
+				active ? GLFW.GLFW_CURSOR_HIDDEN : GLFW.GLFW_CURSOR_NORMAL);
 	}
 
 	private int cellAt(double mouseX, double mouseY) {
@@ -289,6 +390,27 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 		ItemStack preview = previewStack();
 		if (preview != null) {
 			g.item(preview, this.leftPos + 42, this.topPos + 70);
+		}
+		extractChiselCursor(g, mouseX, mouseY);
+	}
+
+	// The chisel item icons are drawn on a 16x16 canvas but the tool itself doesn't reach the edges —
+	// its actual tip sits at this pixel within the texture, not the texture's corner.
+	private static final int CHISEL_TIP_X = 12;
+	private static final int CHISEL_TIP_Y = 3;
+
+	/**
+	 * While hovering an engravable grid, swap the OS cursor for the equipped chisel (so its tier is
+	 * visible at a glance) by hiding the real cursor and drawing the chisel's own item icon in its place.
+	 * The icon is offset so its tip pixel — not the texture's corner — lands on the actual mouse
+	 * position (its hotspot).
+	 */
+	private void extractChiselCursor(GuiGraphicsExtractor g, int mouseX, int mouseY) {
+		ItemStack chisel = this.menu.chiselStack();
+		boolean overGrid = this.menu.canEngrave() && cellAt(mouseX, mouseY) >= 0 && !chisel.isEmpty();
+		setChiselCursorActive(overGrid);
+		if (overGrid) {
+			g.item(chisel, mouseX - CHISEL_TIP_X, mouseY - CHISEL_TIP_Y);
 		}
 	}
 
@@ -449,6 +571,7 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 		return switch (result) {
 			case OK -> Component.translatable("screen.socket-sorcery.engrave_success").withStyle(ChatFormatting.GREEN);
 			case NO_CHISEL -> Component.translatable("screen.socket-sorcery.fail_no_chisel").withStyle(ChatFormatting.DARK_RED);
+			case NO_DUST -> Component.translatable("screen.socket-sorcery.fail_no_dust").withStyle(ChatFormatting.DARK_RED);
 			case NOT_ENGRAVABLE -> Component.translatable("screen.socket-sorcery.fail_incompatible").withStyle(ChatFormatting.DARK_RED);
 			case BAD_MODIFIERS -> Component.translatable("screen.socket-sorcery.fail_bad_modifiers").withStyle(ChatFormatting.DARK_RED);
 			case BAD_SYMBOL -> Component.translatable("screen.socket-sorcery.fail_bad_symbol").withStyle(ChatFormatting.DARK_RED);

@@ -75,12 +75,18 @@ public final class ModLoot {
 						.add(EmptyLootItem.emptyItem().setWeight(10)));
 			}
 			if (config.accessoryLoot && NECKLACE_TARGETS.contains(key)) {
-				tableBuilder.withPool(accessoryPool(ModItems.NECKLACE, config.accessoryChance));
+				tableBuilder.withPool(accessoryPool(config.accessoryChance, new WeightedAccessory(ModItems.NECKLACE, 1)));
 			}
 			if (config.accessoryLoot && BANGLE_TARGETS.contains(key)) {
-				tableBuilder.withPool(accessoryPool(ModItems.BANGLE, config.accessoryChance));
+				// Gold is the common champion's prize; a socketed netherite bangle is a rarer jackpot.
+				tableBuilder.withPool(accessoryPool(config.accessoryChance,
+						new WeightedAccessory(ModItems.BANGLE, 4),
+						new WeightedAccessory(ModItems.NETHERITE_BANGLE, 1)));
 			}
 		});
+	}
+
+	private record WeightedAccessory(Item item, int weight) {
 	}
 
 	/**
@@ -88,11 +94,15 @@ public final class ModLoot {
 	 * accessory is a pre-socketed "artifact" (crafting is how you get blank ones), so a treasure find is
 	 * always a ready-to-wear prize.
 	 */
-	private static LootPool.Builder accessoryPool(Item accessory, float chance) {
-		return LootPool.lootPool()
+	private static LootPool.Builder accessoryPool(float chance, WeightedAccessory... accessories) {
+		LootPool.Builder pool = LootPool.lootPool()
 				.setRolls(ConstantValue.exactly(1.0F))
-				.when(LootItemRandomChanceCondition.randomChance(chance))
-				.add(LootItem.lootTableItem(accessory).apply(SocketArtifactFunction.artifact()));
+				.when(LootItemRandomChanceCondition.randomChance(chance));
+		for (WeightedAccessory accessory : accessories) {
+			pool.add(LootItem.lootTableItem(accessory.item()).setWeight(accessory.weight())
+					.apply(SocketArtifactFunction.artifact()));
+		}
+		return pool;
 	}
 
 	private ModLoot() {

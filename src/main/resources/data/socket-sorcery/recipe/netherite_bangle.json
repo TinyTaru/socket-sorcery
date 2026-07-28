@@ -1,0 +1,10 @@
+{
+	"type": "minecraft:smithing_transform",
+	"template": "minecraft:netherite_upgrade_smithing_template",
+	"base": "socket-sorcery:bangle",
+	"addition": "minecraft:netherite_ingot",
+	"result": {
+		"id": "socket-sorcery:netherite_bangle",
+		"count": 1
+	}
+}

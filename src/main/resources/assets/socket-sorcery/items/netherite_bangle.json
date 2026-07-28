@@ -1,0 +1,9 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "socket-sorcery:item/netherite_bangle",
+    "model": {
+      "type": "socket-sorcery:accessory"
+    }
+  }
+}

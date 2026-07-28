@@ -1,5 +1,6 @@
 package tinytaru.socketsorcery.registry;
 
+import java.util.Map;
 import java.util.function.Function;
 
 import eu.pb4.trinkets.api.callback.TrinketCallback;
@@ -9,9 +10,11 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import tinytaru.socketsorcery.Balance;
 import tinytaru.socketsorcery.SocketSorcery;
 import tinytaru.socketsorcery.item.BangleItem;
 import tinytaru.socketsorcery.item.ChiselItem;
+import tinytaru.socketsorcery.item.GemDustItem;
 import tinytaru.socketsorcery.item.GemItem;
 import tinytaru.socketsorcery.item.NecklaceItem;
 import tinytaru.socketsorcery.item.RingItem;
@@ -52,6 +55,45 @@ public final class ModItems {
 			ENGRAVABLE_PRISMARINE, ENGRAVABLE_GLOWSTONE, ENGRAVABLE_COPPER, ENGRAVABLE_ENDER
 	};
 
+	// Gem dust: ground from its matching gem (one gem -> nine dust, see data/.../recipe/*_dust.json).
+	// Consumed at the Engraving Table to un-engrave that same gem type.
+	public static final Item RUBY_DUST = registerDust("ruby_dust");
+	public static final Item SAPPHIRE_DUST = registerDust("sapphire_dust");
+	public static final Item PERIDOT_DUST = registerDust("peridot_dust");
+	public static final Item AMETHYST_DUST = registerDust("amethyst_dust");
+	public static final Item TOPAZ_DUST = registerDust("topaz_dust");
+	public static final Item DIAMOND_DUST = registerDust("diamond_dust");
+	public static final Item REDSTONE_DUST = registerDust("redstone_dust");
+	public static final Item LAPIS_DUST = registerDust("lapis_dust");
+	public static final Item EMERALD_DUST = registerDust("emerald_dust");
+	public static final Item QUARTZ_DUST = registerDust("quartz_dust");
+	public static final Item PRISMARINE_DUST = registerDust("prismarine_dust");
+	public static final Item GLOWSTONE_DUST = registerDust("glowstone_dust");
+	public static final Item COPPER_DUST = registerDust("copper_dust");
+	public static final Item ENDER_DUST = registerDust("ender_dust");
+
+	/** Every gem dust, in the same order as {@link #GEMS} — index {@code i} matches {@code GEMS[i]}. */
+	public static final Item[] GEM_DUSTS = {
+			RUBY_DUST, SAPPHIRE_DUST, PERIDOT_DUST, AMETHYST_DUST, TOPAZ_DUST,
+			DIAMOND_DUST, REDSTONE_DUST, LAPIS_DUST, EMERALD_DUST, QUARTZ_DUST,
+			PRISMARINE_DUST, GLOWSTONE_DUST, COPPER_DUST, ENDER_DUST
+	};
+
+	private static final Map<Item, Item> DUST_BY_GEM = buildDustByGem();
+
+	private static Map<Item, Item> buildDustByGem() {
+		Map<Item, Item> map = new java.util.HashMap<>();
+		for (int i = 0; i < GEMS.length; i++) {
+			map.put(GEMS[i], GEM_DUSTS[i]);
+		}
+		return map;
+	}
+
+	/** The gem dust that un-engraves {@code gem}, or null if {@code gem} isn't one of {@link #GEMS}. */
+	public static Item dustFor(Item gem) {
+		return DUST_BY_GEM.get(gem);
+	}
+
 	// Pattern scrolls (found in loot).
 	public static final Item SCROLL_FIRE = registerScroll("scroll_fire");
 	public static final Item SCROLL_FROST = registerScroll("scroll_frost");
@@ -68,16 +110,26 @@ public final class ModItems {
 	// Accessories (Trinkets). Declared as their concrete types: each item is its own TrinketCallback.
 	public static final NecklaceItem NECKLACE = register("necklace", NecklaceItem::new,
 			new Item.Properties().stacksTo(1));
-	public static final BangleItem BANGLE = register("bangle", BangleItem::new,
-			new Item.Properties().stacksTo(1));
 	public static final RingItem RING = register("ring", RingItem::new,
 			new Item.Properties().stacksTo(1));
 
-	// Block items.
+	// Bangle tiers. Baseline (copper) up through gold (the original bangle, kept at id "bangle" for
+	// save/recipe compatibility) to netherite; see Balance.COOLDOWN_REDUCTION_* for their bonuses.
+	public static final BangleItem COPPER_BANGLE = register("copper_bangle",
+			p -> new BangleItem(p, Balance.COOLDOWN_REDUCTION_COPPER_BANGLE), new Item.Properties().stacksTo(1));
+	public static final BangleItem BANGLE = register("bangle",
+			p -> new BangleItem(p, Balance.COOLDOWN_REDUCTION_GOLD_BANGLE), new Item.Properties().stacksTo(1));
+	public static final BangleItem NETHERITE_BANGLE = register("netherite_bangle",
+			p -> new BangleItem(p, Balance.COOLDOWN_REDUCTION_NETHERITE_BANGLE),
+			new Item.Properties().stacksTo(1).fireResistant());
+
+	// Block items. BlockItem no longer inherits its block's translation key automatically, so these
+	// opt into "block.<ns>.<path>" (matching the block's own lang entry) instead of the default
+	// "item.<ns>.<path>", which would otherwise show up as a raw untranslated key in tooltips.
 	public static final Item ENGRAVING_TABLE = register("engraving_table",
-			p -> new BlockItem(ModBlocks.ENGRAVING_TABLE, p), new Item.Properties());
+			p -> new BlockItem(ModBlocks.ENGRAVING_TABLE, p), new Item.Properties().useBlockDescriptionPrefix());
 	public static final Item SOCKETING_BENCH = register("socketing_bench",
-			p -> new BlockItem(ModBlocks.SOCKETING_BENCH, p), new Item.Properties());
+			p -> new BlockItem(ModBlocks.SOCKETING_BENCH, p), new Item.Properties().useBlockDescriptionPrefix());
 
 	/**
 	 * Registers an item under {@code socket-sorcery:<name>}. The registry key has to be stamped onto
@@ -94,6 +146,10 @@ public final class ModItems {
 		return register(name, GemItem::new, new Item.Properties());
 	}
 
+	private static Item registerDust(String name) {
+		return register(name, GemDustItem::new, new Item.Properties());
+	}
+
 	private static Item registerScroll(String name) {
 		return register(name, ScrollItem::new, new Item.Properties().stacksTo(16));
 	}
@@ -102,7 +158,9 @@ public final class ModItems {
 		// Bind the accessories' Trinkets behaviour so they can be equipped in the necklace / bangle /
 		// ring slots. Which slots accept them is data, via data/trinkets/tags/item/socket_sorcery/.
 		TrinketCallback.setCallback(NECKLACE, NECKLACE);
+		TrinketCallback.setCallback(COPPER_BANGLE, COPPER_BANGLE);
 		TrinketCallback.setCallback(BANGLE, BANGLE);
+		TrinketCallback.setCallback(NETHERITE_BANGLE, NETHERITE_BANGLE);
 		TrinketCallback.setCallback(RING, RING);
 	}
 

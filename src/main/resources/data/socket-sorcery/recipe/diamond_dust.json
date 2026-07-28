@@ -1,0 +1,11 @@
+{
+	"type": "minecraft:crafting_shapeless",
+	"category": "misc",
+	"ingredients": [
+		"socket-sorcery:engravable_diamond"
+	],
+	"result": {
+		"id": "socket-sorcery:diamond_dust",
+		"count": 9
+	}
+}

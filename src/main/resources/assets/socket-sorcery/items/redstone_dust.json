@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "socket-sorcery:item/redstone_dust"
+  }
+}

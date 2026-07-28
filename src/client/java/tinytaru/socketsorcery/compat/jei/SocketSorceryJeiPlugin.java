@@ -108,7 +108,9 @@ public class SocketSorceryJeiPlugin implements IModPlugin {
 		}
 		return List.of(
 				socketing(ModItems.NECKLACE, NecklaceItem.CAPACITY, examples),
+				socketing(ModItems.COPPER_BANGLE, BangleItem.CAPACITY, examples),
 				socketing(ModItems.BANGLE, BangleItem.CAPACITY, examples),
+				socketing(ModItems.NETHERITE_BANGLE, BangleItem.CAPACITY, examples),
 				socketing(ModItems.RING, RingItem.CAPACITY, examples));
 	}
 

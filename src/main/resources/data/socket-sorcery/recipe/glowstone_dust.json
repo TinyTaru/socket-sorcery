@@ -1,0 +1,11 @@
+{
+	"type": "minecraft:crafting_shapeless",
+	"category": "misc",
+	"ingredients": [
+		"socket-sorcery:engravable_glowstone"
+	],
+	"result": {
+		"id": "socket-sorcery:glowstone_dust",
+		"count": 9
+	}
+}

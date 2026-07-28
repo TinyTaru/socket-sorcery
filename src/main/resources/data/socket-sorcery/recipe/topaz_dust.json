@@ -1,0 +1,11 @@
+{
+	"type": "minecraft:crafting_shapeless",
+	"category": "misc",
+	"ingredients": [
+		"socket-sorcery:topaz"
+	],
+	"result": {
+		"id": "socket-sorcery:topaz_dust",
+		"count": 9
+	}
+}

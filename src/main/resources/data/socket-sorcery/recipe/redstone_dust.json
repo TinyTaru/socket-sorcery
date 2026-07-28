@@ -1,0 +1,11 @@
+{
+	"type": "minecraft:crafting_shapeless",
+	"category": "misc",
+	"ingredients": [
+		"socket-sorcery:engravable_redstone"
+	],
+	"result": {
+		"id": "socket-sorcery:redstone_dust",
+		"count": 9
+	}
+}

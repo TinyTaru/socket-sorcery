@@ -31,7 +31,8 @@ public final class Cooldowns {
 			double multiplier = 1.0 + Balance.COOLDOWN_MOD_SURCHARGE * data.modifiers().size();
 			total += (int) Math.round(base * multiplier);
 		}
-		return (int) Math.round(total * SocketSorceryConfig.get().cooldownMultiplier);
+		double tierReduction = bangle.getItem() instanceof BangleItem item ? item.cooldownReduction() : 0.0;
+		return (int) Math.round(total * (1.0 - tierReduction) * SocketSorceryConfig.get().cooldownMultiplier);
 	}
 
 	private Cooldowns() {

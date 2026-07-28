@@ -1,0 +1,11 @@
+{
+	"type": "minecraft:crafting_shapeless",
+	"category": "misc",
+	"ingredients": [
+		"socket-sorcery:engravable_ender"
+	],
+	"result": {
+		"id": "socket-sorcery:ender_dust",
+		"count": 9
+	}
+}

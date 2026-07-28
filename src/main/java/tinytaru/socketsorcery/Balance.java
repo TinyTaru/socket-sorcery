@@ -22,6 +22,13 @@ public final class Balance {
 	/** Extra fraction of a gem's base cooldown charged per applied modifier. */
 	public static final double COOLDOWN_MOD_SURCHARGE = 0.4;
 
+	// --- Bangle tiers ---
+	// Each tier's fraction knocked off the computed activation cooldown (0 = no bonus).
+
+	public static final double COOLDOWN_REDUCTION_COPPER_BANGLE = 0.0;
+	public static final double COOLDOWN_REDUCTION_GOLD_BANGLE = 0.10;
+	public static final double COOLDOWN_REDUCTION_NETHERITE_BANGLE = 0.20;
+
 	// --- Bangle targeting ---
 
 	/** How far the bangle's targeting ray reaches, in blocks. */

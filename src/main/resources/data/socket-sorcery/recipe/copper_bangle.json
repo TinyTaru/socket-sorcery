@@ -1,0 +1,16 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"category": "equipment",
+	"pattern": [
+		"GGG",
+		"G G",
+		"GGG"
+	],
+	"key": {
+		"G": "minecraft:copper_ingot"
+	},
+	"result": {
+		"id": "socket-sorcery:copper_bangle",
+		"count": 1
+	}
+}

@@ -1,0 +1,11 @@
+{
+	"type": "minecraft:crafting_shapeless",
+	"category": "misc",
+	"ingredients": [
+		"socket-sorcery:sapphire"
+	],
+	"result": {
+		"id": "socket-sorcery:sapphire_dust",
+		"count": 9
+	}
+}

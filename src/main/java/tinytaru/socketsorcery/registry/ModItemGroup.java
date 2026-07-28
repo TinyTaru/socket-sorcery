@@ -28,6 +28,9 @@ public final class ModItemGroup {
 						for (var gem : ModItems.GEMS) {
 							output.accept(gem);
 						}
+						for (var dust : ModItems.GEM_DUSTS) {
+							output.accept(dust);
+						}
 						output.accept(ModItems.SCROLL_FIRE);
 						output.accept(ModItems.SCROLL_FROST);
 						output.accept(ModItems.SCROLL_HEALING);
@@ -40,7 +43,9 @@ public final class ModItemGroup {
 						output.accept(ModItems.SCROLL_HASTE);
 						output.accept(ModItems.SCROLL_SPIKES);
 						output.accept(ModItems.NECKLACE);
+						output.accept(ModItems.COPPER_BANGLE);
 						output.accept(ModItems.BANGLE);
+						output.accept(ModItems.NETHERITE_BANGLE);
 						output.accept(ModItems.RING);
 					})
 					.build());

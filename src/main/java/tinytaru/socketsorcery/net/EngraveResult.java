@@ -8,6 +8,7 @@ public enum EngraveResult {
 	OK,
 	NOT_ENGRAVABLE,
 	NO_CHISEL,
+	NO_DUST,
 	BAD_MODIFIERS,
 	BAD_SYMBOL;
 

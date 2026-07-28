@@ -21,6 +21,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import tinytaru.socketsorcery.advancement.ModCriteria;
@@ -34,12 +35,13 @@ import tinytaru.socketsorcery.pattern.Patterns;
 import tinytaru.socketsorcery.net.EngraveResult;
 import tinytaru.socketsorcery.registry.ModBlocks;
 import tinytaru.socketsorcery.registry.ModComponents;
+import tinytaru.socketsorcery.registry.ModItems;
 import tinytaru.socketsorcery.registry.ModMenus;
 
 /**
  * Menu for the Engraving Table. Holds the gem / scroll / chisel slots; the chiselling minigame is
  * driven by the screen, which sends the carved cells back here for validation via
- * {@link #tryEngrave(ServerPlayer, int)}.
+ * {@link #tryEngrave(ServerPlayer, long[], long[], int)}.
  */
 public class EngravingTableMenu extends AbstractContainerMenu {
 
@@ -150,13 +152,51 @@ public class EngravingTableMenu extends AbstractContainerMenu {
 				&& chiselStack().getItem() instanceof ChiselItem;
 	}
 
+	/** The gem dust spent easing a chiselled cut back on the currently placed gem, or null if none applies. */
+	public Item currentGemDust() {
+		ItemStack gem = gemStack();
+		return gem.isEmpty() ? null : ModItems.dustFor(gem.getItem());
+	}
+
+	/** Total count of {@code dust} across the player-inventory slots this menu tracks. */
+	public int countDust(Item dust) {
+		if (dust == null) {
+			return 0;
+		}
+		int total = 0;
+		for (int i = TABLE_SLOTS; i < this.slots.size(); i++) {
+			ItemStack stack = this.slots.get(i).getItem();
+			if (stack.is(dust)) {
+				total += stack.getCount();
+			}
+		}
+		return total;
+	}
+
+	/** Shrinks {@code amount} of {@code dust} out of the player-inventory slots. Caller must have already
+	 *  verified {@link #countDust} covers it. */
+	private void consumeDust(Item dust, int amount) {
+		int remaining = amount;
+		for (int i = TABLE_SLOTS; i < this.slots.size() && remaining > 0; i++) {
+			Slot slot = this.slots.get(i);
+			ItemStack stack = slot.getItem();
+			if (stack.is(dust)) {
+				int take = Math.min(remaining, stack.getCount());
+				stack.shrink(take);
+				slot.setChanged();
+				remaining -= take;
+			}
+		}
+	}
+
 	/**
 	 * Server-side completion of an engraving. {@code carved} is the depth≥1 layer (must equal the
 	 * symbol plus any Direction extension cells) and {@code deep} is the depth-2 layer (must decode to
-	 * a valid modifier set). Consumes a scroll and chisel durability. Returns the outcome so the
-	 * caller can report it to the client.
+	 * a valid modifier set). {@code downgrades} is how many times the player eased a cut back
+	 * (right-click) while chiselling — each one costs a matching gem dust, charged here alongside the
+	 * scroll and chisel durability. Returns the outcome so the caller can report it to the client.
 	 */
-	public EngraveResult tryEngrave(ServerPlayer player, long[] carved, long[] deep) {
+	public EngraveResult tryEngrave(ServerPlayer player, long[] carved, long[] deep, int downgrades) {
 		ItemStack gem = gemStack();
 		Holder.Reference<Pattern> holder = targetPattern();
 		if (holder == null
@@ -178,6 +218,12 @@ public class EngravingTableMenu extends AbstractContainerMenu {
 			return EngraveResult.BAD_SYMBOL; // missing symbol or stray carved cells
 		}
 
+		int dustNeeded = Math.max(0, downgrades);
+		Item dust = currentGemDust();
+		if (dustNeeded > 0 && (dust == null || countDust(dust) < dustNeeded)) {
+			return EngraveResult.NO_DUST;
+		}
+
 		int baseCost = GridBits.count(carved) + GridBits.count(deep);
 		int reduction = chiselStack().getItem() instanceof ChiselItem chisel ? chisel.carveCostReduction() : 0;
 		int cost = Math.max(1, baseCost - reduction);
@@ -190,6 +236,9 @@ public class EngravingTableMenu extends AbstractContainerMenu {
 			table.setItem(SLOT_GEM, engraved);
 
 			scrollStack().shrink(1);
+			if (dustNeeded > 0) {
+				consumeDust(dust, dustNeeded);
+			}
 
 			ItemStack chisel = chiselStack();
 			if (chisel.isDamageableItem()) {

@@ -49,6 +49,11 @@
       "type": "socket-sorcery:ignite",
       "seconds": 5,
       "place_fire_on_block": true
+    },
+    {
+      "type": "socket-sorcery:flame_line",
+      "seconds": 5,
+      "length": 4.0
     }
   ]
 }

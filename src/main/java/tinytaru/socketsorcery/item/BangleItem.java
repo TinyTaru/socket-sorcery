@@ -16,8 +16,20 @@ public class BangleItem extends AccessoryItem {
 
 	public static final int CAPACITY = 3;
 
+	private final double cooldownReduction;
+
 	public BangleItem(Properties properties) {
+		this(properties, 0.0);
+	}
+
+	public BangleItem(Properties properties, double cooldownReduction) {
 		super(properties, CAPACITY);
+		this.cooldownReduction = cooldownReduction;
+	}
+
+	/** Fraction knocked off this tier's computed activation cooldown (see {@link Cooldowns#forBangle}). */
+	public double cooldownReduction() {
+		return cooldownReduction;
 	}
 
 	@Override

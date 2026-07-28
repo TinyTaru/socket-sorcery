@@ -14,9 +14,11 @@ import tinytaru.socketsorcery.pattern.Pattern;
  *   <li>{@code deep} — cells chiselled twice (depth 2), a subset of {@code carved}; these form the
  *       modifier set.</li>
  * </ul>
- * The server re-validates both against the scroll's pattern.
+ * {@code downgrades} counts how many times the player eased a cut back (right-click) during this
+ * chiselling session — each one costs a matching gem dust, charged by the server alongside it
+ * re-validating both masks against the scroll's pattern.
  */
-public record FinishEngravingC2SPayload(long[] carved, long[] deep) implements CustomPacketPayload {
+public record FinishEngravingC2SPayload(long[] carved, long[] deep, int downgrades) implements CustomPacketPayload {
 
 	public static final Type<FinishEngravingC2SPayload> ID =
 			new Type<>(SocketSorcery.id("finish_engraving"));
@@ -25,13 +27,17 @@ public record FinishEngravingC2SPayload(long[] carved, long[] deep) implements C
 			new StreamCodec<>() {
 				@Override
 				public FinishEngravingC2SPayload decode(RegistryFriendlyByteBuf buf) {
-					return new FinishEngravingC2SPayload(readMask(buf), readMask(buf));
+					long[] carved = readMask(buf);
+					long[] deep = readMask(buf);
+					int downgrades = buf.readVarInt();
+					return new FinishEngravingC2SPayload(carved, deep, downgrades);
 				}
 
 				@Override
 				public void encode(RegistryFriendlyByteBuf buf, FinishEngravingC2SPayload payload) {
 					writeMask(buf, payload.carved());
 					writeMask(buf, payload.deep());
+					buf.writeVarInt(payload.downgrades());
 				}
 
 				private long[] readMask(RegistryFriendlyByteBuf buf) {

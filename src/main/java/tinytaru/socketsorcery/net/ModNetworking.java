@@ -27,7 +27,7 @@ public final class ModNetworking {
 		ServerPlayNetworking.registerGlobalReceiver(FinishEngravingC2SPayload.ID, (payload, context) -> {
 			ServerPlayer player = context.player();
 			if (player.containerMenu instanceof EngravingTableMenu menu) {
-				EngraveResult result = menu.tryEngrave(player, payload.carved(), payload.deep());
+				EngraveResult result = menu.tryEngrave(player, payload.carved(), payload.deep(), payload.downgrades());
 				ServerPlayNetworking.send(player, new EngraveResultS2CPayload(result.ordinal()));
 			}
 		});

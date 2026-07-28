@@ -1,0 +1,11 @@
+{
+	"type": "minecraft:crafting_shapeless",
+	"category": "misc",
+	"ingredients": [
+		"socket-sorcery:peridot"
+	],
+	"result": {
+		"id": "socket-sorcery:peridot_dust",
+		"count": 9
+	}
+}
