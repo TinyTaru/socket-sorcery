@@ -75,6 +75,7 @@
 	"tooltip.socket-sorcery.bangle_hint": "Worn: gems fire on the bangle key",
 	"tooltip.socket-sorcery.ring_hint": "Worn: gems fire automatically when you're hit",
 	"tooltip.socket-sorcery.cooldown": "Cooldown: %ss",
+	"tooltip.socket-sorcery.cooldown_reduction": "%s%% cooldown reduction",
 
 	"container.socket-sorcery.engraving_table": "Engraving Table",
 	"container.socket-sorcery.socketing_bench": "Socketing Bench",
@@ -96,6 +97,8 @@
 	"screen.socket-sorcery.fail_incompatible": "This gem can't hold that pattern",
 	"screen.socket-sorcery.fail_bad_modifiers": "Those deep cuts don't form a modifier",
 	"screen.socket-sorcery.fail_bad_symbol": "The carving doesn't match the pattern",
+	"screen.socket-sorcery.fail_incompatible_modifier": "This pattern rejects one of those modifiers",
+	"screen.socket-sorcery.modifier_rejected": "%1$s cannot be cut into %2$s",
 
 	"tooltip.socket-sorcery.modifiers": "Modifiers:",
 

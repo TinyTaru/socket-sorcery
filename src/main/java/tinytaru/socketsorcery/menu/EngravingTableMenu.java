@@ -213,6 +213,9 @@ public class EngravingTableMenu extends AbstractContainerMenu {
 		if (modifiers == null) {
 			return EngraveResult.BAD_MODIFIERS; // stray or incomplete deep cells
 		}
+		if (!Modifiers.incompatible(pattern, modifiers).isEmpty()) {
+			return EngraveResult.INCOMPATIBLE_MODIFIER; // well-formed, but this pattern can't use it
+		}
 		long[] required = GridBits.or(pattern.maskBits(), deep); // symbol + Direction extension cells
 		if (!GridBits.equal(carved, required)) {
 			return EngraveResult.BAD_SYMBOL; // missing symbol or stray carved cells

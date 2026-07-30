@@ -56,6 +56,14 @@ public final class RegistryValidation {
 				}
 			});
 
+			for (Identifier modifierId : pattern.incompatibleModifiers()) {
+				if (Modifiers.get(registries, modifierId) == null) {
+					SocketSorcery.LOGGER.warn(
+							"Pattern {} lists unknown modifier {} as incompatible — the entry does nothing",
+							id, modifierId);
+				}
+			}
+
 			if (checkRoundTrips(registries, id, pattern, modifiers, checkedCombos)) {
 				brokenPatterns[0]++;
 			}
@@ -78,6 +86,7 @@ public final class RegistryValidation {
 			List<Holder.Reference<Modifier>> modifiers, int[] checkedCombos) {
 		List<Holder.Reference<Modifier>> applicable = modifiers.stream()
 				.filter(m -> m.value().cellMask(pattern) != null)
+				.filter(m -> pattern.allows(m.key().identifier())) // refused ones can never be engraved
 				.toList();
 		int n = applicable.size();
 		if (n > 16) { // 2^n guard; the built-ins are 7 — only a pathological datapack would exceed this

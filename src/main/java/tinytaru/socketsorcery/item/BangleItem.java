@@ -43,6 +43,10 @@ public class BangleItem extends AccessoryItem {
 				tooltip.accept(Component.translatable("tooltip.socket-sorcery.cooldown", seconds).withStyle(ChatFormatting.GRAY));
 			}
 		}
+		if (cooldownReduction > 0) {
+			String percent = String.format("%.0f", cooldownReduction * 100);
+			tooltip.accept(Component.translatable("tooltip.socket-sorcery.cooldown_reduction", percent).withStyle(ChatFormatting.GRAY));
+		}
 		tooltip.accept(Component.translatable("tooltip.socket-sorcery.bangle_hint").withStyle(ChatFormatting.DARK_GRAY));
 	}
 }

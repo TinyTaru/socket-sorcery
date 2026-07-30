@@ -27,7 +27,7 @@ import tinytaru.socketsorcery.util.ColorCodecs;
  * Display names derive from the id: {@code pattern.<namespace>.<path>}.
  */
 public record Pattern(boolean[][] mask, int color, int cooldown, Optional<CastFeedback> castFeedback,
-		List<Identifier> gems, Optional<Identifier> scroll,
+		List<Identifier> gems, Optional<Identifier> scroll, List<Identifier> incompatibleModifiers,
 		List<PatternEffectComponent> necklaceEffects, List<PatternEffectComponent> bangleEffects) {
 
 	/** Edge length of the chiselling grid — one cell per pixel of the 16x16 gem texture. */
@@ -46,6 +46,7 @@ public record Pattern(boolean[][] mask, int color, int cooldown, Optional<CastFe
 			CastFeedback.CODEC.optionalFieldOf("cast_feedback").forGetter(Pattern::castFeedback),
 			Identifier.CODEC.listOf().optionalFieldOf("gems", List.of()).forGetter(Pattern::gems),
 			Identifier.CODEC.optionalFieldOf("scroll").forGetter(Pattern::scroll),
+			Identifier.CODEC.listOf().optionalFieldOf("incompatible_modifiers", List.of()).forGetter(Pattern::incompatibleModifiers),
 			PatternEffectComponent.CODEC.listOf().optionalFieldOf("necklace_effects", List.of()).forGetter(Pattern::necklaceEffects),
 			PatternEffectComponent.CODEC.listOf().optionalFieldOf("bangle_effects", List.of()).forGetter(Pattern::bangleEffects)
 	).apply(instance, Pattern::new));
@@ -113,6 +114,15 @@ public record Pattern(boolean[][] mask, int color, int cooldown, Optional<CastFe
 	/** Display name for the given pattern id, tinted with this pattern's colour. */
 	public MutableComponent coloredName(Identifier id) {
 		return Component.translatable(translationKey(id)).withColor(color);
+	}
+
+	/**
+	 * Whether this pattern accepts the given modifier. A pattern lists {@code incompatible_modifiers}
+	 * for gestures its effects cannot use — Direction on a pure self-buff, say — so the table refuses
+	 * the engraving outright rather than charging a cooldown surcharge for nothing.
+	 */
+	public boolean allows(Identifier modifierId) {
+		return !incompatibleModifiers.contains(modifierId);
 	}
 
 	public boolean isCellCarved(int row, int col) {

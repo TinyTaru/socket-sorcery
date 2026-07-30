@@ -10,7 +10,9 @@ public enum EngraveResult {
 	NO_CHISEL,
 	NO_DUST,
 	BAD_MODIFIERS,
-	BAD_SYMBOL;
+	BAD_SYMBOL,
+	/** A well-formed modifier the target pattern lists as incompatible. Appended last: the ordinal is the wire id. */
+	INCOMPATIBLE_MODIFIER;
 
 	private static final EngraveResult[] VALUES = values();
 

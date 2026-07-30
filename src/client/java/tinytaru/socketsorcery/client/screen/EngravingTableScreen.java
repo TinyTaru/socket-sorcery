@@ -2,6 +2,7 @@ package tinytaru.socketsorcery.client.screen;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -211,8 +212,13 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 		return bits;
 	}
 
-	/** The applied modifier set if the current carve is a valid engraving, else null. */
-	private Set<Identifier> validModifiers() {
+	/**
+	 * The modifier set the current carve forms as pure geometry, ignoring whether the pattern accepts
+	 * them; null if the deep cells are stray or the symbol doesn't match. Kept separate from
+	 * {@link #validModifiers} so the status line can distinguish a botched carve from a well-formed
+	 * gesture this pattern refuses.
+	 */
+	private Set<Identifier> decodedModifiers() {
 		Holder.Reference<Pattern> holder = this.menu.targetPattern();
 		if (holder == null) {
 			return null;
@@ -225,6 +231,16 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 			return null;
 		}
 		return modifiers;
+	}
+
+	/** The applied modifier set if the current carve is a valid, acceptable engraving, else null. */
+	private Set<Identifier> validModifiers() {
+		Holder.Reference<Pattern> holder = this.menu.targetPattern();
+		Set<Identifier> modifiers = decodedModifiers();
+		if (holder == null || modifiers == null) {
+			return null;
+		}
+		return Modifiers.incompatible(holder.value(), modifiers).isEmpty() ? modifiers : null;
 	}
 
 	private boolean anyCarved() {
@@ -554,6 +570,15 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 		}
 		Set<Identifier> modifiers = validModifiers();
 		if (modifiers == null) {
+			Set<Identifier> formed = decodedModifiers();
+			List<Identifier> rejected = formed == null ? List.of() : Modifiers.incompatible(pattern, formed);
+			if (!rejected.isEmpty()) {
+				Identifier id = rejected.getFirst();
+				Holder.Reference<Modifier> modifier = Modifiers.get(this.menu.registries(), id);
+				Component name = modifier != null ? modifier.value().coloredName(id) : Modifier.displayName(id);
+				return Component.translatable("screen.socket-sorcery.modifier_rejected",
+						name, pattern.coloredName(patternId)).withStyle(ChatFormatting.DARK_RED);
+			}
 			return Component.translatable("screen.socket-sorcery.invalid_engraving").withStyle(ChatFormatting.DARK_RED);
 		}
 		MutableComponent line = pattern.coloredName(patternId);
@@ -575,6 +600,7 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 			case NOT_ENGRAVABLE -> Component.translatable("screen.socket-sorcery.fail_incompatible").withStyle(ChatFormatting.DARK_RED);
 			case BAD_MODIFIERS -> Component.translatable("screen.socket-sorcery.fail_bad_modifiers").withStyle(ChatFormatting.DARK_RED);
 			case BAD_SYMBOL -> Component.translatable("screen.socket-sorcery.fail_bad_symbol").withStyle(ChatFormatting.DARK_RED);
+			case INCOMPATIBLE_MODIFIER -> Component.translatable("screen.socket-sorcery.fail_incompatible_modifier").withStyle(ChatFormatting.DARK_RED);
 		};
 	}
 

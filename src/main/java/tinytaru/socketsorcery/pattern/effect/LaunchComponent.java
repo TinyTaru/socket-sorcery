@@ -13,8 +13,9 @@ import tinytaru.socketsorcery.pattern.PatternEffectComponent;
 
 /**
  * Propels the wearer: a look-direction dash (Leaping) or a straight upward launch (Wind). Magnitude
- * respects the Power modifier; {@code aim_scale} lets Direction modifiers bias the dash. Always
- * forces a velocity packet and clears fall distance.
+ * respects the Power modifier; {@code aim_scale} lets Direction modifiers bias the launch, whichever
+ * base direction it uses — so a Wind jump can be angled sideways or driven back down into a slam.
+ * Always forces a velocity packet and clears fall distance.
  */
 public record LaunchComponent(Direction direction, double magnitude, double yBoost, double aimScale,
 		EffectWhen when) implements PatternEffectComponent {
@@ -60,9 +61,9 @@ public record LaunchComponent(Direction direction, double magnitude, double yBoo
 			velocity = player.getDeltaMovement().add(0.0, mods.magnitude(magnitude), 0.0);
 		} else {
 			velocity = player.getViewVector(1.0F).scale(mods.magnitude(magnitude)).add(0.0, yBoost, 0.0);
-			if (aimScale > 0.0 && mods.hasAim()) {
-				velocity = velocity.add(mods.worldAim(player).scale(aimScale));
-			}
+		}
+		if (aimScale > 0.0 && mods.hasAim()) {
+			velocity = velocity.add(mods.worldAim(player).scale(aimScale));
 		}
 		player.setDeltaMovement(velocity);
 		player.hurtMarked = true; // forces a velocity packet to the client

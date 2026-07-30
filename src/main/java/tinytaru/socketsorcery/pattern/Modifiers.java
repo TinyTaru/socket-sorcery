@@ -58,6 +58,15 @@ public final class Modifiers {
 		return GridBits.equal(union, deep) ? applied : null;
 	}
 
+	/**
+	 * The subset of {@code ids} the pattern refuses (see {@link Pattern#allows}), in display order.
+	 * Empty for an acceptable set — the engraving path treats a non-empty result as a hard refusal
+	 * rather than filtering the offenders out, so the player is told what went wrong.
+	 */
+	public static List<Identifier> incompatible(Pattern pattern, Collection<Identifier> ids) {
+		return ordered(ids).stream().filter(id -> !pattern.allows(id)).toList();
+	}
+
 	/** The full deep mask an applied modifier set occupies for a pattern. */
 	public static long[] cellsFor(HolderLookup.Provider registries, Pattern pattern, Collection<Identifier> ids) {
 		long[] mask = GridBits.empty();

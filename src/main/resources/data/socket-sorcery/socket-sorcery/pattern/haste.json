@@ -29,6 +29,12 @@
     "socket-sorcery:engravable_glowstone"
   ],
   "scroll": "socket-sorcery:scroll_haste",
+  "incompatible_modifiers": [
+    "socket-sorcery:direction_up",
+    "socket-sorcery:direction_down",
+    "socket-sorcery:direction_left",
+    "socket-sorcery:direction_right"
+  ],
   "necklace_effects": [
     {
       "type": "socket-sorcery:mob_effect",
