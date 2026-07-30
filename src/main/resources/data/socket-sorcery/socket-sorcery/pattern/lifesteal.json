@@ -50,6 +50,12 @@
       "amount": 4,
       "target": "self",
       "when": "hit_entity"
+    },
+    {
+      "type": "socket-sorcery:damage",
+      "amount": 3,
+      "target": "aimed_line",
+      "radius": 4.0
     }
   ]
 }

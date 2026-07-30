@@ -1,5 +1,7 @@
 package tinytaru.socketsorcery.pattern.effect;
 
+import java.util.List;
+
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -8,14 +10,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.ExtraCodecs;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseFireBlock;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
 import tinytaru.socketsorcery.pattern.EngraveMods;
 import tinytaru.socketsorcery.pattern.PatternEffectComponent;
 
@@ -25,10 +23,14 @@ import tinytaru.socketsorcery.pattern.PatternEffectComponent;
  * {@code length} respects the Range modifier and its burn {@code seconds} the Duration and Power
  * modifiers, so every modifier bears on the same cast.
  *
- * <p>Does nothing without an aim — an unmodified engraving is the plain
- * {@link IgniteComponent} it sits alongside, and opposing Direction pairs cancel to no line at all.
- * Entities along the line are always set alight; fire blocks are only kindled where fire could
+ * <p>The geometry is {@link EffectTargets#aimedLineCells}, shared with the {@code aimed_line}
+ * target — so an engraving with no Direction modifier casts nothing here and the plain
+ * {@link IgniteComponent} alongside it carries the cast, exactly as before modifiers existed.
+ *
+ * <p>Entities along the line are always set alight; fire blocks are only kindled where fire could
  * survive, so a mid-air wall still burns what walks through it without littering doomed blocks.
+ * This component exists for that block-laying half — the burning half is what {@code aimed_line}
+ * would give any other component.
  */
 public record FlameLineComponent(int seconds, double length, boolean placeFire, EffectFilter filter,
 		EffectWhen when) implements PatternEffectComponent {
@@ -48,44 +50,25 @@ public record FlameLineComponent(int seconds, double length, boolean placeFire, 
 
 	@Override
 	public void apply(ServerPlayer player, HitResult target, EngraveMods mods) {
-		if (!when.matches(target) || !mods.hasAim()) {
+		if (!when.matches(target)) {
 			return;
 		}
-		Vec3 aim = mods.worldAim(player);
-		if (aim.lengthSqr() < 1.0e-6) {
-			return; // opposing Direction modifiers cancelled out
+		List<BlockPos> cells = EffectTargets.aimedLineCells(player, target, mods, length);
+		if (cells.isEmpty()) {
+			return; // no Direction modifier, or opposing ones cancelled out
 		}
-		Level level = player.level();
-		Vec3 origin = origin(target);
-		int steps = Math.max(1, Mth.floor(mods.radius(length)));
 		float burn = (float) mods.magnitude(mods.duration(seconds));
-		BlockPos last = null;
-		for (int step = 1; step <= steps; step++) {
-			BlockPos pos = BlockPos.containing(origin.add(aim.scale(step)));
-			if (pos.equals(last)) {
-				continue; // a shallow aim can round two steps into the same cell
-			}
-			last = pos;
-			scorch(level, player, pos, burn);
-		}
-	}
-
-	/** Where the line starts: the air cell in front of a struck face, else the hit point itself. */
-	private static Vec3 origin(HitResult target) {
-		if (target instanceof BlockHitResult hit && target.getType() == HitResult.Type.BLOCK) {
-			return Vec3.atCenterOf(hit.getBlockPos().relative(hit.getDirection()));
-		}
-		return target.getLocation();
-	}
-
-	/** Sets alight whatever stands in this cell, and kindles fire there if fire could survive. */
-	private void scorch(Level level, ServerPlayer player, BlockPos pos, float burn) {
-		for (LivingEntity entity : level.getEntitiesOfClass(filter.entityClass(), new AABB(pos),
-				e -> e.isAlive() && e != player)) {
+		for (LivingEntity entity : EffectTargets.resolve(EffectTarget.AIMED_LINE, player, target, mods, length, filter)) {
 			entity.igniteForSeconds(burn);
 		}
-		if (placeFire && level.getBlockState(pos).isAir() && BaseFireBlock.canBePlacedAt(level, pos, Direction.UP)) {
-			level.setBlockAndUpdate(pos, BaseFireBlock.getState(level, pos));
+		if (!placeFire) {
+			return;
+		}
+		Level level = player.level();
+		for (BlockPos pos : cells) {
+			if (level.getBlockState(pos).isAir() && BaseFireBlock.canBePlacedAt(level, pos, Direction.UP)) {
+				level.setBlockAndUpdate(pos, BaseFireBlock.getState(level, pos));
+			}
 		}
 	}
 }

@@ -1,5 +1,5 @@
 {
-	"icon": "trinkets:container/slots/ring",
+	"icon": "socket-sorcery:container/slots/ring",
 	"order": 2,
 	"validator_predicates": ["trinkets:default"]
 }

@@ -189,8 +189,12 @@ public abstract class DynamicIconRenderer
 			return (get(x, y) >>> 24) & 0xFF;
 		}
 
-		/** A copy cropped to the opaque bounding box, or null if fully transparent. */
-		public Pixels cropToOpaque() {
+		/**
+		 * The opaque bounding box as {@code {minX, minY, maxX, maxY}} (inclusive), or null if the
+		 * image is fully transparent. Callers that want the pixels use {@link #cropToOpaque()};
+		 * callers that want to address the region in the original image (UVs, say) use this.
+		 */
+		public int[] opaqueBounds() {
 			int minX = width, minY = height, maxX = -1, maxY = -1;
 			for (int y = 0; y < height; y++) {
 				for (int x = 0; x < width; x++) {
@@ -202,11 +206,19 @@ public abstract class DynamicIconRenderer
 					}
 				}
 			}
-			if (maxX < 0) {
+			return maxX < 0 ? null : new int[] { minX, minY, maxX, maxY };
+		}
+
+		/** A copy cropped to the opaque bounding box, or null if fully transparent. */
+		public Pixels cropToOpaque() {
+			int[] bounds = opaqueBounds();
+			if (bounds == null) {
 				return null;
 			}
-			int w = maxX - minX + 1;
-			int h = maxY - minY + 1;
+			int minX = bounds[0];
+			int minY = bounds[1];
+			int w = bounds[2] - minX + 1;
+			int h = bounds[3] - minY + 1;
 			int[] out = new int[w * h];
 			for (int y = 0; y < h; y++) {
 				for (int x = 0; x < w; x++) {

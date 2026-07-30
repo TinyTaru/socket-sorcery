@@ -62,6 +62,20 @@
       "type": "socket-sorcery:freeze",
       "target": "hit_entity",
       "set_ticks": 220
+    },
+    {
+      "type": "socket-sorcery:mob_effect",
+      "effect": "minecraft:slowness",
+      "duration": 100,
+      "amplifier": 1,
+      "target": "aimed_line",
+      "radius": 4.0
+    },
+    {
+      "type": "socket-sorcery:freeze",
+      "target": "aimed_line",
+      "radius": 4.0,
+      "set_ticks": 160
     }
   ]
 }

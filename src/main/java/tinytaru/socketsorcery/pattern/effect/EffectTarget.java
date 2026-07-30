@@ -13,7 +13,13 @@ public enum EffectTarget implements StringRepresentable {
 	/** The living entity hit, or the wearer when there is none. */
 	HIT_ENTITY_OR_SELF("hit_entity_or_self"),
 	/** All matching living entities within {@code radius} blocks of the wearer. */
-	AREA("area");
+	AREA("area"),
+	/**
+	 * All matching living entities standing in the block cells a line sweeps out from the hit
+	 * location along the Direction modifiers' aim, {@code radius} blocks long. Selects nothing on an
+	 * engraving with no Direction modifier, or when opposing Directions cancel.
+	 */
+	AIMED_LINE("aimed_line");
 
 	public static final Codec<EffectTarget> CODEC = StringRepresentable.fromEnum(EffectTarget::values);
 

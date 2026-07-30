@@ -16,6 +16,8 @@ public class SocketSorceryClient implements ClientModInitializer {
 		GemItemRenderer.register();
 		AccessoryItemRenderer.register();
 		PatternTooltipRenderer.register();
+		// Worn bangles: the band as a baked model layer, the socketed gems drawn on top of it.
+		BangleTrinketRenderer.register();
 		// The old "engraving" model predicate is gone: item model definitions select the engraved
 		// variant with vanilla's minecraft:has_component condition instead (see assets/…/items/).
 		ModKeybinds.register();
