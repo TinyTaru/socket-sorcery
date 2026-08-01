@@ -9,6 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
@@ -23,7 +24,7 @@ final class EffectTargets {
 	static List<LivingEntity> resolve(EffectTarget target, ServerPlayer player, HitResult hit,
 			EngraveMods mods, double radius, EffectFilter filter) {
 		return switch (target) {
-			case SELF -> List.of(player);
+			case SELF -> shareWithAllies(player, mods);
 			case HIT_ENTITY -> hitLiving(hit) instanceof LivingEntity living ? List.of(living) : List.of();
 			case HIT_ENTITY_OR_SELF -> hitLiving(hit) instanceof LivingEntity living ? List.of(living) : List.of(player);
 			case AREA -> {
@@ -40,6 +41,32 @@ final class EffectTargets {
 				yield List.copyOf(found);
 			}
 		};
+	}
+
+	/**
+	 * Who a {@code self} component reaches: the wearer alone, or — once the engraving carries a Range
+	 * bonus — the wearer plus every non-hostile living thing within that many blocks. This is what
+	 * makes Range mean something on the many patterns that only ever buff their wearer: it turns a
+	 * private ward into a small shared one.
+	 *
+	 * <p>Hostility is tested against {@link Enemy} rather than {@code Monster}, because slimes,
+	 * phantoms, hoglins and the dragon are all hostile without extending {@code Monster} — filtering
+	 * by the class would hand them the wearer's buffs.
+	 *
+	 * <p>The component's own {@code filter} is deliberately ignored here. A {@code self} effect never
+	 * had a meaningful filter to set (most default to {@code monsters}, which is exactly backwards for
+	 * sharing a buff), so the sharing rule is fixed rather than data-driven.
+	 */
+	private static List<LivingEntity> shareWithAllies(ServerPlayer player, EngraveMods mods) {
+		if (mods.rangeBonus() <= 0.0) {
+			return List.of(player);
+		}
+		AABB area = player.getBoundingBox().inflate(mods.rangeBonus());
+		List<LivingEntity> shared = new ArrayList<>();
+		shared.add(player);
+		shared.addAll(player.level().getEntitiesOfClass(LivingEntity.class, area,
+				e -> e.isAlive() && e != player && !(e instanceof Enemy)));
+		return List.copyOf(shared);
 	}
 
 	/**

@@ -20,15 +20,17 @@ import tinytaru.socketsorcery.pattern.Patterns;
 public final class ModNetworking {
 
 	public static void registerServer() {
-		PayloadTypeRegistry.serverboundPlay().register(FinishEngravingC2SPayload.ID, FinishEngravingC2SPayload.CODEC);
+		PayloadTypeRegistry.serverboundPlay().register(ChiselC2SPayload.ID, ChiselC2SPayload.CODEC);
 		PayloadTypeRegistry.serverboundPlay().register(ActivateBangleC2SPayload.ID, ActivateBangleC2SPayload.CODEC);
-		PayloadTypeRegistry.clientboundPlay().register(EngraveResultS2CPayload.ID, EngraveResultS2CPayload.CODEC);
+		PayloadTypeRegistry.clientboundPlay().register(EngraveFeedbackS2CPayload.ID, EngraveFeedbackS2CPayload.CODEC);
 
-		ServerPlayNetworking.registerGlobalReceiver(FinishEngravingC2SPayload.ID, (payload, context) -> {
+		ServerPlayNetworking.registerGlobalReceiver(ChiselC2SPayload.ID, (payload, context) -> {
 			ServerPlayer player = context.player();
 			if (player.containerMenu instanceof EngravingTableMenu menu) {
-				EngraveResult result = menu.tryEngrave(player, payload.carved(), payload.deep(), payload.downgrades());
-				ServerPlayNetworking.send(player, new EngraveResultS2CPayload(result.ordinal()));
+				EngraveFeedbackS2CPayload feedback = menu.chisel(player, payload.cell(), payload.action());
+				if (feedback != null) {
+					ServerPlayNetworking.send(player, feedback);
+				}
 			}
 		});
 

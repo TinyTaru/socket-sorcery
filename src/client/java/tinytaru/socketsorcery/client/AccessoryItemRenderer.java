@@ -7,7 +7,7 @@ import java.util.Map;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.serialization.MapCodec;
 
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.renderer.special.SpecialModelRenderers;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -34,7 +34,7 @@ public class AccessoryItemRenderer extends DynamicIconRenderer {
 	// Top-left (row, col) where each gem's cropped sprite is drawn, in socket order.
 	private static final int[][] NECKLACE_SLOTS = { { 6, 10 }, { 9, 12 }, { 10, 3 }, { 12, 6 }, { 12, 10 } };
 	private static final int[][] BANGLE_SLOTS = { { 1, 6 }, { 3, 9 }, { 6, 11 } };
-	private static final int[][] RING_SLOTS = { { 6, 6 } };
+	private static final int[][] RING_SLOTS = { { 10, 6 } };
 
 	private final Map<Item, Pixels> baseCache = new HashMap<>();
 	private final Map<Item, Pixels> gemCache = new HashMap<>();
@@ -62,7 +62,7 @@ public class AccessoryItemRenderer extends DynamicIconRenderer {
 	public static void register() {
 		// Which items use this renderer is declared by their item model definitions, not here.
 		SpecialModelRenderers.ID_MAPPER.put(ID, Unbaked.MAP_CODEC);
-		ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(INSTANCE);
+		ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloadListener(INSTANCE.getFabricId(), INSTANCE);
 	}
 
 	@Override

@@ -6,6 +6,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import tinytaru.socketsorcery.SocketSorcery;
+import tinytaru.socketsorcery.component.CarvingData;
 import tinytaru.socketsorcery.component.EngravingData;
 import tinytaru.socketsorcery.component.SocketData;
 
@@ -13,6 +14,7 @@ import tinytaru.socketsorcery.component.SocketData;
  * Registers the mod's {@link DataComponentType}s:
  * <ul>
  *   <li>{@code engraving} — the chiselled pattern carried by an engraved gem.</li>
+ *   <li>{@code carving} — the half-finished cuts on a gem still being chiselled.</li>
  *   <li>{@code sockets} — the ordered gems socketed into an accessory.</li>
  * </ul>
  */
@@ -20,6 +22,9 @@ public final class ModComponents {
 
 	public static final DataComponentType<EngravingData> ENGRAVING = register("engraving",
 			builder -> builder.persistent(EngravingData.CODEC).networkSynchronized(EngravingData.STREAM_CODEC));
+
+	public static final DataComponentType<CarvingData> CARVING = register("carving",
+			builder -> builder.persistent(CarvingData.CODEC).networkSynchronized(CarvingData.STREAM_CODEC));
 
 	public static final DataComponentType<SocketData> SOCKETS = register("sockets",
 			builder -> builder.persistent(SocketData.CODEC).networkSynchronized(SocketData.STREAM_CODEC));

@@ -10,12 +10,17 @@ import net.minecraft.world.phys.HitResult;
 import tinytaru.socketsorcery.pattern.EngraveMods;
 import tinytaru.socketsorcery.pattern.PatternEffectComponent;
 
-/** Heals the resolved targets. Amount respects the Power modifier. */
-public record HealComponent(double amount, EffectTarget target, EffectWhen when) implements PatternEffectComponent {
+/**
+ * Heals the resolved targets. Amount respects the Power modifier; {@code radius} — the aura width
+ * for {@code area} targeting, the line length for {@code aimed_line} — respects Range.
+ */
+public record HealComponent(double amount, EffectTarget target, double radius,
+		EffectWhen when) implements PatternEffectComponent {
 
 	public static final MapCodec<HealComponent> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
 			Codec.DOUBLE.fieldOf("amount").forGetter(HealComponent::amount),
 			EffectTarget.CODEC.optionalFieldOf("target", EffectTarget.HIT_ENTITY_OR_SELF).forGetter(HealComponent::target),
+			Codec.DOUBLE.optionalFieldOf("radius", 0.0).forGetter(HealComponent::radius),
 			EffectWhen.CODEC.optionalFieldOf("when", EffectWhen.ALWAYS).forGetter(HealComponent::when)
 	).apply(instance, HealComponent::new));
 
@@ -29,7 +34,7 @@ public record HealComponent(double amount, EffectTarget target, EffectWhen when)
 		if (!when.matches(target)) {
 			return;
 		}
-		for (LivingEntity entity : EffectTargets.resolve(this.target, player, target, mods, 0.0, EffectFilter.LIVING)) {
+		for (LivingEntity entity : EffectTargets.resolve(this.target, player, target, mods, radius, EffectFilter.LIVING)) {
 			entity.heal((float) mods.magnitude(amount));
 		}
 	}

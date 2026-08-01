@@ -6,7 +6,7 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "$(bold)Power$() amplifies the effect — stronger potions, bigger numbers. Its cells sit at the very heart of the grid.$(br2)$(bold)Duration$() doubles how long effects last. Look to the symbol's crown and foot.$(br2)$(bold)Range$() widens auras and reach. Look to the symbol's outermost flanks."
+      "text": "$(bold)Power$() amplifies the effect — stronger potions, bigger numbers. Its cells sit at the very heart of the grid.$(br2)$(bold)Duration$() doubles how long effects last. Look to the symbol's crown and foot.$(br2)$(bold)Range$() widens auras and reach — and a ward that would guard only you instead spills over onto whatever friendly thing stands close by. Look to the symbol's outermost flanks."
     }
   ]
 }

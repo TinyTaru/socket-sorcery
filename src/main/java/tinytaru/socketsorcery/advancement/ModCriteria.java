@@ -9,7 +9,8 @@ import tinytaru.socketsorcery.SocketSorcery;
  * The mod's custom advancement criteria, registered into the vanilla {@code TRIGGER_TYPES} registry
  * (no access widener needed in 1.21). Fired from gameplay code:
  * <ul>
- *   <li>{@link #ENGRAVE} — {@code EngravingTableMenu.tryEngrave} on success.</li>
+ *   <li>{@link #ENGRAVE} — {@code EngravingTableMenu.chisel} whenever a stroke completes the pattern
+ *       or adds a modifier to it.</li>
  *   <li>{@link #EQUIP_ACCESSORY} — {@code AccessoryItem.onEquip}.</li>
  *   <li>{@link #ACTIVATE_ABILITY} — {@code AccessoryItem.runBangle} when a socketed gem fires.</li>
  * </ul>

@@ -16,7 +16,7 @@
     {
       "type": "patchouli:text",
       "title": "Wind",
-      "text": "$(bold)Necklace:$() grants Slow Falling.$(br2)$(bold)Bangle / Ring:$() launches you skyward, or sends a target floating with Levitation.$(br2)$(bold)Cooldown:$() 1.5s per cast.$(br2)$(bold)Held by:$() Engravable Ender Pearl."
+      "text": "$(bold)Necklace:$() grants Slow Falling.$(br2)$(bold)Bangle / Ring:$() launches you skyward, or sends a target floating with Levitation. Either way a gust scatters the monsters around you — outward, or along an aim if one is cut.$(br2)$(bold)Cooldown:$() 1.5s per cast.$(br2)$(bold)Held by:$() Engravable Ender Pearl."
     }
   ]
 }

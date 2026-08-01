@@ -6,7 +6,7 @@ import java.util.Map;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.serialization.MapCodec;
 
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.renderer.special.SpecialModelRenderers;
@@ -71,7 +71,7 @@ public class GemItemRenderer extends DynamicIconRenderer {
 	public static void register() {
 		// Which items use this renderer is declared by their item model definitions, not here.
 		SpecialModelRenderers.ID_MAPPER.put(ID, Unbaked.MAP_CODEC);
-		ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(INSTANCE);
+		ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloadListener(INSTANCE.getFabricId(), INSTANCE);
 	}
 
 	/**

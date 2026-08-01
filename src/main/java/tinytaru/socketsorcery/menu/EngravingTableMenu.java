@@ -1,8 +1,9 @@
 package tinytaru.socketsorcery.menu;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
-
-import org.joml.Vector3f;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -26,22 +27,31 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import tinytaru.socketsorcery.advancement.ModCriteria;
 import tinytaru.socketsorcery.block.EngravingTableBlockEntity;
+import tinytaru.socketsorcery.component.CarvingData;
 import tinytaru.socketsorcery.component.EngravingData;
 import tinytaru.socketsorcery.item.ChiselItem;
+import tinytaru.socketsorcery.pattern.Carvings;
 import tinytaru.socketsorcery.pattern.GridBits;
+import tinytaru.socketsorcery.pattern.Modifier;
 import tinytaru.socketsorcery.pattern.Modifiers;
 import tinytaru.socketsorcery.pattern.Pattern;
 import tinytaru.socketsorcery.pattern.Patterns;
-import tinytaru.socketsorcery.net.EngraveResult;
+import tinytaru.socketsorcery.net.ChiselC2SPayload;
+import tinytaru.socketsorcery.net.EngraveFeedbackS2CPayload;
 import tinytaru.socketsorcery.registry.ModBlocks;
 import tinytaru.socketsorcery.registry.ModComponents;
 import tinytaru.socketsorcery.registry.ModItems;
 import tinytaru.socketsorcery.registry.ModMenus;
 
 /**
- * Menu for the Engraving Table. Holds the gem / scroll / chisel slots; the chiselling minigame is
- * driven by the screen, which sends the carved cells back here for validation via
- * {@link #tryEngrave(ServerPlayer, long[], long[], int)}.
+ * Menu for the Engraving Table. Holds the gem / scroll / chisel slots and owns the chiselling
+ * minigame: the screen sends one {@link ChiselC2SPayload} per click and {@link #chisel} cuts the gem
+ * in the table there and then, writing the carve straight onto the item. The gem itself is therefore
+ * the only state the minigame has — pull it out half-carved and the cuts come with it.
+ *
+ * <p>Costs are charged as the carve happens rather than at a confirmation step: the chisel takes a
+ * point of durability per cut (past the flat discount its tier grants), easing a cut back costs a
+ * gem dust each time, and the scroll is spent by whichever stroke first closes the base symbol.
  */
 public class EngravingTableMenu extends AbstractContainerMenu {
 
@@ -135,19 +145,28 @@ public class EngravingTableMenu extends AbstractContainerMenu {
 		return registries;
 	}
 
-	/** The pattern the loaded scroll teaches, or null if no scroll present. */
+	/**
+	 * The pattern being chiselled: whatever the gem is already cut for, else the one the loaded scroll
+	 * teaches. A gem that has been struck once carries its own pattern, so the scroll can be taken
+	 * back out and swapped freely mid-carve — it only has to be back in place for whichever stroke
+	 * closes the base symbol, since that's the one that spends it.
+	 */
 	public Holder.Reference<Pattern> targetPattern() {
+		ItemStack gem = gemStack();
+		Identifier carvedFor = gem.isEmpty() ? null : Carvings.patternId(gem);
+		if (carvedFor != null) {
+			return Patterns.get(registries, carvedFor);
+		}
 		ItemStack scroll = scrollStack();
 		return scroll.isEmpty() ? null : Patterns.forScroll(registries, scroll.getItem());
 	}
 
-	/** True when a gem, a matching scroll and a chisel are all present and the gem is engravable. */
-	public boolean canEngrave() {
+	/** True when a chisel and a gem this pattern accepts are both present, so strokes will land. */
+	public boolean canCarve() {
 		ItemStack gem = gemStack();
 		Holder.Reference<Pattern> pattern = targetPattern();
 		return pattern != null
 				&& !gem.isEmpty()
-				&& !gem.has(ModComponents.ENGRAVING)
 				&& Patterns.canEngrave(registries, gem.getItem(), pattern.key().identifier())
 				&& chiselStack().getItem() instanceof ChiselItem;
 	}
@@ -189,90 +208,202 @@ public class EngravingTableMenu extends AbstractContainerMenu {
 		}
 	}
 
-	/**
-	 * Server-side completion of an engraving. {@code carved} is the depth≥1 layer (must equal the
-	 * symbol plus any Direction extension cells) and {@code deep} is the depth-2 layer (must decode to
-	 * a valid modifier set). {@code downgrades} is how many times the player eased a cut back
-	 * (right-click) while chiselling — each one costs a matching gem dust, charged here alongside the
-	 * scroll and chisel durability. Returns the outcome so the caller can report it to the client.
-	 */
-	public EngraveResult tryEngrave(ServerPlayer player, long[] carved, long[] deep, int downgrades) {
-		ItemStack gem = gemStack();
-		Holder.Reference<Pattern> holder = targetPattern();
-		if (holder == null
-				|| gem.isEmpty()
-				|| gem.has(ModComponents.ENGRAVING)
-				|| !Patterns.canEngrave(registries, gem.getItem(), holder.key().identifier())) {
-			return EngraveResult.NOT_ENGRAVABLE;
-		}
-		if (!(chiselStack().getItem() instanceof ChiselItem)) {
-			return EngraveResult.NO_CHISEL;
-		}
-		Pattern pattern = holder.value();
-		Set<Identifier> modifiers = Modifiers.decode(registries, pattern, deep);
-		if (modifiers == null) {
-			return EngraveResult.BAD_MODIFIERS; // stray or incomplete deep cells
-		}
-		if (!Modifiers.incompatible(pattern, modifiers).isEmpty()) {
-			return EngraveResult.INCOMPATIBLE_MODIFIER; // well-formed, but this pattern can't use it
-		}
-		long[] required = GridBits.or(pattern.maskBits(), deep); // symbol + Direction extension cells
-		if (!GridBits.equal(carved, required)) {
-			return EngraveResult.BAD_SYMBOL; // missing symbol or stray carved cells
-		}
-
-		int dustNeeded = Math.max(0, downgrades);
+	/** True if the player can cover {@code strokes} eased cuts — gems with no dust of their own ease free. */
+	public boolean canAffordEase(int strokes) {
 		Item dust = currentGemDust();
-		if (dustNeeded > 0 && (dust == null || countDust(dust) < dustNeeded)) {
-			return EngraveResult.NO_DUST;
-		}
-
-		int baseCost = GridBits.count(carved) + GridBits.count(deep);
-		int reduction = chiselStack().getItem() instanceof ChiselItem chisel ? chisel.carveCostReduction() : 0;
-		int cost = Math.max(1, baseCost - reduction);
-		int color = pattern.color();
-		access.execute((level, pos) -> {
-			ItemStack engraved = gemStack().copy();
-			engraved.setCount(1);
-			engraved.set(ModComponents.ENGRAVING,
-					new EngravingData(holder.key().identifier(), Modifiers.ordered(modifiers)));
-			table.setItem(SLOT_GEM, engraved);
-
-			scrollStack().shrink(1);
-			if (dustNeeded > 0) {
-				consumeDust(dust, dustNeeded);
-			}
-
-			ItemStack chisel = chiselStack();
-			if (chisel.isDamageableItem()) {
-				int damage = chisel.getDamageValue() + cost;
-				if (damage >= chisel.getMaxDamage()) {
-					table.setItem(SLOT_CHISEL, ItemStack.EMPTY);
-					level.playSound(null, pos, SoundEvents.ITEM_BREAK.value(), SoundSource.BLOCKS, 0.7F, 1.0F);
-				} else {
-					chisel.setDamageValue(damage);
-				}
-			}
-
-			table.setChanged();
-			level.playSound(null, pos, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, 0.6F, 1.4F);
-			if (level instanceof ServerLevel server) {
-				spawnEngraveBurst(server, pos, color);
-			}
-		});
-		broadcastChanges();
-		ModCriteria.ENGRAVE.trigger(player, holder.key().identifier(), !modifiers.isEmpty());
-		return EngraveResult.OK;
+		return dust == null || countDust(dust) >= strokes;
 	}
 
-	/** A short celebratory burst in the pattern's colour when an engraving completes. */
-	private static void spawnEngraveBurst(ServerLevel level, BlockPos pos, int color) {
+	/**
+	 * Applies one chisel stroke to the gem in the table and saves the result onto it: an
+	 * {@link EngravingData} once the cells form a finished engraving, otherwise a {@link CarvingData}
+	 * of the cuts so far (and neither once the gem is bare again). Returns what the stroke finished,
+	 * for the screen to celebrate, or null when nothing changed.
+	 *
+	 * <p>Every cost is checked before anything is charged, so a stroke either lands in full or not at
+	 * all — never a half-charged one. {@link #mutateCell} itself charges nothing; it only mutates a
+	 * local copy of the cells, which is simply discarded if the stroke turns out unaffordable.
+	 */
+	public EngraveFeedbackS2CPayload chisel(ServerPlayer player, int cell, ChiselC2SPayload.Action action) {
+		if (!canCarve()) {
+			return null;
+		}
+		ItemStack gem = gemStack();
+		Holder.Reference<Pattern> holder = targetPattern();
+		Pattern pattern = holder.value();
+		Identifier patternId = holder.key().identifier();
+
+		CarvingData before = Carvings.on(registries, gem);
+		long[] carved = before == null ? GridBits.empty() : GridBits.copy(before.carved());
+		long[] deep = before == null ? GridBits.empty() : GridBits.copy(before.deep());
+		boolean symbolWasWhole = before != null && GridBits.subset(pattern.maskBits(), carved);
+		// Which modifiers were already standing, read permissively (see Modifiers#formedSubset) so a
+		// stray half-cut modifier elsewhere in the carve doesn't hide a different one that's complete.
+		Set<Identifier> hadModifiers = Modifiers.formedSubset(registries, pattern, deep);
+		int strokesBefore = GridBits.count(carved) + GridBits.count(deep);
+
+		int easeCost = mutateCell(cell, action, carved, deep);
+		if (easeCost < 0) {
+			return null; // off the grid, already at the limit, or nothing to clear
+		}
+		Set<Identifier> modifiers = Carvings.acceptedModifiers(registries, pattern, carved, deep);
+		boolean patternComplete = !symbolWasWhole && modifiers != null;
+
+		if (easeCost > 0 && !canAffordEase(easeCost)) {
+			return null;
+		}
+		if (patternComplete && scrollStack().isEmpty()) {
+			return null; // the closing cut is what spends the scroll; without one, it doesn't land
+		}
+
+		if (easeCost > 0) {
+			spendDust(easeCost);
+		}
+		if (patternComplete) {
+			scrollStack().shrink(1);
+		}
+		if (action == ChiselC2SPayload.Action.DEEPEN) {
+			damageChisel(strokesBefore);
+		}
+
+		writeCarve(gem, patternId, carved, deep, modifiers);
+		table.setChanged();
+		broadcastChanges();
+
+		if (modifiers == null) {
+			return null; // the carve is unfinished — nothing to celebrate yet
+		}
+		List<Identifier> formed = new ArrayList<>(modifiers);
+		formed.removeAll(hadModifiers);
+		if (symbolWasWhole && formed.isEmpty()) {
+			return null; // a shape it had already reached (a modifier eased back off, say)
+		}
+		celebrate(pattern, patternComplete, formed);
+		ModCriteria.ENGRAVE.trigger(player, patternId, !modifiers.isEmpty());
+		return new EngraveFeedbackS2CPayload(patternComplete, Modifiers.ordered(formed));
+	}
+
+	/**
+	 * Mutates {@code carved}/{@code deep} for a single stroke and returns its dust cost — 0 for a cut,
+	 * 1 for easing one cell, the stroke count standing beforehand for a full clear — or -1 if the
+	 * stroke can't land at all: off the grid, a cut already at its limit, an ease on a bare cell, or a
+	 * clear with nothing to undo. Charges nothing itself, which is what makes it safe to call before
+	 * costs are known to be affordable.
+	 */
+	private static int mutateCell(int cell, ChiselC2SPayload.Action action, long[] carved, long[] deep) {
+		if (action == ChiselC2SPayload.Action.CLEAR) {
+			int strokes = GridBits.count(carved) + GridBits.count(deep);
+			if (strokes == 0) {
+				return -1;
+			}
+			Arrays.fill(carved, 0L);
+			Arrays.fill(deep, 0L);
+			return strokes;
+		}
+		if (cell < 0 || cell >= Pattern.GRID * Pattern.GRID) {
+			return -1;
+		}
+		int depth = Carvings.depth(carved, deep, cell);
+		if (action == ChiselC2SPayload.Action.EASE) {
+			if (depth == 0) {
+				return -1;
+			}
+			if (depth == 2) {
+				GridBits.clearIndex(deep, cell);
+			} else {
+				GridBits.clearIndex(carved, cell);
+			}
+			return 1;
+		}
+		if (depth >= 2) {
+			return -1;
+		}
+		if (depth == 0) {
+			GridBits.setIndex(carved, cell);
+		} else {
+			GridBits.setIndex(deep, cell);
+		}
+		return 0;
+	}
+
+	/**
+	 * Saves the carve onto the gem: a finished engraving when {@code modifiers} is non-null (the cuts
+	 * are then re-derivable from it), the raw cuts while it's null, and neither once the gem is bare.
+	 */
+	private void writeCarve(ItemStack gem, Identifier patternId, long[] carved, long[] deep, Set<Identifier> modifiers) {
+		if (modifiers != null) {
+			gem.set(ModComponents.ENGRAVING, new EngravingData(patternId, Modifiers.ordered(modifiers)));
+			gem.remove(ModComponents.CARVING);
+		} else {
+			gem.remove(ModComponents.ENGRAVING);
+			if (GridBits.isEmpty(carved)) {
+				gem.remove(ModComponents.CARVING);
+			} else {
+				gem.set(ModComponents.CARVING, new CarvingData(patternId, carved, deep));
+			}
+		}
+	}
+
+	/** Spends {@code amount} of the current gem's dust — a no-op for gems with no dust of their own. */
+	private void spendDust(int amount) {
+		Item dust = currentGemDust();
+		if (dust != null) {
+			consumeDust(dust, amount);
+		}
+	}
+
+	/**
+	 * Takes a point of chisel durability for one cut. A tier's flat discount is spent up front — the
+	 * first {@code carveCostReduction()} cuts of a carve are free — so a whole pattern still costs what
+	 * it used to. A chisel that runs out mid-carve breaks; the cuts already made stay on the gem.
+	 */
+	private void damageChisel(int strokesSoFar) {
+		ItemStack chisel = chiselStack();
+		if (!(chisel.getItem() instanceof ChiselItem tool)
+				|| !chisel.isDamageableItem()
+				|| strokesSoFar < tool.carveCostReduction()) {
+			return;
+		}
+		int damage = chisel.getDamageValue() + 1;
+		if (damage < chisel.getMaxDamage()) {
+			chisel.setDamageValue(damage);
+			return;
+		}
+		table.setItem(SLOT_CHISEL, ItemStack.EMPTY);
+		access.execute((level, pos) ->
+				level.playSound(null, pos, SoundEvents.ITEM_BREAK.value(), SoundSource.BLOCKS, 0.7F, 1.0F));
+	}
+
+	/** Sound and sparks at the table for the pattern falling into place, or a modifier joining it. */
+	private void celebrate(Pattern pattern, boolean patternComplete, List<Identifier> formed) {
+		int color = patternComplete ? pattern.color() : modifierColor(formed, pattern.color());
+		access.execute((level, pos) -> {
+			level.playSound(null, pos, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS,
+					0.6F, patternComplete ? 1.4F : 1.8F);
+			if (level instanceof ServerLevel server) {
+				spawnEngraveBurst(server, pos, color, patternComplete ? 16 : 6);
+			}
+		});
+	}
+
+	private int modifierColor(List<Identifier> formed, int fallback) {
+		for (Identifier id : formed) {
+			Holder.Reference<Modifier> modifier = Modifiers.get(registries, id);
+			if (modifier != null) {
+				return modifier.value().color();
+			}
+		}
+		return fallback;
+	}
+
+	/** A short celebratory burst above the table, in the colour of whatever just fell into place. */
+	private static void spawnEngraveBurst(ServerLevel level, BlockPos pos, int color, int count) {
 		double cx = pos.getX() + 0.5;
 		double cy = pos.getY() + 1.0;
 		double cz = pos.getZ() + 0.5;
 		// DustParticleOptions takes the packed RGB directly now (it used to need a Vector3f).
-		level.sendParticles(new DustParticleOptions(color, 1.2F), cx, cy, cz, 16, 0.25, 0.2, 0.25, 0.0);
-		level.sendParticles(ParticleTypes.ENCHANT, cx, cy, cz, 12, 0.3, 0.3, 0.3, 0.05);
+		level.sendParticles(new DustParticleOptions(color, 1.2F), cx, cy, cz, count, 0.25, 0.2, 0.25, 0.0);
+		level.sendParticles(ParticleTypes.ENCHANT, cx, cy, cz, count * 3 / 4, 0.3, 0.3, 0.3, 0.05);
 	}
 
 	@Override

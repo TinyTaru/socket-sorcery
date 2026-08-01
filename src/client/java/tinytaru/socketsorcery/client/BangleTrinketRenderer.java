@@ -11,8 +11,8 @@ import eu.pb4.trinkets.api.TrinketSlotAccess;
 import eu.pb4.trinkets.api.client.TrinketRenderer;
 import eu.pb4.trinkets.api.client.TrinketRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.ModelLayerRegistry;
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
-import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
+import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
+import net.fabricmc.fabric.api.resource.v1.reloader.SimpleReloadListener;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.ClientAvatarEntity;
 import net.minecraft.client.model.EntityModel;
@@ -28,7 +28,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.PreparableReloadListener.SharedState;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.PlayerModelType;
 import net.minecraft.world.item.Item;
@@ -58,7 +58,7 @@ import tinytaru.socketsorcery.registry.ModItems;
  * the anchor already tracks the 1-pixel-narrower arm, and the gems are spaced along Z and Y, the
  * axes the slim model leaves alone (see {@link BangleModel}).
  */
-public final class BangleTrinketRenderer implements TrinketRenderer, SimpleSynchronousResourceReloadListener {
+public final class BangleTrinketRenderer extends SimpleReloadListener<Void> implements TrinketRenderer {
 
 	private static final BangleTrinketRenderer INSTANCE = new BangleTrinketRenderer();
 
@@ -109,7 +109,7 @@ public final class BangleTrinketRenderer implements TrinketRenderer, SimpleSynch
 		for (BangleItem bangle : List.of(ModItems.COPPER_BANGLE, ModItems.BANGLE, ModItems.NETHERITE_BANGLE)) {
 			TrinketRendererRegistry.registerRenderer(bangle, INSTANCE);
 		}
-		ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(INSTANCE);
+		ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloadListener(INSTANCE.getFabricId(), INSTANCE);
 	}
 
 	@Override
@@ -319,13 +319,17 @@ public final class BangleTrinketRenderer implements TrinketRenderer, SimpleSynch
 				(bounds[2] + 1) / width, (bounds[3] + 1) / height);
 	}
 
-	@Override
 	public Identifier getFabricId() {
 		return SocketSorcery.id("bangle_renderer");
 	}
 
 	@Override
-	public void onResourceManagerReload(ResourceManager resourceManager) {
+	protected Void prepare(SharedState sharedState) {
+		return null;
+	}
+
+	@Override
+	protected void apply(Void ignored, SharedState sharedState) {
 		// Both the baked models and the gem sprites come from the packs that just changed.
 		wideBand = null;
 		slimBand = null;

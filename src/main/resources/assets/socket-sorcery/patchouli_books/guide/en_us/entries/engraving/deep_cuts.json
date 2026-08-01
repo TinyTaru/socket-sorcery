@@ -6,7 +6,7 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "A second strike on a carved cell cuts it $(bold)deeper$(). Deep cells are how $(l:socket-sorcery:modifiers/overview)modifiers$(/l) are written: certain exact sets of deep cells strengthen the engraving.$(br2)Cut the right set and the table names it; cut a wrong one and the engraving won't take."
+      "text": "A second strike on a carved cell cuts it $(bold)deeper$(). Deep cells are how $(l:socket-sorcery:modifiers/overview)modifiers$(/l) are written: certain exact sets of deep cells strengthen the engraving.$(br2)Close one and its cells alone flare as the table names it. A wrong set holds nothing — the gem waits, unfinished, until you make it right or smooth it away."
     }
   ]
 }

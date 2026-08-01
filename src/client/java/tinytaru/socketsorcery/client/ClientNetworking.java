@@ -5,8 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvents;
 import tinytaru.socketsorcery.client.screen.EngravingTableScreen;
-import tinytaru.socketsorcery.net.EngraveResult;
-import tinytaru.socketsorcery.net.EngraveResultS2CPayload;
+import tinytaru.socketsorcery.net.EngraveFeedbackS2CPayload;
 
 /**
  * Client-side receivers for the mod's server→client payloads. Registered from
@@ -15,18 +14,24 @@ import tinytaru.socketsorcery.net.EngraveResultS2CPayload;
 public final class ClientNetworking {
 
 	public static void registerClient() {
-		ClientPlayNetworking.registerGlobalReceiver(EngraveResultS2CPayload.ID, (payload, context) -> {
-			EngraveResult result = payload.result();
-			context.client().execute(() -> {
-				Minecraft mc = context.client();
-				mc.getSoundManager().play(SimpleSoundInstance.forUI(
-						result.success() ? SoundEvents.PLAYER_LEVELUP : SoundEvents.VILLAGER_NO,
-						result.success() ? 1.3F : 1.0F));
-				if (mc.screen instanceof EngravingTableScreen screen) {
-					screen.onEngraveResult(result);
-				}
-			});
-		});
+		ClientPlayNetworking.registerGlobalReceiver(EngraveFeedbackS2CPayload.ID, (payload, context) ->
+				context.client().execute(() -> {
+					Minecraft mc = context.client();
+					if (payload.patternComplete()) {
+						mc.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.PLAYER_LEVELUP, 1.3F));
+					} else if (!payload.modifiers().isEmpty()) {
+						mc.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.AMETHYST_BLOCK_CHIME, 1.4F));
+					} else {
+						return;
+					}
+					if (mc.screen instanceof EngravingTableScreen screen) {
+						if (payload.patternComplete()) {
+							screen.onPatternEngraved();
+						} else {
+							screen.onModifiersFormed(payload.modifiers());
+						}
+					}
+				}));
 	}
 
 	private ClientNetworking() {

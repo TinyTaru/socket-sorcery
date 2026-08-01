@@ -16,7 +16,7 @@
     {
       "type": "patchouli:text",
       "title": "Spikes",
-      "text": "$(bold)Necklace:$() wounds monsters that press close to you.$(br2)$(bold)Bangle / Ring:$() blasts nearby monsters back with a burst of damage.$(br2)$(bold)Cooldown:$() 2.8s per cast.$(br2)$(bold)Held by:$() Engravable Prismarine."
+      "text": "$(bold)Necklace:$() wounds monsters that press close to you.$(br2)$(bold)Bangle / Ring:$() blasts nearby monsters back with a burst of damage, leaving barbs behind that slow them.$(br2)$(bold)Cooldown:$() 2.8s per cast.$(br2)$(bold)Held by:$() Engravable Prismarine."
     }
   ]
 }

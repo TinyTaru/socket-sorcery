@@ -11,6 +11,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
+import tinytaru.socketsorcery.component.CarvingData;
 import tinytaru.socketsorcery.component.EngravingData;
 import tinytaru.socketsorcery.pattern.Modifier;
 import tinytaru.socketsorcery.pattern.Modifiers;
@@ -39,12 +40,31 @@ public class GemItem extends Item {
 		return stack.has(ModComponents.ENGRAVING) || super.isFoil(stack);
 	}
 
+	/**
+	 * A gem carrying half-finished cuts stops being a plain gem: it is stone with an unreadable mark on
+	 * it and grants nothing until the pattern is closed, so it says so rather than passing for blank.
+	 */
+	@Override
+	public Component getName(ItemStack stack) {
+		return stack.has(ModComponents.CARVING)
+				? Component.translatable("item.socket-sorcery.partially_engraved_gem")
+				: super.getName(stack);
+	}
+
 	@Override
 	public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display,
 			Consumer<Component> tooltip, TooltipFlag flag) {
 		HolderLookup.Provider registries = context.registries(); // may be null; lookups tolerate it
 		EngravingData engraving = stack.get(ModComponents.ENGRAVING);
-		if (engraving != null) {
+		CarvingData carving = stack.get(ModComponents.CARVING);
+		if (carving != null) {
+			Holder.Reference<Pattern> pattern = Patterns.get(registries, carving.pattern());
+			Component name = pattern != null
+					? pattern.value().coloredName(pattern.key().identifier())
+					: Component.literal(carving.pattern().toString());
+			tooltip.accept(Component.translatable("tooltip.socket-sorcery.carving_unfinished")
+					.withStyle(ChatFormatting.GRAY).append(Component.literal(" ")).append(name));
+		} else if (engraving != null) {
 			Holder.Reference<Pattern> pattern = Patterns.get(registries, engraving.pattern());
 			Component name = pattern != null
 					? pattern.value().coloredName(pattern.key().identifier())

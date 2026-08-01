@@ -29,6 +29,10 @@ public final class GridBits {
 		setIndex(mask, index(row, col));
 	}
 
+	public static void clearIndex(long[] mask, int index) {
+		mask[index >> 6] &= ~(1L << (index & 63));
+	}
+
 	public static boolean getIndex(long[] mask, int index) {
 		return (mask[index >> 6] >>> (index & 63) & 1L) != 0;
 	}

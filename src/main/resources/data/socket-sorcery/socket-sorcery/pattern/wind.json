@@ -53,6 +53,14 @@
       "magnitude": 1.2,
       "aim_scale": 0.8,
       "when": "no_hit_entity"
+    },
+    {
+      "type": "socket-sorcery:gust",
+      "target": "area",
+      "radius": 3.0,
+      "magnitude": 0.8,
+      "y_boost": 0.4,
+      "aim_scale": 1.0
     }
   ]
 }

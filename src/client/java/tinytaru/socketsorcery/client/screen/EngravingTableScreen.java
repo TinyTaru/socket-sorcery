@@ -2,6 +2,7 @@ package tinytaru.socketsorcery.client.screen;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -27,10 +28,10 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import tinytaru.socketsorcery.component.EngravingData;
+import tinytaru.socketsorcery.component.CarvingData;
 import tinytaru.socketsorcery.menu.EngravingTableMenu;
-import tinytaru.socketsorcery.net.EngraveResult;
-import tinytaru.socketsorcery.net.FinishEngravingC2SPayload;
+import tinytaru.socketsorcery.net.ChiselC2SPayload;
+import tinytaru.socketsorcery.pattern.Carvings;
 import tinytaru.socketsorcery.pattern.GridBits;
 import tinytaru.socketsorcery.pattern.Modifier;
 import tinytaru.socketsorcery.pattern.Modifiers;
@@ -42,10 +43,15 @@ import tinytaru.socketsorcery.registry.ModComponents;
  * The Engraving Table screen. The gem is shown in the background of a 16x16 grid, one cell per gem
  * pixel; the scroll's symbol is hinted faintly. Left-click chisels an opaque cell deeper (depth 1
  * then 2, capped). Depth 1 carves the base symbol; depth-2 cells form modifiers. Right-click eases a
- * cut back, but each such downgrade costs a gem dust matching the placed gem — charged for real when
- * the engraving is confirmed, and blocked here if the player doesn't have enough left to spend. There
- * are no modifier hints — the status line just names the modifiers you've correctly formed
- * (learn-by-doing).
+ * cut back, at the cost of a gem dust matching the placed gem. There are no modifier hints — the
+ * status line just names the modifiers you've correctly formed (learn-by-doing).
+ *
+ * <p>The grid is not this screen's state: every click goes to the server, which cuts the gem and
+ * saves the carve onto the item, and the grid is drawn from what the gem carries. There is no
+ * confirmation step — the engraving takes hold the moment the cells form a whole pattern, and the
+ * cut cells pulse to say so (only the new modifier's cells when it is a modifier that closed).
+ * Strokes are shown immediately and reconciled with the item a beat later, so carving stays
+ * responsive on a laggy connection without ever drifting from what the server actually cut.
  *
  * <p>Pattern/modifier definitions come from the synced dynamic registries, resolved through the
  * menu's captured registry view.
@@ -57,6 +63,13 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 	private static final int GRID_X = 64;
 	private static final int GRID_Y = 18;
 
+	/** How long a completion pulse runs, and how long a status banner lingers, in ticks. */
+	private static final int PULSE_TICKS = 24;
+	private static final int BANNER_TICKS = 40;
+
+	/** How long after a stroke the drawn grid is allowed to run ahead of the item it was sent to. */
+	private static final int STROKE_GRACE_TICKS = 8;
+
 	private final int[][] depth = new int[GRID][GRID]; // 0 = bare, 1 = carved, 2 = deep
 
 	// Cached gem pixel data so we don't read the texture every frame.
@@ -64,13 +77,12 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 	private int[][] gemPixels;   // [row][col] ARGB, null if no gem loaded
 	private boolean[][] gemOpaque;
 
-	private Holder.Reference<Pattern> shownPattern;
-	private Button confirmButton;
 	private Button resetButton;
 
-	// How many times a cut has been eased back (right-click) this session — each one owes a gem dust,
-	// settled against the player's inventory when the engraving is confirmed.
-	private int downgrades;
+	// Ticks left in which the drawn grid may still be ahead of the gem, because a stroke we drew is
+	// on its way to the server. Once it runs out the item is simply believed — which is also what
+	// silently undoes a stroke the server refused.
+	private int strokeGraceTicks;
 
 	// Click-and-drag state: which button is being dragged and the last cell it acted on, so a
 	// continuous drag chisels each cell it crosses exactly once rather than flickering back and forth.
@@ -78,12 +90,16 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 	private int lastDragRow = -1;
 	private int lastDragCol = -1;
 
-	// Feedback state: a short cell flash after a chisel stroke, and the last engrave result banner.
+	// Feedback state: a short cell flash after a chisel stroke, the completion pulse, and the banner
+	// that names what was just finished.
 	private int carveFlashRow = -1;
 	private int carveFlashCol = -1;
 	private int carveFlashTicks;
-	private EngraveResult lastResult;
-	private int resultTicks;
+	private long[] pulseCells;
+	private int pulseColor;
+	private int pulseTicks;
+	private Component banner;
+	private int bannerTicks;
 
 	// Whether the OS cursor is currently hidden in favour of drawing the equipped chisel over it —
 	// active only while hovering an engravable grid, so it never masks buttons or slots.
@@ -101,13 +117,9 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 	@Override
 	protected void init() {
 		super.init();
-		this.confirmButton = this.addRenderableWidget(Button
-				.builder(Component.translatable("screen.socket-sorcery.engrave"), b -> sendEngrave())
-				.bounds(this.leftPos + 8, this.topPos + 100, 48, 18)
-				.build());
 		this.resetButton = this.addRenderableWidget(Button
-				.builder(Component.translatable("screen.socket-sorcery.reset"), b -> clearCarving())
-				.bounds(this.leftPos + 8, this.topPos + 122, 48, 18)
+				.builder(Component.translatable("screen.socket-sorcery.reset"), b -> sendClear())
+				.bounds(this.leftPos + 8, this.topPos + 100, 48, 18)
 				.build());
 		updateButtons();
 	}
@@ -122,28 +134,69 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 	@Override
 	protected void containerTick() {
 		super.containerTick();
-		ensureGemData();
-		Holder.Reference<Pattern> pattern = this.menu.targetPattern();
-		if (pattern != shownPattern) {
-			shownPattern = pattern;
-			clearCarving();
+		if (strokeGraceTicks > 0) {
+			strokeGraceTicks--;
 		}
+		ensureGemData();
+		reconcileWithGem(false);
 		if (carveFlashTicks > 0) {
 			carveFlashTicks--;
 		}
-		if (resultTicks > 0) {
-			resultTicks--;
+		if (pulseTicks > 0) {
+			pulseTicks--;
+		}
+		if (bannerTicks > 0) {
+			bannerTicks--;
 		}
 		updateButtons();
 	}
 
-	/** Called from the client networking handler when the server reports an engraving outcome. */
-	public void onEngraveResult(EngraveResult result) {
-		this.lastResult = result;
-		this.resultTicks = result.success() ? 30 : 45;
-		if (result.success()) {
-			clearCarving();
+	/** Called from the client networking handler when a stroke finished the whole pattern. */
+	public void onPatternEngraved() {
+		Holder.Reference<Pattern> holder = this.menu.targetPattern();
+		pulse(carvedBits(), holder == null ? 0xFFFFFF : holder.value().color());
+		showBanner(Component.translatable("screen.socket-sorcery.engrave_success").withStyle(ChatFormatting.GREEN));
+	}
+
+	/** Called from the client networking handler when a stroke closed one or more modifiers. */
+	public void onModifiersFormed(List<Identifier> ids) {
+		Holder.Reference<Pattern> holder = this.menu.targetPattern();
+		if (holder == null) {
+			return;
 		}
+		long[] cells = GridBits.empty();
+		MutableComponent line = null;
+		int color = holder.value().color();
+		for (Identifier id : ids) {
+			Holder.Reference<Modifier> modifier = Modifiers.get(this.menu.registries(), id);
+			if (modifier == null) {
+				continue;
+			}
+			long[] modifierCells = modifier.value().cellMask(holder.value());
+			if (modifierCells != null) {
+				GridBits.orInto(cells, modifierCells);
+			}
+			color = modifier.value().color();
+			Component name = modifier.value().coloredName(id);
+			line = line == null ? Component.empty().append(name)
+					: line.append(Component.literal(", ").withStyle(ChatFormatting.DARK_GRAY)).append(name);
+		}
+		if (line == null) {
+			return;
+		}
+		pulse(cells, color);
+		showBanner(Component.translatable("screen.socket-sorcery.modifier_formed", line));
+	}
+
+	private void pulse(long[] cells, int color) {
+		pulseCells = cells;
+		pulseColor = color;
+		pulseTicks = PULSE_TICKS;
+	}
+
+	private void showBanner(Component message) {
+		banner = message;
+		bannerTicks = BANNER_TICKS;
 	}
 
 	private void ensureGemData() {
@@ -155,7 +208,8 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 		cachedGemItem = gem;
 		gemPixels = null;
 		gemOpaque = null;
-		clearCarving();
+		reconcileWithGem(true); // a different gem is a different carve; adopt it outright
+		pulseTicks = 0;
 		if (gem == null) {
 			return;
 		}
@@ -188,6 +242,29 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 		}
 	}
 
+	/**
+	 * Pulls the grid back in line with the carve saved on the gem. A stroke is drawn the instant it's
+	 * clicked, so for the round trip it takes the server to cut the gem and send it back the grid is
+	 * legitimately ahead of the item; outside that window the item is simply believed, which is what
+	 * quietly undoes a refused stroke and what picks up a gem swapped for another of the same kind.
+	 * {@code force} skips the window entirely, for when the gem in the slot changes outright.
+	 */
+	private void reconcileWithGem(boolean force) {
+		CarvingData carve = Carvings.on(this.menu.registries(), this.menu.gemStack());
+		int[][] saved = new int[GRID][GRID];
+		if (carve != null) {
+			for (int cell = 0; cell < GRID * GRID; cell++) {
+				saved[cell / GRID][cell % GRID] = Carvings.depth(carve.carved(), carve.deep(), cell);
+			}
+		}
+		if (Arrays.deepEquals(saved, depth) || (!force && strokeGraceTicks > 0)) {
+			return;
+		}
+		for (int row = 0; row < GRID; row++) {
+			System.arraycopy(saved[row], 0, depth[row], 0, GRID);
+		}
+	}
+
 	private long[] carvedBits() {
 		long[] bits = GridBits.empty();
 		for (int row = 0; row < GRID; row++) {
@@ -215,72 +292,64 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 	/**
 	 * The modifier set the current carve forms as pure geometry, ignoring whether the pattern accepts
 	 * them; null if the deep cells are stray or the symbol doesn't match. Kept separate from
-	 * {@link #validModifiers} so the status line can distinguish a botched carve from a well-formed
+	 * {@link #acceptedModifiers} so the status line can distinguish a botched carve from a well-formed
 	 * gesture this pattern refuses.
 	 */
-	private Set<Identifier> decodedModifiers() {
+	private Set<Identifier> formedModifiers() {
 		Holder.Reference<Pattern> holder = this.menu.targetPattern();
-		if (holder == null) {
-			return null;
-		}
-		Pattern pattern = holder.value();
-		long[] carved = carvedBits();
-		long[] deep = deepBits();
-		Set<Identifier> modifiers = Modifiers.decode(this.menu.registries(), pattern, deep);
-		if (modifiers == null || !GridBits.equal(carved, GridBits.or(pattern.maskBits(), deep))) {
-			return null;
-		}
-		return modifiers;
+		return holder == null ? null
+				: Carvings.formedModifiers(this.menu.registries(), holder.value(), carvedBits(), deepBits());
 	}
 
-	/** The applied modifier set if the current carve is a valid, acceptable engraving, else null. */
-	private Set<Identifier> validModifiers() {
+	/** The applied modifier set if the current carve is a finished, acceptable engraving, else null. */
+	private Set<Identifier> acceptedModifiers() {
 		Holder.Reference<Pattern> holder = this.menu.targetPattern();
-		Set<Identifier> modifiers = decodedModifiers();
-		if (holder == null || modifiers == null) {
-			return null;
-		}
-		return Modifiers.incompatible(holder.value(), modifiers).isEmpty() ? modifiers : null;
+		return holder == null ? null
+				: Carvings.acceptedModifiers(this.menu.registries(), holder.value(), carvedBits(), deepBits());
 	}
 
-	private boolean anyCarved() {
+	/** Total chisel strokes standing on the gem — also what easing them all back would cost in dust. */
+	private int strokeCount() {
+		int strokes = 0;
 		for (int[] row : depth) {
 			for (int d : row) {
-				if (d > 0) {
-					return true;
-				}
+				strokes += d;
 			}
 		}
-		return false;
-	}
-
-	private void clearCarving() {
-		for (int[] row : depth) {
-			java.util.Arrays.fill(row, 0);
-		}
-		downgrades = 0;
-		updateButtons();
+		return strokes;
 	}
 
 	private void updateButtons() {
-		if (confirmButton != null) {
-			confirmButton.active = this.menu.canEngrave() && validModifiers() != null;
+		if (resetButton == null) {
+			return;
 		}
-		if (resetButton != null) {
-			resetButton.active = anyCarved();
-		}
+		int strokes = strokeCount();
+		resetButton.active = strokes > 0 && this.menu.canAffordEase(strokes);
 	}
 
-	private void sendEngrave() {
-		if (this.menu.canEngrave() && validModifiers() != null) {
-			ClientPlayNetworking.send(new FinishEngravingC2SPayload(carvedBits(), deepBits(), downgrades));
-		}
+	private void sendStroke(int cell, ChiselC2SPayload.Action action) {
+		ClientPlayNetworking.send(new ChiselC2SPayload(cell, action));
+		strokeGraceTicks = STROKE_GRACE_TICKS;
 	}
 
-	/** True if easing another cut back is still affordable — dust owed so far is below what's on hand. */
-	private boolean canAffordDowngrade() {
-		Item dust = this.menu.currentGemDust();
-		return dust == null || this.menu.countDust(dust) > downgrades;
+	/** Eases every cut back at once — the same dust bill as doing it a cell at a time by hand. */
+	private void sendClear() {
+		int strokes = strokeCount();
+		if (strokes == 0) {
+			return;
+		}
+		if (!this.menu.canAffordEase(strokes)) {
+			playDeniedSound();
+			return;
+		}
+		for (int[] row : depth) {
+			Arrays.fill(row, 0);
+		}
+		sendStroke(0, ChiselC2SPayload.Action.CLEAR);
+		pulseTicks = 0;
+		carveFlashTicks = 0;
+		playCarveSound(0);
+		updateButtons();
 	}
 
 	/** Mouse input arrives as a {@link MouseButtonEvent} now, carrying position and button together. */
@@ -288,7 +357,7 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
 		int button = event.button();
 		// Left-click chisels a cell deeper (0→1→2); right-click eases it back (2→1→0), at a dust cost.
-		if ((button == 0 || button == 1) && this.menu.canEngrave() && gemOpaque != null) {
+		if ((button == 0 || button == 1) && this.menu.canCarve() && gemOpaque != null) {
 			int cell = cellAt(event.x(), event.y());
 			if (cell >= 0) {
 				int row = cell / GRID;
@@ -310,7 +379,7 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 	@Override
 	public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
 		int button = event.button();
-		if (button == dragButton && this.menu.canEngrave() && gemOpaque != null) {
+		if (button == dragButton && this.menu.canCarve() && gemOpaque != null) {
 			int cell = cellAt(event.x(), event.y());
 			if (cell >= 0) {
 				int row = cell / GRID;
@@ -336,30 +405,38 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 		return super.mouseReleased(event);
 	}
 
-	/** Chisels a single cell one step deeper (left) or eases it back one step (right), at a dust cost. */
+	/**
+	 * Chisels a single cell one step deeper (left) or eases it back one step (right), at a dust cost.
+	 * The cut is drawn straight away and sent to the server, which is what actually cuts the gem.
+	 */
 	private void applyChisel(int button, int row, int col) {
 		if (!gemOpaque[row][col]) { // can't chisel transparent pixels
 			return;
 		}
 		int before = depth[row][col];
+		ChiselC2SPayload.Action action;
 		if (button == 1) {
-			if (before > 0 && !canAffordDowngrade()) {
+			if (before == 0) {
+				return;
+			}
+			if (!this.menu.canAffordEase(1)) {
 				playDeniedSound();
 				return;
 			}
-			depth[row][col] = Math.max(before - 1, 0);
-			if (depth[row][col] != before) {
-				downgrades++;
-			}
+			action = ChiselC2SPayload.Action.EASE;
+			depth[row][col] = before - 1;
 		} else {
-			depth[row][col] = Math.min(before + 1, 2);
+			if (before >= 2) {
+				return;
+			}
+			action = ChiselC2SPayload.Action.DEEPEN;
+			depth[row][col] = before + 1;
 		}
-		if (depth[row][col] != before) {
-			carveFlashRow = row;
-			carveFlashCol = col;
-			carveFlashTicks = 4;
-			playCarveSound(depth[row][col]);
-		}
+		sendStroke(GridBits.index(row, col), action);
+		carveFlashRow = row;
+		carveFlashCol = col;
+		carveFlashTicks = 4;
+		playCarveSound(depth[row][col]);
 		updateButtons();
 	}
 
@@ -401,13 +478,30 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 	 */
 	@Override
 	public void extractContents(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
-		extractPanel(g, mouseX, mouseY);
+		extractPanel(g, mouseX, mouseY, partialTick);
 		super.extractContents(g, mouseX, mouseY, partialTick);
-		ItemStack preview = previewStack();
-		if (preview != null) {
-			g.item(preview, this.leftPos + 42, this.topPos + 70);
+		ItemStack gem = this.menu.gemStack();
+		if (gem.has(ModComponents.ENGRAVING)) {
+			g.item(gem, this.leftPos + 42, this.topPos + 70);
 		}
+		extractResetCost(g);
 		extractChiselCursor(g, mouseX, mouseY);
+	}
+
+	/**
+	 * The current gem's dust icon and the stroke count Reset would spend, shown beside the button
+	 * itself rather than behind a hover — the cost of clicking Reset should be visible at a glance.
+	 */
+	private void extractResetCost(GuiGraphicsExtractor g) {
+		int strokes = strokeCount();
+		Item dust = this.menu.currentGemDust();
+		if (strokes <= 0 || dust == null) {
+			return;
+		}
+		int x = this.leftPos + 8;
+		int y = this.topPos + 122;
+		g.item(dust.getDefaultInstance(), x, y);
+		g.text(this.font, Component.literal("x" + strokes), x + 18, y + 4, 0xFFFFFFFF, true);
 	}
 
 	// The chisel item icons are drawn on a 16x16 canvas but the tool itself doesn't reach the edges —
@@ -423,14 +517,14 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 	 */
 	private void extractChiselCursor(GuiGraphicsExtractor g, int mouseX, int mouseY) {
 		ItemStack chisel = this.menu.chiselStack();
-		boolean overGrid = this.menu.canEngrave() && cellAt(mouseX, mouseY) >= 0 && !chisel.isEmpty();
+		boolean overGrid = this.menu.canCarve() && cellAt(mouseX, mouseY) >= 0 && !chisel.isEmpty();
 		setChiselCursorActive(overGrid);
 		if (overGrid) {
 			g.item(chisel, mouseX - CHISEL_TIP_X, mouseY - CHISEL_TIP_Y);
 		}
 	}
 
-	private void extractPanel(GuiGraphicsExtractor g, int mouseX, int mouseY) {
+	private void extractPanel(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
 		int left = this.leftPos;
 		int top = this.topPos;
 		g.fill(left, top, left + this.imageWidth, top + this.imageHeight, 0xFFC6C6C6);
@@ -445,7 +539,7 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 			}
 		}
 
-		renderGrid(g, mouseX, mouseY);
+		renderGrid(g, mouseX, mouseY, partialTick);
 	}
 
 	private static void drawSlot(GuiGraphicsExtractor g, int x, int y) {
@@ -454,7 +548,7 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 		g.fill(x - 1, y - 1, x, y + 17, 0xFF8B8B8B);
 	}
 
-	private void renderGrid(GuiGraphicsExtractor g, int mouseX, int mouseY) {
+	private void renderGrid(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
 		Holder.Reference<Pattern> holder = this.menu.targetPattern();
 		Pattern pattern = holder == null ? null : holder.value();
 		int ox = this.leftPos + GRID_X;
@@ -487,9 +581,9 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 
 		// Tint the cells of each correctly-formed modifier in its own colour: feedback on what you've
 		// shaped, without revealing where unformed modifiers live (the discovery is the point).
-		Set<Identifier> valid = pattern == null ? null : validModifiers();
-		if (valid != null) {
-			for (Identifier id : valid) {
+		Set<Identifier> accepted = pattern == null ? null : acceptedModifiers();
+		if (accepted != null) {
+			for (Identifier id : accepted) {
 				Holder.Reference<Modifier> modifier = Modifiers.get(this.menu.registries(), id);
 				if (modifier == null) {
 					continue;
@@ -509,6 +603,8 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 			}
 		}
 
+		renderPulse(g, ox, oy, partialTick);
+
 		// Brief white flash on the cell just chiselled.
 		if (carveFlashTicks > 0 && carveFlashRow >= 0) {
 			int alpha = Math.min(0xFF, 0x30 + 0x30 * carveFlashTicks);
@@ -519,7 +615,7 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 
 		// Hover highlight: white over a carveable pixel, faint red over a transparent one.
 		int hover = cellAt(mouseX, mouseY);
-		if (hover >= 0 && this.menu.canEngrave()) {
+		if (hover >= 0 && this.menu.canCarve()) {
 			int row = hover / GRID;
 			int col = hover % GRID;
 			boolean opaque = gemOpaque != null && gemOpaque[row][col];
@@ -534,6 +630,40 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 		}
 	}
 
+	/**
+	 * The completion pulse: the cells that just closed something brighten and fade a few times over
+	 * {@link #PULSE_TICKS}, in the colour of whatever closed — the whole carve for a finished pattern,
+	 * only that modifier's cells for a modifier. Driven off {@code partialTick} so it breathes
+	 * smoothly rather than stepping at 20Hz.
+	 */
+	private void renderPulse(GuiGraphicsExtractor g, int ox, int oy, float partialTick) {
+		if (pulseTicks <= 0 || pulseCells == null) {
+			return;
+		}
+		float remaining = Math.max(0.0F, pulseTicks - partialTick);
+		float wave = (float) Math.abs(Math.sin(remaining * Math.PI / 6.0));
+		int alpha = (int) (0xC0 * wave * (remaining / PULSE_TICKS));
+		if (alpha <= 0) {
+			return;
+		}
+		int color = (alpha << 24) | (brighten(pulseColor) & 0xFFFFFF);
+		for (int idx = 0; idx < GRID * GRID; idx++) {
+			if (GridBits.getIndex(pulseCells, idx)) {
+				int x1 = ox + (idx % GRID) * CELL;
+				int y1 = oy + (idx / GRID) * CELL;
+				g.fill(x1, y1, x1 + CELL, y1 + CELL, color);
+			}
+		}
+	}
+
+	/** Half-way to white, so a pulse reads as the same colour lit up rather than a different one. */
+	private static int brighten(int rgb) {
+		int r = (((rgb >> 16) & 0xFF) + 0xFF) / 2;
+		int gr = (((rgb >> 8) & 0xFF) + 0xFF) / 2;
+		int b = ((rgb & 0xFF) + 0xFF) / 2;
+		return (r << 16) | (gr << 8) | b;
+	}
+
 	@Override
 	protected void extractLabels(GuiGraphicsExtractor g, int mouseX, int mouseY) {
 		super.extractLabels(g, mouseX, mouseY);
@@ -544,23 +674,23 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 	}
 
 	private Component statusLine() {
-		if (resultTicks > 0 && lastResult != null) {
-			return resultMessage(lastResult);
+		if (bannerTicks > 0 && banner != null) {
+			return banner;
 		}
 		ItemStack gem = this.menu.gemStack();
 		Holder.Reference<Pattern> holder = this.menu.targetPattern();
+		if (gem.isEmpty()) {
+			return Component.translatable("screen.socket-sorcery.need_gem").withStyle(ChatFormatting.DARK_GRAY);
+		}
 		if (holder == null) {
 			return Component.translatable("screen.socket-sorcery.need_scroll").withStyle(ChatFormatting.DARK_GRAY);
 		}
 		Pattern pattern = holder.value();
 		Identifier patternId = holder.key().identifier();
-		if (gem.isEmpty()) {
-			return Component.translatable("screen.socket-sorcery.need_gem").withStyle(ChatFormatting.DARK_GRAY);
-		}
 		if (!Patterns.canEngrave(this.menu.registries(), gem.getItem(), patternId)) {
 			return Component.translatable("screen.socket-sorcery.incompatible").withStyle(ChatFormatting.DARK_RED);
 		}
-		if (!this.menu.canEngrave()) {
+		if (!this.menu.canCarve()) {
 			return Component.translatable("screen.socket-sorcery.need_chisel").withStyle(ChatFormatting.DARK_GRAY);
 		}
 
@@ -568,9 +698,9 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 		if (!GridBits.subset(pattern.maskBits(), carvedBits())) {
 			return pattern.coloredName(patternId);
 		}
-		Set<Identifier> modifiers = validModifiers();
+		Set<Identifier> modifiers = acceptedModifiers();
 		if (modifiers == null) {
-			Set<Identifier> formed = decodedModifiers();
+			Set<Identifier> formed = formedModifiers();
 			List<Identifier> rejected = formed == null ? List.of() : Modifiers.incompatible(pattern, formed);
 			if (!rejected.isEmpty()) {
 				Identifier id = rejected.getFirst();
@@ -592,35 +722,6 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 		return line;
 	}
 
-	private Component resultMessage(EngraveResult result) {
-		return switch (result) {
-			case OK -> Component.translatable("screen.socket-sorcery.engrave_success").withStyle(ChatFormatting.GREEN);
-			case NO_CHISEL -> Component.translatable("screen.socket-sorcery.fail_no_chisel").withStyle(ChatFormatting.DARK_RED);
-			case NO_DUST -> Component.translatable("screen.socket-sorcery.fail_no_dust").withStyle(ChatFormatting.DARK_RED);
-			case NOT_ENGRAVABLE -> Component.translatable("screen.socket-sorcery.fail_incompatible").withStyle(ChatFormatting.DARK_RED);
-			case BAD_MODIFIERS -> Component.translatable("screen.socket-sorcery.fail_bad_modifiers").withStyle(ChatFormatting.DARK_RED);
-			case BAD_SYMBOL -> Component.translatable("screen.socket-sorcery.fail_bad_symbol").withStyle(ChatFormatting.DARK_RED);
-			case INCOMPATIBLE_MODIFIER -> Component.translatable("screen.socket-sorcery.fail_incompatible_modifier").withStyle(ChatFormatting.DARK_RED);
-		};
-	}
-
-	/** A live preview of the gem as it would look once engraved with the current valid carve. */
-	private ItemStack previewStack() {
-		Set<Identifier> modifiers = validModifiers();
-		Holder.Reference<Pattern> holder = this.menu.targetPattern();
-		if (modifiers == null || holder == null) {
-			return null;
-		}
-		ItemStack preview = this.menu.gemStack().copy();
-		if (preview.isEmpty()) {
-			return null;
-		}
-		preview.setCount(1);
-		preview.set(ModComponents.ENGRAVING,
-				new EngravingData(holder.key().identifier(), Modifiers.ordered(modifiers)));
-		return preview;
-	}
-
 	/** Names the hovered cell: a formed modifier's cell, or a base-symbol cell. */
 	@Override
 	protected void extractTooltip(GuiGraphicsExtractor g, int mouseX, int mouseY) {
@@ -635,9 +736,9 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 			super.extractTooltip(g, mouseX, mouseY);
 			return;
 		}
-		Set<Identifier> valid = validModifiers();
-		if (valid != null) {
-			for (Identifier id : valid) {
+		Set<Identifier> accepted = acceptedModifiers();
+		if (accepted != null) {
+			for (Identifier id : accepted) {
 				Holder.Reference<Modifier> modifier = Modifiers.get(this.menu.registries(), id);
 				long[] cells = modifier == null ? null : modifier.value().cellMask(pattern);
 				if (cells != null && GridBits.getIndex(cells, cell)) {

@@ -6,7 +6,10 @@ import net.minecraft.util.StringRepresentable;
 
 /** Who a {@code PatternEffectComponent} applies to. */
 public enum EffectTarget implements StringRepresentable {
-	/** The wearer. */
+	/**
+	 * The wearer — and, on an engraving carrying Range, every non-hostile living thing within that
+	 * many blocks of them, so a self-buff pattern can be shared out as a small aura.
+	 */
 	SELF("self"),
 	/** The living entity the activation hit; nothing on a block hit or miss. */
 	HIT_ENTITY("hit_entity"),

@@ -6,11 +6,15 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "The gem's face is a 16x16 grid, and the scroll's symbol shows through faintly. $(bold)Left-click$() carves a cell; $(bold)right-click$() smooths it back. Carve the whole symbol — no more, no less — and confirm.$(br2)A live preview shows exactly what your finished gem will look like."
+      "text": "The gem's face is a 16x16 grid, and the scroll's symbol shows through faintly. $(bold)Left-click$() carves a cell; $(bold)right-click$() smooths it back. Carve the whole symbol — no more, no less.$(br2)There is nothing to confirm: the moment the symbol is whole the engraving takes hold, the cut cells flare, and the gem is finished."
     },
     {
       "type": "patchouli:text",
-      "text": "Every carved cell costs one point of chisel durability, so grand symbols wear your tools faster. Better chisels last longer — and a netherite edge cuts so cleanly it wastes less of itself on every engraving."
+      "text": "Every cut is made in the stone itself. Take a half-carved gem out of the table and the cuts come with it — it is a $(item)Partially Engraved Gem$() until the symbol is closed, and grants nothing until then. The scroll isn't spent until that final cut closes the symbol, so it can be pulled back out and swapped freely mid-carve — just have one in place for whichever stroke finishes the shape."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Each cut costs a point of chisel durability, so grand symbols wear your tools faster, and smoothing one back costs a pinch of dust from the same gem. Better chisels last longer — and a netherite edge cuts so cleanly it wastes less of itself on every engraving."
     },
     {
       "type": "patchouli:crafting",

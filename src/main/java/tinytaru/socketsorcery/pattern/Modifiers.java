@@ -46,16 +46,26 @@ public final class Modifiers {
 	 * (a plain base engraving).
 	 */
 	public static Set<Identifier> decode(HolderLookup.Provider registries, Pattern pattern, long[] deep) {
+		Set<Identifier> applied = formedSubset(registries, pattern, deep);
+		return GridBits.equal(cellsFor(registries, pattern, applied), deep) ? applied : null;
+	}
+
+	/**
+	 * The modifiers fully embedded in {@code deep}, tolerating stray or otherwise-incomplete cells
+	 * alongside them — unlike {@link #decode}, this doesn't require {@code deep} to be exactly their
+	 * union. Meant for asking "which modifiers were already standing" mid-carve, when an unrelated
+	 * half-cut modifier elsewhere in {@code deep} would otherwise make {@link #decode} fail outright
+	 * and hide a different one that's already whole.
+	 */
+	public static Set<Identifier> formedSubset(HolderLookup.Provider registries, Pattern pattern, long[] deep) {
 		Set<Identifier> applied = new LinkedHashSet<>();
-		long[] union = GridBits.empty();
 		all(registries).forEach(holder -> {
 			long[] cells = holder.value().cellMask(pattern);
 			if (cells != null && GridBits.subset(cells, deep)) {
 				applied.add(holder.key().identifier());
-				GridBits.orInto(union, cells);
 			}
 		});
-		return GridBits.equal(union, deep) ? applied : null;
+		return applied;
 	}
 
 	/**

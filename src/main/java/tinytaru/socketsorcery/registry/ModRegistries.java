@@ -14,6 +14,7 @@ import tinytaru.socketsorcery.pattern.PatternEffectComponent;
 import tinytaru.socketsorcery.pattern.effect.DamageComponent;
 import tinytaru.socketsorcery.pattern.effect.FlameLineComponent;
 import tinytaru.socketsorcery.pattern.effect.FreezeComponent;
+import tinytaru.socketsorcery.pattern.effect.GustComponent;
 import tinytaru.socketsorcery.pattern.effect.HealComponent;
 import tinytaru.socketsorcery.pattern.effect.IgniteComponent;
 import tinytaru.socketsorcery.pattern.effect.LaunchComponent;
@@ -66,6 +67,7 @@ public final class ModRegistries {
 		Registry.register(EFFECT_TYPE, SocketSorcery.id("ignite"), IgniteComponent.CODEC);
 		Registry.register(EFFECT_TYPE, SocketSorcery.id("flame_line"), FlameLineComponent.CODEC);
 		Registry.register(EFFECT_TYPE, SocketSorcery.id("launch"), LaunchComponent.CODEC);
+		Registry.register(EFFECT_TYPE, SocketSorcery.id("gust"), GustComponent.CODEC);
 		Registry.register(EFFECT_TYPE, SocketSorcery.id("teleport"), TeleportComponent.CODEC);
 		Registry.register(EFFECT_TYPE, SocketSorcery.id("summon_lightning"), SummonLightningComponent.CODEC);
 

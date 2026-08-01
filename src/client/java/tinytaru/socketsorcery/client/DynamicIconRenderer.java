@@ -11,15 +11,15 @@ import java.util.function.Supplier;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
+import net.fabricmc.fabric.api.resource.v1.reloader.SimpleReloadListener;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.resources.PreparableReloadListener.SharedState;
 import net.minecraft.server.packs.resources.Resource;
-import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
@@ -42,8 +42,8 @@ import tinytaru.socketsorcery.SocketSorcery;
  * below is unchanged. The per-stack lookup moved into {@link #extractArgument}, which runs before
  * submission and yields the {@link Icon} that {@link #submit} draws.
  */
-public abstract class DynamicIconRenderer
-		implements SpecialModelRenderer<DynamicIconRenderer.Icon>, SimpleSynchronousResourceReloadListener {
+public abstract class DynamicIconRenderer extends SimpleReloadListener<Void>
+		implements SpecialModelRenderer<DynamicIconRenderer.Icon> {
 
 	protected static final int SIZE = 16;
 
@@ -134,13 +134,17 @@ public abstract class DynamicIconRenderer
 		return opaque;
 	}
 
-	@Override
 	public final Identifier getFabricId() {
 		return fabricId;
 	}
 
 	@Override
-	public final void onResourceManagerReload(ResourceManager resourceManager) {
+	protected final Void prepare(SharedState sharedState) {
+		return null;
+	}
+
+	@Override
+	protected final void apply(Void ignored, SharedState sharedState) {
 		for (Identifier id : cache.values()) {
 			Minecraft.getInstance().getTextureManager().release(id);
 		}

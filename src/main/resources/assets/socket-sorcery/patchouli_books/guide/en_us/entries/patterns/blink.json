@@ -16,7 +16,7 @@
     {
       "type": "patchouli:text",
       "title": "Blink",
-      "text": "$(bold)Necklace:$() grants Dolphin's Grace.$(br2)$(bold)Bangle / Ring:$() teleports you to whatever you are looking at.$(br2)$(bold)Cooldown:$() 4.0s per cast.$(br2)$(bold)Held by:$() Engravable Ender Pearl."
+      "text": "$(bold)Necklace:$() grants Dolphin's Grace.$(br2)$(bold)Bangle / Ring:$() teleports you to whatever you are looking at — or, with nothing in view, as far ahead as the way is clear.$(br2)$(bold)Cooldown:$() 4.0s per cast.$(br2)$(bold)Held by:$() Engravable Ender Pearl."
     }
   ]
 }

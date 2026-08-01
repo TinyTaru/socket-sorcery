@@ -56,6 +56,21 @@
       "duration": 100,
       "amplifier": 1,
       "target": "hit_entity_or_self"
+    },
+    {
+      "type": "socket-sorcery:heal",
+      "amount": 4,
+      "target": "aimed_line",
+      "radius": 4.0
+    },
+    {
+      "type": "socket-sorcery:mob_effect",
+      "effect": "minecraft:regeneration",
+      "duration": 80,
+      "amplifier": 0,
+      "target": "aimed_line",
+      "radius": 4.0,
+      "filter": "living"
     }
   ]
 }

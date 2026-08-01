@@ -44,6 +44,14 @@
       "radius": 3,
       "knockback": 0.6,
       "knockback_aim_scale": 1.4
+    },
+    {
+      "type": "socket-sorcery:mob_effect",
+      "effect": "minecraft:slowness",
+      "duration": 60,
+      "amplifier": 0,
+      "target": "area",
+      "radius": 3
     }
   ]
 }
