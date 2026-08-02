@@ -76,8 +76,9 @@ final class EffectTargets {
 	 * opposing Directions cancel to nothing rather than to an arbitrary axis.
 	 *
 	 * <p>This is the single source of that geometry: {@link EffectTarget#AIMED_LINE} resolves
-	 * entities from these cells, and positional effects such as {@link FlameLineComponent} place
-	 * blocks along the very same ones.
+	 * entities from these cells, positional effects such as {@link FlameLineComponent} place
+	 * blocks along the very same ones, and {@link EffectShapes} draws the visuals down them — so what
+	 * the player sees cannot drift from what the cast actually reaches.
 	 */
 	static List<BlockPos> aimedLineCells(ServerPlayer player, HitResult hit, EngraveMods mods, double length) {
 		if (!mods.hasAim()) {

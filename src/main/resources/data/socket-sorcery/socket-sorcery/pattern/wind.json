@@ -37,6 +37,15 @@
       "target": "self",
       "ambient": true,
       "show_particles": false
+    },
+    {
+      "type": "socket-sorcery:particles",
+      "particle": {
+        "type": "minecraft:cloud"
+      },
+      "shape": "ally_aura",
+      "points": 16,
+      "snap_to_ground": true
     }
   ],
   "bangle_effects": [
@@ -61,6 +70,16 @@
       "magnitude": 0.8,
       "y_boost": 0.4,
       "aim_scale": 1.0
+    },
+    {
+      "type": "socket-sorcery:particles",
+      "particle": {
+        "type": "minecraft:gust"
+      },
+      "shape": "ring",
+      "radius": 3.0,
+      "points": 12,
+      "y_offset": 0.3
     }
   ]
 }

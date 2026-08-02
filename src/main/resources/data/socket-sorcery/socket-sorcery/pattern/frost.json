@@ -48,6 +48,16 @@
       "radius": 5,
       "add_ticks": 6,
       "max_ticks": 140
+    },
+    {
+      "type": "socket-sorcery:particles",
+      "particle": {
+        "type": "minecraft:snowflake"
+      },
+      "shape": "ring",
+      "radius": 5.0,
+      "points": 24,
+      "snap_to_ground": true
     }
   ],
   "bangle_effects": [
@@ -76,6 +86,25 @@
       "target": "aimed_line",
       "radius": 4.0,
       "set_ticks": 160
+    },
+    {
+      "type": "socket-sorcery:particles",
+      "particle": {
+        "type": "minecraft:snowflake"
+      },
+      "shape": "line",
+      "radius": 4.0,
+      "count": 3,
+      "spread": 0.3
+    },
+    {
+      "type": "socket-sorcery:spawn_spikes",
+      "shape": "line",
+      "radius": 4.0,
+      "color": "#A9DDF3",
+      "scale": 0.8,
+      "life_ticks": 20,
+      "stagger_ticks": 2
     }
   ]
 }

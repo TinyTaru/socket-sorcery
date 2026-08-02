@@ -54,6 +54,16 @@
       "type": "socket-sorcery:flame_line",
       "seconds": 5,
       "length": 4.0
+    },
+    {
+      "type": "socket-sorcery:particles",
+      "particle": {
+        "type": "minecraft:flame"
+      },
+      "shape": "line",
+      "radius": 4.0,
+      "count": 4,
+      "spread": 0.2
     }
   ]
 }

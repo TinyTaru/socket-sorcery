@@ -19,6 +19,8 @@ import tinytaru.socketsorcery.pattern.effect.HealComponent;
 import tinytaru.socketsorcery.pattern.effect.IgniteComponent;
 import tinytaru.socketsorcery.pattern.effect.LaunchComponent;
 import tinytaru.socketsorcery.pattern.effect.MobEffectComponent;
+import tinytaru.socketsorcery.pattern.effect.ShapedParticlesComponent;
+import tinytaru.socketsorcery.pattern.effect.SpawnSpikesComponent;
 import tinytaru.socketsorcery.pattern.effect.SummonLightningComponent;
 import tinytaru.socketsorcery.pattern.effect.TeleportComponent;
 import tinytaru.socketsorcery.pattern.rule.CenterBlockRule;
@@ -70,6 +72,8 @@ public final class ModRegistries {
 		Registry.register(EFFECT_TYPE, SocketSorcery.id("gust"), GustComponent.CODEC);
 		Registry.register(EFFECT_TYPE, SocketSorcery.id("teleport"), TeleportComponent.CODEC);
 		Registry.register(EFFECT_TYPE, SocketSorcery.id("summon_lightning"), SummonLightningComponent.CODEC);
+		Registry.register(EFFECT_TYPE, SocketSorcery.id("spawn_spikes"), SpawnSpikesComponent.CODEC);
+		Registry.register(EFFECT_TYPE, SocketSorcery.id("particles"), ShapedParticlesComponent.CODEC);
 
 		Registry.register(CELL_RULE_TYPE, SocketSorcery.id("center_block"), CenterBlockRule.CODEC);
 		Registry.register(CELL_RULE_TYPE, SocketSorcery.id("top_bottom"), TopBottomRule.CODEC);

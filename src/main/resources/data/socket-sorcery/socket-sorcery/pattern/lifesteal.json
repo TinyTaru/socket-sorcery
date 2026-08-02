@@ -56,6 +56,16 @@
       "amount": 3,
       "target": "aimed_line",
       "radius": 4.0
+    },
+    {
+      "type": "socket-sorcery:particles",
+      "particle": {
+        "type": "minecraft:damage_indicator"
+      },
+      "shape": "line",
+      "radius": 4.0,
+      "count": 2,
+      "spread": 0.2
     }
   ]
 }

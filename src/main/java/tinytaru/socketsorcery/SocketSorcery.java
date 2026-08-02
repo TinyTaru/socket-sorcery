@@ -13,6 +13,7 @@ import tinytaru.socketsorcery.net.ModNetworking;
 import tinytaru.socketsorcery.registry.ModBlockEntities;
 import tinytaru.socketsorcery.registry.ModBlocks;
 import tinytaru.socketsorcery.registry.ModComponents;
+import tinytaru.socketsorcery.registry.ModEntities;
 import tinytaru.socketsorcery.registry.ModItemGroup;
 import tinytaru.socketsorcery.registry.ModItems;
 import tinytaru.socketsorcery.registry.ModLoot;
@@ -43,6 +44,7 @@ public class SocketSorcery implements ModInitializer {
 		tinytaru.socketsorcery.registry.ModRegistries.init();
 		ModBlocks.init();
 		ModBlockEntities.init();
+		ModEntities.init();
 		ModItems.init();
 		RingReactions.init();
 		ModMenus.init();

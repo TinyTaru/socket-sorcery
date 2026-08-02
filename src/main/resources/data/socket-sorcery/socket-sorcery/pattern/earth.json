@@ -43,6 +43,15 @@
       "target": "self",
       "ambient": true,
       "show_particles": false
+    },
+    {
+      "type": "socket-sorcery:particles",
+      "particle": {
+        "type": "minecraft:crit"
+      },
+      "shape": "ally_aura",
+      "points": 16,
+      "snap_to_ground": true
     }
   ],
   "bangle_effects": [
@@ -52,6 +61,15 @@
       "duration": 200,
       "amplifier": 1,
       "target": "self"
+    },
+    {
+      "type": "socket-sorcery:particles",
+      "particle": {
+        "type": "minecraft:crit"
+      },
+      "shape": "ally_aura",
+      "points": 16,
+      "snap_to_ground": true
     }
   ]
 }

@@ -42,6 +42,15 @@
       "target": "self",
       "ambient": true,
       "show_particles": false
+    },
+    {
+      "type": "socket-sorcery:particles",
+      "particle": {
+        "type": "minecraft:heart"
+      },
+      "shape": "ally_aura",
+      "points": 16,
+      "snap_to_ground": true
     }
   ],
   "bangle_effects": [
@@ -71,6 +80,16 @@
       "target": "aimed_line",
       "radius": 4.0,
       "filter": "living"
+    },
+    {
+      "type": "socket-sorcery:particles",
+      "particle": {
+        "type": "minecraft:heart"
+      },
+      "shape": "line",
+      "radius": 4.0,
+      "count": 2,
+      "spread": 0.2
     }
   ]
 }

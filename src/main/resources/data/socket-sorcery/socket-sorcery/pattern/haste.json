@@ -44,6 +44,15 @@
       "target": "self",
       "ambient": true,
       "show_particles": false
+    },
+    {
+      "type": "socket-sorcery:particles",
+      "particle": {
+        "type": "minecraft:happy_villager"
+      },
+      "shape": "ally_aura",
+      "points": 16,
+      "snap_to_ground": true
     }
   ],
   "bangle_effects": [
@@ -59,6 +68,15 @@
       "effect": "minecraft:luck",
       "duration": 400,
       "target": "self"
+    },
+    {
+      "type": "socket-sorcery:particles",
+      "particle": {
+        "type": "minecraft:happy_villager"
+      },
+      "shape": "ally_aura",
+      "points": 16,
+      "snap_to_ground": true
     }
   ]
 }

@@ -34,9 +34,30 @@
       "amount": 1,
       "target": "area",
       "radius": 2.5
+    },
+    {
+      "type": "socket-sorcery:particles",
+      "particle": {
+        "type": "minecraft:crit"
+      },
+      "shape": "ring",
+      "radius": 2.5,
+      "points": 12,
+      "snap_to_ground": true,
+      "y_offset": 0.05
     }
   ],
   "bangle_effects": [
+    {
+      "type": "socket-sorcery:spawn_spikes",
+      "shape": "ring",
+      "radius": 3.0,
+      "points": 8,
+      "color": "#8B99A3",
+      "life_ticks": 22,
+      "stagger_ticks": 1,
+      "snap_down": 3
+    },
     {
       "type": "socket-sorcery:damage",
       "amount": 3,

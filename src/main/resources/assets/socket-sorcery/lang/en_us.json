@@ -52,6 +52,7 @@
 
 	"block.socket-sorcery.engraving_table": "Engraving Table",
 	"block.socket-sorcery.socketing_bench": "Socketing Bench",
+	"entity.socket-sorcery.spike": "Spike",
 
 	"pattern.socket-sorcery.fire": "Fire",
 	"pattern.socket-sorcery.frost": "Frost",

@@ -42,8 +42,30 @@
   ],
   "bangle_effects": [
     {
+      "type": "socket-sorcery:particles",
+      "particle": {
+        "type": "minecraft:portal"
+      },
+      "shape": "self",
+      "count": 40,
+      "spread": 0.6,
+      "speed": 0.05,
+      "y_offset": 1.0
+    },
+    {
       "type": "socket-sorcery:teleport",
       "aim_scale": 1.5
+    },
+    {
+      "type": "socket-sorcery:particles",
+      "particle": {
+        "type": "minecraft:reverse_portal"
+      },
+      "shape": "self",
+      "count": 40,
+      "spread": 0.6,
+      "speed": 0.05,
+      "y_offset": 1.0
     }
   ]
 }
