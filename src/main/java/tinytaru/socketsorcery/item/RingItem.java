@@ -7,6 +7,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
+import tinytaru.socketsorcery.registry.ModComponents;
 
 /**
  * Ring — holds a single gem and fires its <em>active</em> behaviour automatically when the wearer
@@ -19,6 +20,17 @@ public class RingItem extends AccessoryItem {
 
 	public RingItem(Properties properties) {
 		super(properties, CAPACITY);
+	}
+
+	@Override
+	public Component getName(ItemStack stack) {
+		return stack.has(ModComponents.ENGRAVING) ? super.getName(stack)
+				: Component.translatable("item.socket-sorcery.blank_ring");
+	}
+
+	@Override
+	public boolean isFoil(ItemStack stack) {
+		return stack.has(ModComponents.ENGRAVING) || super.isFoil(stack);
 	}
 
 	@Override

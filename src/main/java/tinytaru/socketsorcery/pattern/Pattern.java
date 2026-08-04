@@ -28,7 +28,8 @@ import tinytaru.socketsorcery.util.ColorCodecs;
  */
 public record Pattern(boolean[][] mask, int color, int cooldown, Optional<CastFeedback> castFeedback,
 		List<Identifier> gems, Optional<Identifier> scroll, List<Identifier> incompatibleModifiers,
-		List<PatternEffectComponent> necklaceEffects, List<PatternEffectComponent> bangleEffects) {
+		List<PatternEffectComponent> necklaceEffects, List<PatternEffectComponent> bangleEffects,
+		Optional<RingTrigger> ringTrigger) {
 
 	/** Edge length of the chiselling grid — one cell per pixel of the 16x16 gem texture. */
 	public static final int GRID = 16;
@@ -48,7 +49,8 @@ public record Pattern(boolean[][] mask, int color, int cooldown, Optional<CastFe
 			Identifier.CODEC.optionalFieldOf("scroll").forGetter(Pattern::scroll),
 			Identifier.CODEC.listOf().optionalFieldOf("incompatible_modifiers", List.of()).forGetter(Pattern::incompatibleModifiers),
 			PatternEffectComponent.CODEC.listOf().optionalFieldOf("necklace_effects", List.of()).forGetter(Pattern::necklaceEffects),
-			PatternEffectComponent.CODEC.listOf().optionalFieldOf("bangle_effects", List.of()).forGetter(Pattern::bangleEffects)
+			PatternEffectComponent.CODEC.listOf().optionalFieldOf("bangle_effects", List.of()).forGetter(Pattern::bangleEffects),
+			RingTrigger.CODEC.optionalFieldOf("ring_trigger").forGetter(Pattern::ringTrigger)
 	).apply(instance, Pattern::new));
 
 	/** Builds a {@code GRID x GRID} mask from rows of text where '#' marks a carved cell. */

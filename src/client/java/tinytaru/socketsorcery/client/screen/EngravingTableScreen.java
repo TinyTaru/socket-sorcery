@@ -37,6 +37,7 @@ import tinytaru.socketsorcery.pattern.Modifier;
 import tinytaru.socketsorcery.pattern.Modifiers;
 import tinytaru.socketsorcery.pattern.Pattern;
 import tinytaru.socketsorcery.pattern.Patterns;
+import tinytaru.socketsorcery.item.RingItem;
 import tinytaru.socketsorcery.registry.ModComponents;
 
 /**
@@ -359,7 +360,7 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 		// Left-click chisels a cell deeper (0→1→2); right-click eases it back (2→1→0), at a dust cost.
 		if ((button == 0 || button == 1) && this.menu.canCarve() && gemOpaque != null) {
 			int cell = cellAt(event.x(), event.y());
-			if (cell >= 0) {
+			if (cell >= 0 && ringCellAllowed(cell)) {
 				int row = cell / GRID;
 				int col = cell % GRID;
 				applyChisel(button, row, col);
@@ -381,7 +382,7 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 		int button = event.button();
 		if (button == dragButton && this.menu.canCarve() && gemOpaque != null) {
 			int cell = cellAt(event.x(), event.y());
-			if (cell >= 0) {
+			if (cell >= 0 && ringCellAllowed(cell)) {
 				int row = cell / GRID;
 				int col = cell % GRID;
 				if (row != lastDragRow || col != lastDragCol) {
@@ -410,6 +411,9 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 	 * The cut is drawn straight away and sent to the server, which is what actually cuts the gem.
 	 */
 	private void applyChisel(int button, int row, int col) {
+		if (!ringCellAllowed(row * GRID + col)) {
+			return;
+		}
 		if (!gemOpaque[row][col]) { // can't chisel transparent pixels
 			return;
 		}
@@ -469,6 +473,16 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 		int col = (int) ((mouseX - ox) / CELL);
 		int row = (int) ((mouseY - oy) / CELL);
 		return row * GRID + col;
+	}
+
+	private boolean ringCellAllowed(int cell) {
+		ItemStack stack = this.menu.gemStack();
+		if (!(stack.getItem() instanceof RingItem)) {
+			return true;
+		}
+		int row = cell / GRID;
+		int col = cell % GRID;
+		return col >= 5 && col <= 10 && row >= 9 && row <= 12;
 	}
 
 	/**
@@ -615,7 +629,7 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 
 		// Hover highlight: white over a carveable pixel, faint red over a transparent one.
 		int hover = cellAt(mouseX, mouseY);
-		if (hover >= 0 && this.menu.canCarve()) {
+		if (hover >= 0 && ringCellAllowed(hover) && this.menu.canCarve()) {
 			int row = hover / GRID;
 			int col = hover % GRID;
 			boolean opaque = gemOpaque != null && gemOpaque[row][col];
@@ -692,6 +706,9 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 		}
 		if (!this.menu.canCarve()) {
 			return Component.translatable("screen.socket-sorcery.need_chisel").withStyle(ChatFormatting.DARK_GRAY);
+		}
+		if (pattern.ringTrigger().isPresent()) {
+			return pattern.coloredName(patternId);
 		}
 
 		// Base symbol not fully carved yet: still forming the base.

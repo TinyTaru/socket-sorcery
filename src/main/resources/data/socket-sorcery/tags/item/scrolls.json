@@ -11,6 +11,12 @@
     "socket-sorcery:scroll_lifesteal",
     "socket-sorcery:scroll_blink",
     "socket-sorcery:scroll_haste",
-    "socket-sorcery:scroll_spikes"
+		"socket-sorcery:scroll_spikes"
+		,"socket-sorcery:scroll_ring_on_hit"
+		,"socket-sorcery:scroll_ring_on_attack"
+		,"socket-sorcery:scroll_ring_on_falling"
+		,"socket-sorcery:scroll_ring_on_kill"
+		,"socket-sorcery:scroll_ring_hp_threshold"
+		,"socket-sorcery:scroll_ring_in_radius"
   ]
 }

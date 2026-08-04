@@ -42,6 +42,12 @@ public final class ModItemGroup {
 						output.accept(ModItems.SCROLL_BLINK);
 						output.accept(ModItems.SCROLL_HASTE);
 						output.accept(ModItems.SCROLL_SPIKES);
+						output.accept(ModItems.SCROLL_RING_ON_HIT);
+						output.accept(ModItems.SCROLL_RING_ON_ATTACK);
+						output.accept(ModItems.SCROLL_RING_ON_FALLING);
+						output.accept(ModItems.SCROLL_RING_ON_KILL);
+						output.accept(ModItems.SCROLL_RING_HP_THRESHOLD);
+						output.accept(ModItems.SCROLL_RING_IN_RADIUS);
 						output.accept(ModItems.NECKLACE);
 						output.accept(ModItems.COPPER_BANGLE);
 						output.accept(ModItems.BANGLE);

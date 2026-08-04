@@ -24,6 +24,7 @@ import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import tinytaru.socketsorcery.advancement.ModCriteria;
 import tinytaru.socketsorcery.block.EngravingTableBlockEntity;
@@ -83,7 +84,8 @@ public class EngravingTableMenu extends AbstractContainerMenu {
 		this.addSlot(new Slot(table, SLOT_GEM, 20, 20) {
 			@Override
 			public boolean mayPlace(ItemStack stack) {
-				return Patterns.isEngravableGem(registries, stack.getItem());
+				return Patterns.isEngravableGem(registries, stack.getItem())
+						|| Patterns.isEngravableRing(registries, stack.getItem());
 			}
 
 			@Override
@@ -171,10 +173,14 @@ public class EngravingTableMenu extends AbstractContainerMenu {
 				&& chiselStack().getItem() instanceof ChiselItem;
 	}
 
-	/** The gem dust spent easing a chiselled cut back on the currently placed gem, or null if none applies. */
+	/** The eraser item spent easing a cut: matching gem dust, or gold nuggets for rings. */
 	public Item currentGemDust() {
 		ItemStack gem = gemStack();
-		return gem.isEmpty() ? null : ModItems.dustFor(gem.getItem());
+		if (gem.isEmpty()) {
+			return null;
+		}
+		return gem.getItem() instanceof tinytaru.socketsorcery.item.RingItem
+				? Items.GOLD_NUGGET : ModItems.dustFor(gem.getItem());
 	}
 
 	/** Total count of {@code dust} across the player-inventory slots this menu tracks. */
@@ -290,7 +296,7 @@ public class EngravingTableMenu extends AbstractContainerMenu {
 	 * clear with nothing to undo. Charges nothing itself, which is what makes it safe to call before
 	 * costs are known to be affordable.
 	 */
-	private static int mutateCell(int cell, ChiselC2SPayload.Action action, long[] carved, long[] deep) {
+	private int mutateCell(int cell, ChiselC2SPayload.Action action, long[] carved, long[] deep) {
 		if (action == ChiselC2SPayload.Action.CLEAR) {
 			int strokes = GridBits.count(carved) + GridBits.count(deep);
 			if (strokes == 0) {
@@ -301,6 +307,12 @@ public class EngravingTableMenu extends AbstractContainerMenu {
 			return strokes;
 		}
 		if (cell < 0 || cell >= Pattern.GRID * Pattern.GRID) {
+			return -1;
+		}
+		ItemStack item = table.getItem(SLOT_GEM);
+		Holder.Reference<Pattern> target = targetPattern();
+		if (item.getItem() instanceof tinytaru.socketsorcery.item.RingItem && target != null
+				&& !ringCellAllowed(cell)) {
 			return -1;
 		}
 		int depth = Carvings.depth(carved, deep, cell);
@@ -324,6 +336,13 @@ public class EngravingTableMenu extends AbstractContainerMenu {
 			GridBits.setIndex(deep, cell);
 		}
 		return 0;
+	}
+
+	private boolean ringCellAllowed(int cell) {
+		int row = cell / Pattern.GRID;
+		int col = cell % Pattern.GRID;
+		// The ring face is the pure-black 6x4 pixel panel x=5..10, y=9..12.
+		return col >= 5 && col <= 10 && row >= 9 && row <= 12;
 	}
 
 	/**
@@ -422,7 +441,8 @@ public class EngravingTableMenu extends AbstractContainerMenu {
 			if (!this.moveItemStackTo(inSlot, invStart, invEnd, true)) {
 				return ItemStack.EMPTY;
 			}
-		} else if (Patterns.isEngravableGem(registries, inSlot.getItem())) {
+		} else if (Patterns.isEngravableGem(registries, inSlot.getItem())
+				|| Patterns.isEngravableRing(registries, inSlot.getItem())) {
 			if (!this.moveItemStackTo(inSlot, SLOT_GEM, SLOT_GEM + 1, false)) {
 				return ItemStack.EMPTY;
 			}

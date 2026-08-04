@@ -60,6 +60,9 @@ public final class Carvings {
 	 */
 	public static Set<Identifier> formedModifiers(HolderLookup.Provider registries, Pattern pattern,
 			long[] carved, long[] deep) {
+		if (pattern.ringTrigger().isPresent()) {
+			return pattern.matchesCarved(carved) && GridBits.isEmpty(deep) ? Set.of() : null;
+		}
 		Set<Identifier> modifiers = Modifiers.decode(registries, pattern, deep);
 		if (modifiers == null || !GridBits.equal(carved, GridBits.or(pattern.maskBits(), deep))) {
 			return null;

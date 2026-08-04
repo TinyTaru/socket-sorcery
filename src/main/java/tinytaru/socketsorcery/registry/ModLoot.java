@@ -72,6 +72,12 @@ public final class ModLoot {
 						.add(LootItem.lootTableItem(ModItems.SCROLL_BLINK).setWeight(2))
 						.add(LootItem.lootTableItem(ModItems.SCROLL_HASTE).setWeight(2))
 						.add(LootItem.lootTableItem(ModItems.SCROLL_SPIKES).setWeight(2))
+						.add(LootItem.lootTableItem(ModItems.SCROLL_RING_ON_HIT).setWeight(1))
+						.add(LootItem.lootTableItem(ModItems.SCROLL_RING_ON_ATTACK).setWeight(1))
+						.add(LootItem.lootTableItem(ModItems.SCROLL_RING_ON_FALLING).setWeight(1))
+						.add(LootItem.lootTableItem(ModItems.SCROLL_RING_ON_KILL).setWeight(1))
+						.add(LootItem.lootTableItem(ModItems.SCROLL_RING_HP_THRESHOLD).setWeight(1))
+						.add(LootItem.lootTableItem(ModItems.SCROLL_RING_IN_RADIUS).setWeight(1))
 						.add(EmptyLootItem.emptyItem().setWeight(10)));
 			}
 			if (config.accessoryLoot && NECKLACE_TARGETS.contains(key)) {

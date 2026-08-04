@@ -106,6 +106,12 @@ public final class ModItems {
 	public static final Item SCROLL_BLINK = registerScroll("scroll_blink");
 	public static final Item SCROLL_HASTE = registerScroll("scroll_haste");
 	public static final Item SCROLL_SPIKES = registerScroll("scroll_spikes");
+	public static final Item SCROLL_RING_ON_HIT = registerScroll("scroll_ring_on_hit");
+	public static final Item SCROLL_RING_ON_ATTACK = registerScroll("scroll_ring_on_attack");
+	public static final Item SCROLL_RING_ON_FALLING = registerScroll("scroll_ring_on_falling");
+	public static final Item SCROLL_RING_ON_KILL = registerScroll("scroll_ring_on_kill");
+	public static final Item SCROLL_RING_HP_THRESHOLD = registerScroll("scroll_ring_hp_threshold");
+	public static final Item SCROLL_RING_IN_RADIUS = registerScroll("scroll_ring_in_radius");
 
 	// Accessories (Trinkets). Declared as their concrete types: each item is its own TrinketCallback.
 	public static final NecklaceItem NECKLACE = register("necklace", NecklaceItem::new,

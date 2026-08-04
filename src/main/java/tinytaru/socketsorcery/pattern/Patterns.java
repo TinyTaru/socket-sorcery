@@ -63,13 +63,19 @@ public final class Patterns {
 
 	public static boolean canEngrave(HolderLookup.Provider registries, Item gem, Identifier patternId) {
 		Holder.Reference<Pattern> pattern = get(registries, patternId);
-		return pattern != null && pattern.value().gems().contains(BuiltInRegistries.ITEM.getKey(gem));
+		return pattern != null && (pattern.value().gems().contains(BuiltInRegistries.ITEM.getKey(gem))
+				|| gem instanceof tinytaru.socketsorcery.item.RingItem && pattern.value().ringTrigger().isPresent());
 	}
 
 	/** True if the item appears in ANY pattern's gems list — the "can go in the gem slot" gate. */
 	public static boolean isEngravableGem(HolderLookup.Provider registries, Item item) {
 		Identifier itemId = BuiltInRegistries.ITEM.getKey(item);
 		return all(registries).anyMatch(holder -> holder.value().gems().contains(itemId));
+	}
+
+	public static boolean isEngravableRing(HolderLookup.Provider registries, Item item) {
+		return item instanceof tinytaru.socketsorcery.item.RingItem
+				&& all(registries).anyMatch(holder -> holder.value().ringTrigger().isPresent());
 	}
 
 	/** The pattern the given scroll item teaches, or null if no pattern claims it. */
