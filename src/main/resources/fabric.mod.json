@@ -9,6 +9,12 @@
 	],
 	"license": "CC0-1.0",
 	"icon": "assets/socket-sorcery/icon.png",
+	"mixins": [
+		{
+			"config": "socket-sorcery.client.mixins.json",
+			"environment": "client"
+		}
+	],
 	"environment": "*",
 	"entrypoints": {
 		"main": [
