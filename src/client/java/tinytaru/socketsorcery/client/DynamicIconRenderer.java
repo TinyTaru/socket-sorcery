@@ -8,12 +8,19 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import com.mojang.blaze3d.pipeline.DepthStencilState;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.fabricmc.fabric.api.resource.v1.reloader.SimpleReloadListener;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.renderer.texture.DynamicTexture;
@@ -51,15 +58,27 @@ public abstract class DynamicIconRenderer extends SimpleReloadListener<Void>
 	private static final float THICKNESS = 1.0F / SIZE;
 	private static final float FRONT_Z = 0.5F - THICKNESS / 2.0F;
 	private static final float BACK_Z = 0.5F + THICKNESS / 2.0F;
+	private static final RenderPipeline CLOSE_UP_PIPELINE = RenderPipelines.register(RenderPipeline.builder(
+			RenderPipelines.MATRICES_PROJECTION_SNIPPET)
+			.withLocation(SocketSorcery.id("pipeline/scroll_close_up"))
+			.withVertexShader(SocketSorcery.id("core/scroll_close_up"))
+			.withFragmentShader(SocketSorcery.id("core/scroll_close_up"))
+			.withSampler("Sampler0")
+			.withSampler("Sampler2")
+			.withVertexFormat(DefaultVertexFormat.ENTITY, VertexFormat.Mode.QUADS)
+			.withDepthStencilState(DepthStencilState.DEFAULT)
+			.withCull(false)
+			.build());
 
 	/** What a single stack resolves to: the composited texture plus its silhouette mask. */
-	public record Icon(Identifier texture, boolean[][] opaque) {
+	public record Icon(Identifier texture, boolean[][] opaque, Identifier backTexture) {
 	}
 
 	private final String idPrefix;
 	private final Identifier fabricId;
 	private final Map<String, Identifier> cache = new HashMap<>();
 	private final Map<Identifier, boolean[][]> opacityCache = new HashMap<>();
+	private final Map<Identifier, RenderType> closeUpTypes = new HashMap<>();
 	private int counter;
 
 	protected DynamicIconRenderer(String idPrefix) {
@@ -70,6 +89,11 @@ public abstract class DynamicIconRenderer extends SimpleReloadListener<Void>
 	/** The texture to draw for the stack, or null to skip. Usually built via {@link #composeCached}. */
 	protected abstract Identifier texture(ItemStack stack);
 
+	/** Optional texture for the reverse face; null keeps the front texture on both faces. */
+	protected Identifier backTexture(ItemStack stack) {
+		return null;
+	}
+
 	/** Hook for subclasses to clear their own caches on resource reload. */
 	protected void onReload() {
 	}
@@ -77,7 +101,12 @@ public abstract class DynamicIconRenderer extends SimpleReloadListener<Void>
 	@Override
 	public final Icon extractArgument(ItemStack stack) {
 		Identifier texture = texture(stack);
-		return texture == null ? null : new Icon(texture, opacityCache.get(texture));
+		if (texture == null) return null;
+		Identifier reverse = backTexture(stack);
+		if (reverse == null) reverse = texture;
+		boolean[][] opaque = opacityCache.get(texture);
+		if (opaque == null) opaque = opacityCache.get(reverse);
+		return new Icon(texture, opaque, reverse);
 	}
 
 	@Override
@@ -86,13 +115,35 @@ public abstract class DynamicIconRenderer extends SimpleReloadListener<Void>
 		if (icon == null) {
 			return;
 		}
-		collector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(icon.texture()), (pose, consumer) -> {
+		RenderType backType = RenderTypes.entityCutout(icon.backTexture());
+		RenderType frontType = RenderTypes.entityCutout(icon.texture());
+		collector.submitCustomGeometry(poseStack, backType,
+				(pose, consumer) -> quad(consumer, pose, light, overlay, true));
+		collector.submitCustomGeometry(poseStack, frontType, (pose, consumer) -> {
 			quad(consumer, pose, light, overlay, false);
-			quad(consumer, pose, light, overlay, true);
-			if (icon.opaque() != null) {
-				sides(consumer, pose, light, overlay, icon.opaque());
-			}
+			if (icon.opaque() != null) sides(consumer, pose, light, overlay, icon.opaque());
 		});
+	}
+
+	/**
+	 * Draws the transcription close-up with an opaque, depth-writing pipeline that samples the texture
+	 * directly. It preserves the current world light level but avoids entity fog and directional
+	 * colour shifts, so the parchment remains faithful to its texture while naturally darkening at night.
+	 */
+	protected final void submitCloseUp(Icon icon, PoseStack poseStack, SubmitNodeCollector collector, int light) {
+		if (icon == null) return;
+		collector.submitCustomGeometry(poseStack, closeUpType(icon.backTexture()),
+				(pose, consumer) -> quad(consumer, pose, light, 0, true));
+		collector.submitCustomGeometry(poseStack, closeUpType(icon.texture()), (pose, consumer) -> {
+			quad(consumer, pose, light, 0, false);
+			if (icon.opaque() != null) sides(consumer, pose, light, 0, icon.opaque());
+		});
+	}
+
+	private RenderType closeUpType(Identifier texture) {
+		return closeUpTypes.computeIfAbsent(texture, id -> RenderType.create(
+				"socket_sorcery_scroll_close_up",
+				RenderSetup.builder(CLOSE_UP_PIPELINE).withTexture("Sampler0", id).useLightmap().createRenderSetup()));
 	}
 
 	/** The corners of the extruded slab, for view culling. */
@@ -150,6 +201,7 @@ public abstract class DynamicIconRenderer extends SimpleReloadListener<Void>
 		}
 		cache.clear();
 		opacityCache.clear();
+		closeUpTypes.clear();
 		counter = 0;
 		onReload();
 	}

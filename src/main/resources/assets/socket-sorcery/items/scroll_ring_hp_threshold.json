@@ -1,1 +1,1 @@
-{"model":{"type":"minecraft:model","model":"socket-sorcery:item/scroll_ring_hp_threshold"}}
+{"model":{"type":"minecraft:special","base":"socket-sorcery:item/scroll_ancient","model":{"type":"socket-sorcery:scroll"}}}

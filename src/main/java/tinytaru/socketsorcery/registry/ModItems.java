@@ -19,6 +19,7 @@ import tinytaru.socketsorcery.item.GemItem;
 import tinytaru.socketsorcery.item.NecklaceItem;
 import tinytaru.socketsorcery.item.RingItem;
 import tinytaru.socketsorcery.item.ScrollItem;
+import tinytaru.socketsorcery.item.BlankScrollItem;
 
 public final class ModItems {
 
@@ -112,6 +113,9 @@ public final class ModItems {
 	public static final Item SCROLL_RING_ON_KILL = registerScroll("scroll_ring_on_kill");
 	public static final Item SCROLL_RING_HP_THRESHOLD = registerScroll("scroll_ring_hp_threshold");
 	public static final Item SCROLL_RING_IN_RADIUS = registerScroll("scroll_ring_in_radius");
+
+	public static final Item BLANK_SCROLL = register("blank_scroll", BlankScrollItem::new, new Item.Properties().stacksTo(16));
+	public static final Item SCROLL_INK = register("scroll_ink", Item::new, new Item.Properties());
 
 	// Accessories (Trinkets). Declared as their concrete types: each item is its own TrinketCallback.
 	public static final NecklaceItem NECKLACE = register("necklace", NecklaceItem::new,

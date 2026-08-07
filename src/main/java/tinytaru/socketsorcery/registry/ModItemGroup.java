@@ -48,6 +48,8 @@ public final class ModItemGroup {
 						output.accept(ModItems.SCROLL_RING_ON_KILL);
 						output.accept(ModItems.SCROLL_RING_HP_THRESHOLD);
 						output.accept(ModItems.SCROLL_RING_IN_RADIUS);
+						output.accept(ModItems.BLANK_SCROLL);
+						output.accept(ModItems.SCROLL_INK);
 						output.accept(ModItems.NECKLACE);
 						output.accept(ModItems.COPPER_BANGLE);
 						output.accept(ModItems.BANGLE);

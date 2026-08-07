@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["S", "P", "S"],
+  "key": { "S": "minecraft:stick", "P": "minecraft:paper" },
+  "result": { "id": "socket-sorcery:blank_scroll", "count": 1 }
+}

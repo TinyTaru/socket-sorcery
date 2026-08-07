@@ -14,6 +14,8 @@ public class SocketSorceryClient implements ClientModInitializer {
 		MenuScreens.register(ModMenus.SOCKETING_BENCH, SocketingBenchScreen::new);
 		// The socketing bench's cutout render layer is derived from its sprites now — no registration.
 		GemItemRenderer.register();
+		ScrollItemRenderer.register();
+		ScrollDrawingMode.register();
 		AccessoryItemRenderer.register();
 		PatternTooltipRenderer.register();
 		// Worn bangles: the band as a baked model layer, the socketed gems drawn on top of it.

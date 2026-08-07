@@ -3,6 +3,9 @@
   "package": "tinytaru.socketsorcery.client.mixin",
   "compatibilityLevel": "JAVA_25",
   "client": [
-    "AdvancementTabMixin"
+    "AdvancementTabMixin",
+    "MinecraftMixin",
+    "ItemInHandRendererMixin",
+    "MouseHandlerMixin"
   ]
 }
