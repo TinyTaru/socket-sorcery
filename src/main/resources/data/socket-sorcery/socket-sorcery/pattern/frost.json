@@ -18,6 +18,7 @@
     "................"
   ],
   "color": "#4FC3F7",
+  "ink": "blue",
   "cooldown": 50,
   "cast_feedback": {
     "sound": "socket-sorcery:cast_frost",

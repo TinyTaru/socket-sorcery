@@ -18,6 +18,7 @@
     "................"
   ],
   "color": "#AB47BC",
+  "ink": "purple",
   "cooldown": 80,
   "cast_feedback": {
     "sound": "minecraft:entity.ender_pearl.throw",

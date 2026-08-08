@@ -18,6 +18,7 @@
     "................"
   ],
   "color": "#FFD54F",
+  "ink": "yellow",
   "cooldown": 50,
   "cast_feedback": {
     "sound": "minecraft:entity.experience_orb.pickup",

@@ -14,6 +14,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ExtraCodecs;
+import tinytaru.socketsorcery.item.ScrollInkColor;
 import tinytaru.socketsorcery.util.ColorCodecs;
 
 /**
@@ -26,7 +27,7 @@ import tinytaru.socketsorcery.util.ColorCodecs;
  * <p>Patterns don't know their own id — the registry provides it (as with vanilla enchantments).
  * Display names derive from the id: {@code pattern.<namespace>.<path>}.
  */
-public record Pattern(boolean[][] mask, int color, int cooldown, Optional<CastFeedback> castFeedback,
+public record Pattern(boolean[][] mask, int color, ScrollInkColor ink, int cooldown, Optional<CastFeedback> castFeedback,
 		List<Identifier> gems, Optional<Identifier> scroll, List<Identifier> incompatibleModifiers,
 		List<PatternEffectComponent> necklaceEffects, List<PatternEffectComponent> bangleEffects,
 		Optional<RingTrigger> ringTrigger) {
@@ -43,6 +44,7 @@ public record Pattern(boolean[][] mask, int color, int cooldown, Optional<CastFe
 	public static final Codec<Pattern> CODEC = RecordCodecBuilder.create(instance -> instance.group(
 			MASK_CODEC.fieldOf("mask").forGetter(Pattern::mask),
 			ColorCodecs.RGB.fieldOf("color").forGetter(Pattern::color),
+			ScrollInkColor.CODEC.optionalFieldOf("ink", ScrollInkColor.RED).forGetter(Pattern::ink),
 			ExtraCodecs.NON_NEGATIVE_INT.fieldOf("cooldown").forGetter(Pattern::cooldown),
 			CastFeedback.CODEC.optionalFieldOf("cast_feedback").forGetter(Pattern::castFeedback),
 			Identifier.CODEC.listOf().optionalFieldOf("gems", List.of()).forGetter(Pattern::gems),

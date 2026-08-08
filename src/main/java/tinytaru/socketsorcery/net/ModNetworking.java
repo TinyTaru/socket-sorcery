@@ -12,6 +12,7 @@ import tinytaru.socketsorcery.item.AccessoryItem;
 import tinytaru.socketsorcery.item.BangleItem;
 import tinytaru.socketsorcery.item.BlankScrollItem;
 import tinytaru.socketsorcery.item.ScrollItem;
+import tinytaru.socketsorcery.item.ScrollInkColor;
 import tinytaru.socketsorcery.component.ScrollDrawingData;
 import tinytaru.socketsorcery.registry.ModComponents;
 import tinytaru.socketsorcery.registry.ModItems;
@@ -63,19 +64,26 @@ public final class ModNetworking {
 			stack = drawingStack;
 		}
 		ScrollDrawingData drawing = stack.getOrDefault(ModComponents.SCROLL_DRAWING, ScrollDrawingData.EMPTY);
-		if (drawing.isPainted(cell) || !removeOneInk(player)) return;
-		drawing = drawing.paint(cell);
-		ScrollDrawingData completedDrawing = drawing;
+		if (drawing.isPainted(cell)) return;
+		ScrollInkColor ink = payload.ink().orElseGet(() -> drawing.ink().orElseGet(() -> firstInk(player)));
+		if (ink == null) return;
+		ScrollDrawingData completedDrawing = drawing.paint(cell, ink);
 		var match = tinytaru.socketsorcery.pattern.Patterns.all(player.registryAccess())
 				.filter(holder -> holder.value().matchesCarved(completedDrawing.painted()))
 				.findFirst().orElse(null);
+		if (match != null && match.value().ink() != ink) {
+			// The final stroke must be made with the pigment assigned to the pattern. Leave the
+			// cell untouched so the player can try again with the right ink.
+			return;
+		}
+		if (!removeOneInk(player, ink)) return;
 		if (match == null || match.value().scroll().isEmpty()) {
-			stack.set(ModComponents.SCROLL_DRAWING, drawing);
+			stack.set(ModComponents.SCROLL_DRAWING, completedDrawing);
 			return;
 		}
 		var item = net.minecraft.core.registries.BuiltInRegistries.ITEM.getOptional(match.value().scroll().get()).orElse(null);
 		if (!(item instanceof ScrollItem)) {
-			stack.set(ModComponents.SCROLL_DRAWING, drawing);
+			stack.set(ModComponents.SCROLL_DRAWING, completedDrawing);
 			return;
 		}
 		ItemStack transcribed = new ItemStack(item);
@@ -83,15 +91,23 @@ public final class ModNetworking {
 		player.setItemInHand(payload.hand(), transcribed);
 	}
 
-	private static boolean removeOneInk(ServerPlayer player) {
+	private static boolean removeOneInk(ServerPlayer player, ScrollInkColor color) {
 		if (player.getAbilities().instabuild) return true;
 		for (ItemStack inventoryStack : player.getInventory().getNonEquipmentItems()) {
-			if (inventoryStack.is(ModItems.SCROLL_INK)) {
+			if (color.matches(inventoryStack)) {
 				inventoryStack.shrink(1);
 				return true;
 			}
 		}
 		return false;
+	}
+
+	private static ScrollInkColor firstInk(ServerPlayer player) {
+		for (ItemStack inventoryStack : player.getInventory().getNonEquipmentItems()) {
+			ScrollInkColor color = ScrollInkColor.fromItem(inventoryStack);
+			if (color != null) return color;
+		}
+		return null;
 	}
 
 	private static void activateBangles(ServerPlayer player) {

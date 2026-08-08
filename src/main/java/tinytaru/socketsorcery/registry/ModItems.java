@@ -20,6 +20,8 @@ import tinytaru.socketsorcery.item.NecklaceItem;
 import tinytaru.socketsorcery.item.RingItem;
 import tinytaru.socketsorcery.item.ScrollItem;
 import tinytaru.socketsorcery.item.BlankScrollItem;
+import tinytaru.socketsorcery.item.ScrollInkColor;
+import tinytaru.socketsorcery.item.ScrollInkItem;
 
 public final class ModItems {
 
@@ -115,7 +117,17 @@ public final class ModItems {
 	public static final Item SCROLL_RING_IN_RADIUS = registerScroll("scroll_ring_in_radius");
 
 	public static final Item BLANK_SCROLL = register("blank_scroll", BlankScrollItem::new, new Item.Properties().stacksTo(16));
+	/** Kept registered so old worlds do not lose their pre-color scroll ink. It is no longer consumed. */
 	public static final Item SCROLL_INK = register("scroll_ink", Item::new, new Item.Properties());
+	public static final ScrollInkItem SCROLL_INK_RED = registerScrollInk(ScrollInkColor.RED);
+	public static final ScrollInkItem SCROLL_INK_BLUE = registerScrollInk(ScrollInkColor.BLUE);
+	public static final ScrollInkItem SCROLL_INK_GREEN = registerScrollInk(ScrollInkColor.GREEN);
+	public static final ScrollInkItem SCROLL_INK_YELLOW = registerScrollInk(ScrollInkColor.YELLOW);
+	public static final ScrollInkItem SCROLL_INK_PURPLE = registerScrollInk(ScrollInkColor.PURPLE);
+
+	public static final ScrollInkItem[] SCROLL_INKS = {
+			SCROLL_INK_RED, SCROLL_INK_BLUE, SCROLL_INK_GREEN, SCROLL_INK_YELLOW, SCROLL_INK_PURPLE
+	};
 
 	// Accessories (Trinkets). Declared as their concrete types: each item is its own TrinketCallback.
 	public static final NecklaceItem NECKLACE = register("necklace", NecklaceItem::new,
@@ -162,6 +174,20 @@ public final class ModItems {
 
 	private static Item registerScroll(String name) {
 		return register(name, ScrollItem::new, new Item.Properties().stacksTo(16));
+	}
+
+	private static ScrollInkItem registerScrollInk(ScrollInkColor color) {
+		return register("scroll_ink_" + color.id(), p -> new ScrollInkItem(p, color), new Item.Properties());
+	}
+
+	public static Item scrollInk(ScrollInkColor color) {
+		return switch (color) {
+			case RED -> SCROLL_INK_RED;
+			case BLUE -> SCROLL_INK_BLUE;
+			case GREEN -> SCROLL_INK_GREEN;
+			case YELLOW -> SCROLL_INK_YELLOW;
+			case PURPLE -> SCROLL_INK_PURPLE;
+		};
 	}
 
 	public static void init() {

@@ -18,6 +18,7 @@
     "................"
   ],
   "color": "#BA68C8",
+  "ink": "purple",
   "cooldown": 20,
   "cast_feedback": {
     "sound": "socket-sorcery:cast_leap",

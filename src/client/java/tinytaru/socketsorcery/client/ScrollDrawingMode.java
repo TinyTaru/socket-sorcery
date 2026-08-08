@@ -9,23 +9,31 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import tinytaru.socketsorcery.item.BlankScrollItem;
+import tinytaru.socketsorcery.item.ScrollInkColor;
 import tinytaru.socketsorcery.net.TranscribeCellC2SPayload;
+import tinytaru.socketsorcery.pattern.GridBits;
+import tinytaru.socketsorcery.pattern.Pattern;
+import tinytaru.socketsorcery.pattern.Patterns;
+import tinytaru.socketsorcery.registry.ModComponents;
+
+import java.util.Optional;
 
 /** Client-only state for the cursor-enabled, held-up Blank Scroll. */
 public final class ScrollDrawingMode {
 	private static boolean active;
 	private static boolean leftHeld;
+	private static boolean completed;
 	private static final Set<Integer> requestedCells = new HashSet<>();
 
 	public static void register() {
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			if (!active) return;
-			if (client.player == null || client.screen != null
-					|| !(client.player.getMainHandItem().getItem() instanceof BlankScrollItem)) {
+			if (client.player == null || client.screen != null || !isDrawingStack(client.player.getMainHandItem())) {
 				exit();
 				return;
 			}
-			if (leftHeld) paintAtCursor();
+			completed |= !(client.player.getMainHandItem().getItem() instanceof BlankScrollItem);
+			if (leftHeld && !completed) paintAtCursor();
 		});
 	}
 
@@ -37,6 +45,7 @@ public final class ScrollDrawingMode {
 				|| !(client.player.getMainHandItem().getItem() instanceof BlankScrollItem)) return false;
 		active = true;
 		leftHeld = false;
+		completed = false;
 		requestedCells.clear();
 		client.mouseHandler.releaseMouse();
 		return true;
@@ -46,6 +55,7 @@ public final class ScrollDrawingMode {
 		if (!active) return;
 		active = false;
 		leftHeld = false;
+		completed = false;
 		requestedCells.clear();
 		Minecraft client = Minecraft.getInstance();
 		if (client.screen == null) client.mouseHandler.grabMouse();
@@ -53,10 +63,12 @@ public final class ScrollDrawingMode {
 
 	public static void paintAtCursor() {
 		Minecraft client = Minecraft.getInstance();
-		if (!active || client.player == null) return;
+		if (!active || completed || client.player == null
+				|| !(client.player.getMainHandItem().getItem() instanceof BlankScrollItem)) return;
 		int cell = cellAtCursor(client);
 		if (cell < 0 || !requestedCells.add(cell)) return;
-		ClientPlayNetworking.send(new TranscribeCellC2SPayload(InteractionHand.MAIN_HAND, cell));
+		ClientPlayNetworking.send(new TranscribeCellC2SPayload(InteractionHand.MAIN_HAND, cell,
+				inkForNextCell(client, cell)));
 	}
 
 	/** Receives raw mouse buttons before vanilla can recapture the released cursor. */
@@ -69,6 +81,32 @@ public final class ScrollDrawingMode {
 				&& action == org.lwjgl.glfw.GLFW.GLFW_PRESS) {
 			exit();
 		}
+	}
+
+	public static boolean isDrawingStack(ItemStack stack) {
+		return stack.getItem() instanceof BlankScrollItem || stack.has(ModComponents.TRANSCRIBED_SCROLL);
+	}
+
+	private static Optional<ScrollInkColor> inkForNextCell(Minecraft client, int cell) {
+		long[] bits = new long[Pattern.WORDS];
+		for (int requested : requestedCells) GridBits.setIndex(bits, requested);
+		if (client.level != null) {
+			var match = Patterns.all(client.level.registryAccess())
+					.filter(holder -> holder.value().matchesCarved(bits))
+					.findFirst().orElse(null);
+			if (match != null) return Optional.of(match.value().ink());
+		}
+		return preferredInk(client);
+	}
+
+	private static Optional<ScrollInkColor> preferredInk(Minecraft client) {
+		ScrollInkColor offhand = ScrollInkColor.fromItem(client.player.getOffhandItem());
+		if (offhand != null) return Optional.of(offhand);
+		for (ItemStack stack : client.player.getInventory().getNonEquipmentItems()) {
+			ScrollInkColor color = ScrollInkColor.fromItem(stack);
+			if (color != null) return Optional.of(color);
+		}
+		return Optional.empty();
 	}
 
 	/** Camera-plane pose shared exactly with {@code ItemInHandRendererMixin}. */

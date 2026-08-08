@@ -9,8 +9,12 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import com.mojang.blaze3d.pipeline.DepthStencilState;
+import com.mojang.blaze3d.pipeline.BlendFunction;
+import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.platform.CompareOp;
+import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -69,6 +73,18 @@ public abstract class DynamicIconRenderer extends SimpleReloadListener<Void>
 			.withDepthStencilState(DepthStencilState.DEFAULT)
 			.withCull(false)
 			.build());
+	private static final RenderPipeline SHINE_PIPELINE = RenderPipelines.register(RenderPipeline.builder(
+			RenderPipelines.MATRICES_PROJECTION_SNIPPET)
+			.withLocation(SocketSorcery.id("pipeline/scroll_shine"))
+			.withVertexShader(SocketSorcery.id("core/scroll_shine"))
+			.withFragmentShader(SocketSorcery.id("core/scroll_shine"))
+			.withSampler("Sampler0")
+			.withUniform("Globals", UniformType.UNIFORM_BUFFER)
+			.withVertexFormat(DefaultVertexFormat.ENTITY, VertexFormat.Mode.QUADS)
+			.withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+			.withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false))
+			.withCull(false)
+			.build());
 
 	/** What a single stack resolves to: the composited texture plus its silhouette mask. */
 	public record Icon(Identifier texture, boolean[][] opaque, Identifier backTexture) {
@@ -79,6 +95,7 @@ public abstract class DynamicIconRenderer extends SimpleReloadListener<Void>
 	private final Map<String, Identifier> cache = new HashMap<>();
 	private final Map<Identifier, boolean[][]> opacityCache = new HashMap<>();
 	private final Map<Identifier, RenderType> closeUpTypes = new HashMap<>();
+	private final Map<Identifier, RenderType> shineTypes = new HashMap<>();
 	private int counter;
 
 	protected DynamicIconRenderer(String idPrefix) {
@@ -123,6 +140,10 @@ public abstract class DynamicIconRenderer extends SimpleReloadListener<Void>
 			quad(consumer, pose, light, overlay, false);
 			if (icon.opaque() != null) sides(consumer, pose, light, overlay, icon.opaque());
 		});
+		if (hasFoil) {
+			collector.submitCustomGeometry(poseStack, RenderTypes.entityGlint(),
+					(pose, consumer) -> quad(consumer, pose, light, overlay, false));
+		}
 	}
 
 	/**
@@ -130,7 +151,8 @@ public abstract class DynamicIconRenderer extends SimpleReloadListener<Void>
 	 * directly. It preserves the current world light level but avoids entity fog and directional
 	 * colour shifts, so the parchment remains faithful to its texture while naturally darkening at night.
 	 */
-	protected final void submitCloseUp(Icon icon, PoseStack poseStack, SubmitNodeCollector collector, int light) {
+	protected final void submitCloseUp(Icon icon, PoseStack poseStack, SubmitNodeCollector collector, int light,
+			boolean hasFoil) {
 		if (icon == null) return;
 		collector.submitCustomGeometry(poseStack, closeUpType(icon.backTexture()),
 				(pose, consumer) -> quad(consumer, pose, light, 0, true));
@@ -138,6 +160,18 @@ public abstract class DynamicIconRenderer extends SimpleReloadListener<Void>
 			quad(consumer, pose, light, 0, false);
 			if (icon.opaque() != null) sides(consumer, pose, light, 0, icon.opaque());
 		});
+		if (hasFoil) {
+			collector.submitCustomGeometry(poseStack, shineType(icon.backTexture()),
+					(pose, consumer) -> shineQuad(consumer, pose, light, true));
+			collector.submitCustomGeometry(poseStack, shineType(icon.texture()),
+					(pose, consumer) -> shineQuad(consumer, pose, light, false));
+		}
+	}
+
+	private RenderType shineType(Identifier texture) {
+		return shineTypes.computeIfAbsent(texture, id -> RenderType.create(
+				"socket_sorcery_scroll_shine",
+				RenderSetup.builder(SHINE_PIPELINE).withTexture("Sampler0", id).createRenderSetup()));
 	}
 
 	private RenderType closeUpType(Identifier texture) {
@@ -202,6 +236,7 @@ public abstract class DynamicIconRenderer extends SimpleReloadListener<Void>
 		cache.clear();
 		opacityCache.clear();
 		closeUpTypes.clear();
+		shineTypes.clear();
 		counter = 0;
 		onReload();
 	}
@@ -294,7 +329,16 @@ public abstract class DynamicIconRenderer extends SimpleReloadListener<Void>
 	 * item-frame views alike (which view the model from opposite sides via their display transforms).
 	 */
 	private static void quad(VertexConsumer vc, PoseStack.Pose pose, int light, int overlay, boolean back) {
-		float z = back ? BACK_Z : FRONT_Z;
+		quad(vc, pose, light, overlay, back, 0.0F);
+	}
+
+	private static void shineQuad(VertexConsumer vc, PoseStack.Pose pose, int light, boolean back) {
+		quad(vc, pose, light, 0, back, -0.002F);
+	}
+
+	private static void quad(VertexConsumer vc, PoseStack.Pose pose, int light, int overlay, boolean back,
+			float zOffset) {
+		float z = (back ? BACK_Z : FRONT_Z) + zOffset;
 		float n = back ? 1.0F : -1.0F; // outward
 		vertex(vc, pose, 0, 0, z, 0, 1, light, overlay, 0, 0, n);
 		vertex(vc, pose, 1, 0, z, 1, 1, light, overlay, 0, 0, n);

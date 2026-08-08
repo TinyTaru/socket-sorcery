@@ -12,7 +12,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import tinytaru.socketsorcery.client.ScrollDrawingMode;
 import tinytaru.socketsorcery.client.ScrollItemRenderer;
-import tinytaru.socketsorcery.item.BlankScrollItem;
 
 /** Holds the active Blank Scroll near the camera without opening a screen. */
 @Mixin(ItemInHandRenderer.class)
@@ -21,7 +20,8 @@ abstract class ItemInHandRendererMixin {
 	private void socketSorcery$holdScrollUp(AbstractClientPlayer player, float partialTick, float pitch,
 			InteractionHand hand, float swingProgress, ItemStack stack, float equipProgress, PoseStack poseStack,
 			SubmitNodeCollector collector, int light, CallbackInfo ci) {
-		if (!ScrollDrawingMode.isActive() || hand != InteractionHand.MAIN_HAND || !(stack.getItem() instanceof BlankScrollItem)) return;
+		if (!ScrollDrawingMode.isActive() || hand != InteractionHand.MAIN_HAND
+				|| !ScrollDrawingMode.isDrawingStack(stack)) return;
 		poseStack.pushPose();
 		// Render the icon directly rather than through an item-display transform. That gives drawing a
 		// stable camera plane whose exact geometry is ray-tested in ScrollDrawingMode.

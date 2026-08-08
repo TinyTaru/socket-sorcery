@@ -18,6 +18,7 @@
     "................"
   ],
   "color": "#FFEB3B",
+  "ink": "yellow",
   "cooldown": 100,
   "cast_feedback": {
     "particle": {

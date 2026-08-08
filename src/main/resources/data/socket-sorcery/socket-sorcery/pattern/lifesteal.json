@@ -18,6 +18,7 @@
     "................"
   ],
   "color": "#C62828",
+  "ink": "red",
   "cooldown": 60,
   "cast_feedback": {
     "particle": {

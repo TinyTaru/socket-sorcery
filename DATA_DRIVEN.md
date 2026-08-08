@@ -33,6 +33,7 @@ data/<your_namespace>/socket-sorcery/modifier/<name>.json
     "  ... exactly 16 rows of 16 chars, '.' or '#' ..."
   ],
   "color": "#FF5722",
+  "ink": "red",
   "cooldown": 40,
   "cast_feedback": {
     "sound": "minecraft:entity.blaze.shoot",
@@ -50,6 +51,7 @@ data/<your_namespace>/socket-sorcery/modifier/<name>.json
 |---|---|---|
 | `mask` | yes | The 16×16 symbol the player must chisel. At least one `#`. Keep the shape inside rows/cols 1–14 with lit cells at the bounding box's top/bottom-centre and mid-row edges, or some modifiers won't be carvable on it (they gracefully disappear). |
 | `color` | yes | `"#RRGGBB"` or int. Tints the symbol, names, tooltip grid. |
+| `ink` | no | The scroll ink color required to complete transcription: `red`, `blue`, `green`, `yellow`, or `purple`. Defaults to `red` for backwards-compatible datapacks. |
 | `cooldown` | yes | Base activation cooldown in ticks per socketed gem of this pattern. |
 | `cast_feedback` | no | Played once per activation: `sound` at the caster, 12 `particle`s at the impact. The particle uses vanilla's object form (`{"type": "minecraft:flame"}` — complex particles like `dust` take their extra options too). `skip_on_miss` suppresses both when nothing was hit. |
 | `gems` | no | Item ids that can receive this pattern — **any** item, yours or vanilla. Unknown ids are tolerated (logged at server start), so cross-mod compat entries are safe. |

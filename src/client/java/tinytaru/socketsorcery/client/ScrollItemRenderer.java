@@ -17,6 +17,7 @@ import tinytaru.socketsorcery.SocketSorcery;
 import tinytaru.socketsorcery.component.ScrollDrawingData;
 import tinytaru.socketsorcery.item.BlankScrollItem;
 import tinytaru.socketsorcery.item.ScrollItem;
+import tinytaru.socketsorcery.item.ScrollInkColor;
 import tinytaru.socketsorcery.pattern.Pattern;
 import tinytaru.socketsorcery.pattern.Patterns;
 import tinytaru.socketsorcery.registry.ModComponents;
@@ -48,7 +49,7 @@ public final class ScrollItemRenderer extends DynamicIconRenderer {
 	/** Draws the dynamic icon directly into the known camera plane used while transcribing. */
 	public static void submitCloseUp(ItemStack stack, com.mojang.blaze3d.vertex.PoseStack poseStack,
 			net.minecraft.client.renderer.SubmitNodeCollector collector, int light) {
-		INSTANCE.submitCloseUp(INSTANCE.extractArgument(stack), poseStack, collector, light);
+		INSTANCE.submitCloseUp(INSTANCE.extractArgument(stack), poseStack, collector, light, stack.hasFoil());
 	}
 
 	@Override
@@ -60,8 +61,9 @@ public final class ScrollItemRenderer extends DynamicIconRenderer {
 	protected Identifier backTexture(ItemStack stack) {
 		if (stack.getItem() instanceof BlankScrollItem) {
 			ScrollDrawingData drawing = stack.getOrDefault(ModComponents.SCROLL_DRAWING, ScrollDrawingData.EMPTY);
-			return composeCached("blank|" + java.util.Arrays.toString(drawing.painted()),
-					() -> compose(true, drawing.painted(), 0xFF111111));
+			return composeCached("blank|" + drawing.ink() + "|" + java.util.Arrays.toString(drawing.painted()),
+					() -> compose(true, drawing.painted(), 0xFF000000 | drawing.ink()
+							.map(ScrollInkColor::rgb).orElse(0x111111)));
 		}
 		if (!(stack.getItem() instanceof ScrollItem scroll)) return baseTexture(stack);
 		HolderLookup.Provider registries = Minecraft.getInstance().level == null ? null : Minecraft.getInstance().level.registryAccess();
