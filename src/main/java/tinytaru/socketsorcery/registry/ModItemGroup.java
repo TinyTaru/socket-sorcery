@@ -49,6 +49,7 @@ public final class ModItemGroup {
 						output.accept(ModItems.SCROLL_RING_HP_THRESHOLD);
 						output.accept(ModItems.SCROLL_RING_IN_RADIUS);
 						output.accept(ModItems.BLANK_SCROLL);
+						output.accept(ModItems.INK_WELL);
 						for (var ink : ModItems.SCROLL_INKS) {
 							output.accept(ink);
 						}

@@ -1,10 +1,11 @@
 {
   "type": "minecraft:crafting_shaped",
   "category": "misc",
-  "pattern": ["GBG", "BBB", "GBG"],
+  "pattern": ["GBG", "BWB", "GBG"],
   "key": {
     "G": "minecraft:glow_berries",
-    "B": "socket-sorcery:amethyst_dust"
+    "B": "socket-sorcery:amethyst_dust",
+    "W": "socket-sorcery:ink_well"
   },
   "result": { "id": "socket-sorcery:scroll_ink_purple", "count": 1 }
 }

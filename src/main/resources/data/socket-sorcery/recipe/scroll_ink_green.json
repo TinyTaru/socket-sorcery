@@ -1,10 +1,11 @@
 {
   "type": "minecraft:crafting_shaped",
   "category": "misc",
-  "pattern": ["GBG", "BBB", "GBG"],
+  "pattern": ["GBG", "BWB", "GBG"],
   "key": {
     "G": "minecraft:glow_berries",
-    "B": "socket-sorcery:peridot_dust"
+    "B": "socket-sorcery:peridot_dust",
+    "W": "socket-sorcery:ink_well"
   },
   "result": { "id": "socket-sorcery:scroll_ink_green", "count": 1 }
 }

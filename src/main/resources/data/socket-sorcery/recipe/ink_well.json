@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["G G", "G G", "GGG"],
+  "key": {
+    "G": "minecraft:gold_ingot"
+  },
+  "result": { "id": "socket-sorcery:ink_well", "count": 1 }
+}

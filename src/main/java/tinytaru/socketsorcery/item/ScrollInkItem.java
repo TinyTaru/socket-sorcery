@@ -11,6 +11,8 @@ import net.minecraft.world.item.component.TooltipDisplay;
 
 /** A colored pigment consumed while a pattern is painted onto a blank scroll. */
 public final class ScrollInkItem extends Item {
+	public static final int MAX_DURABILITY = 48;
+
 	private final ScrollInkColor color;
 
 	public ScrollInkItem(Properties properties, ScrollInkColor color) {

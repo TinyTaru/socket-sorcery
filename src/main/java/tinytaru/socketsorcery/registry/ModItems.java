@@ -117,7 +117,8 @@ public final class ModItems {
 	public static final Item SCROLL_RING_IN_RADIUS = registerScroll("scroll_ring_in_radius");
 
 	public static final Item BLANK_SCROLL = register("blank_scroll", BlankScrollItem::new, new Item.Properties().stacksTo(16));
-	/** Kept registered so old worlds do not lose their pre-color scroll ink. It is no longer consumed. */
+	public static final Item INK_WELL = register("ink_well", Item::new, new Item.Properties());
+	/** Kept registered so old worlds do not lose their pre-color scroll ink; it remains legacy red ink. */
 	public static final Item SCROLL_INK = register("scroll_ink", Item::new, new Item.Properties());
 	public static final ScrollInkItem SCROLL_INK_RED = registerScrollInk(ScrollInkColor.RED);
 	public static final ScrollInkItem SCROLL_INK_BLUE = registerScrollInk(ScrollInkColor.BLUE);
@@ -177,7 +178,8 @@ public final class ModItems {
 	}
 
 	private static ScrollInkItem registerScrollInk(ScrollInkColor color) {
-		return register("scroll_ink_" + color.id(), p -> new ScrollInkItem(p, color), new Item.Properties());
+		return register("scroll_ink_" + color.id(), p -> new ScrollInkItem(p, color),
+				new Item.Properties().durability(ScrollInkItem.MAX_DURABILITY).stacksTo(1));
 	}
 
 	public static Item scrollInk(ScrollInkColor color) {
