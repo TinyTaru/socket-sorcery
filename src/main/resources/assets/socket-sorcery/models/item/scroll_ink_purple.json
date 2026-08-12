@@ -1,1 +1,1 @@
-{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/purple_dye"}}
+{"parent":"minecraft:item/generated","textures":{"layer0":"socket-sorcery:item/ink_well_purple"}}
