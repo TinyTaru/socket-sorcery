@@ -9,6 +9,7 @@ import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.renderer.special.SpecialModelRenderers;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackType;
@@ -26,7 +27,7 @@ import tinytaru.socketsorcery.registry.ModComponents;
 public final class ScrollItemRenderer extends DynamicIconRenderer {
 	public static final Identifier ID = SocketSorcery.id("scroll");
 	private static final ScrollItemRenderer INSTANCE = new ScrollItemRenderer();
-	private final Map<Boolean, Pixels> bases = new HashMap<>();
+	private final Map<Identifier, Pixels> bases = new HashMap<>();
 
 	private ScrollItemRenderer() { super("scroll_icon"); }
 
@@ -62,7 +63,7 @@ public final class ScrollItemRenderer extends DynamicIconRenderer {
 		if (stack.getItem() instanceof BlankScrollItem) {
 			ScrollDrawingData drawing = stack.getOrDefault(ModComponents.SCROLL_DRAWING, ScrollDrawingData.EMPTY);
 			return composeCached("blank|" + drawing.ink() + "|" + java.util.Arrays.toString(drawing.painted()),
-					() -> compose(true, drawing.painted(), 0xFF000000 | drawing.ink()
+					() -> compose(baseTexture(stack), drawing.painted(), 0xFF000000 | drawing.ink()
 							.map(ScrollInkColor::rgb).orElse(0x111111)));
 		}
 		if (!(stack.getItem() instanceof ScrollItem scroll)) return baseTexture(stack);
@@ -72,17 +73,26 @@ public final class ScrollItemRenderer extends DynamicIconRenderer {
 		boolean transcribed = stack.has(ModComponents.TRANSCRIBED_SCROLL);
 		Pattern pattern = holder.value();
 		String key = (transcribed ? "transcribed|" : "ancient|") + holder.key().identifier() + "|" + pattern.color();
-		return composeCached(key, () -> compose(transcribed, pattern.maskBits(), 0xFF000000 | pattern.color()));
+		return composeCached(key, () -> compose(baseTexture(stack), pattern.maskBits(), 0xFF000000 | pattern.color()));
 	}
 
 	private Identifier baseTexture(ItemStack stack) {
 		boolean blank = stack.getItem() instanceof BlankScrollItem
 				|| stack.has(ModComponents.TRANSCRIBED_SCROLL);
-		return itemTexture(SocketSorcery.id(blank ? "scroll_blank" : "scroll_ancient"));
+		boolean ringTrigger = false;
+		if (stack.getItem() instanceof ScrollItem scroll) {
+			HolderLookup.Provider registries = Minecraft.getInstance().level == null ? null
+					: Minecraft.getInstance().level.registryAccess();
+			Holder.Reference<Pattern> holder = Patterns.forScroll(registries, scroll);
+			ringTrigger = holder != null && holder.value().ringTrigger().isPresent();
+		}
+		String base = blank ? "scroll_blank" : "scroll_ancient";
+		if (ringTrigger) base += "_trigger";
+		return itemTexture(SocketSorcery.id(base));
 	}
 
-	private NativeImage compose(boolean blankBase, long[] marks, int color) {
-		Pixels base = bases.computeIfAbsent(blankBase, this::loadBase);
+	private NativeImage compose(Identifier baseTexture, long[] marks, int color) {
+		Pixels base = bases.computeIfAbsent(baseTexture, this::loadBase);
 		if (base == null || base.width() != SIZE || base.height() != SIZE) return null;
 		NativeImage image = new NativeImage(SIZE, SIZE, false);
 		for (int row = 0; row < SIZE; row++) for (int col = 0; col < SIZE; col++) {
@@ -93,8 +103,8 @@ public final class ScrollItemRenderer extends DynamicIconRenderer {
 		return image;
 	}
 
-	private Pixels loadBase(boolean blank) {
-		return loadPixels(itemTexture(SocketSorcery.id(blank ? "scroll_blank" : "scroll_ancient")));
+	private Pixels loadBase(Identifier baseTexture) {
+		return loadPixels(baseTexture);
 	}
 
 	@Override protected void onReload() { bases.clear(); }

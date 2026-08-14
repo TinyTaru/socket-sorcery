@@ -67,6 +67,7 @@
 
 	"block.socket-sorcery.engraving_table": "Engraving Table",
 	"block.socket-sorcery.socketing_bench": "Socketing Bench",
+	"block.socket-sorcery.crystal_lamp": "Crystal Lamp",
 	"entity.socket-sorcery.spike": "Spike",
 
 	"pattern.socket-sorcery.fire": "Fire",
@@ -88,6 +89,7 @@
 	"pattern.socket-sorcery.ring_in_radius": "When in Radius",
 
 	"tooltip.socket-sorcery.chisel": "Used at an Engraving Table",
+	"tooltip.socket-sorcery.engraved_glass_pane": "Freeform Crystal Lamp engraving",
 	"tooltip.socket-sorcery.gem_dust": "Spent easing a cut back while engraving the matching gem",
 	"tooltip.socket-sorcery.engraved_with": "Engraved:",
 	"tooltip.socket-sorcery.carving_unfinished": "Unfinished carving:",
@@ -110,6 +112,7 @@
 	"screen.socket-sorcery.modifier_formed": "%s formed!",
 	"screen.socket-sorcery.need_scroll": "Place a pattern scroll",
 	"screen.socket-sorcery.need_gem": "Place a gem to engrave",
+	"screen.socket-sorcery.glass_pane": "Draw any design for a Crystal Lamp",
 	"screen.socket-sorcery.incompatible": "This gem can't hold that pattern",
 	"screen.socket-sorcery.need_chisel": "Place a chisel",
 	"screen.socket-sorcery.place_accessory": "Place an accessory",

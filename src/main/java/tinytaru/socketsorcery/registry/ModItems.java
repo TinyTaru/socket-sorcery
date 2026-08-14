@@ -153,6 +153,8 @@ public final class ModItems {
 			p -> new BlockItem(ModBlocks.ENGRAVING_TABLE, p), new Item.Properties().useBlockDescriptionPrefix());
 	public static final Item SOCKETING_BENCH = register("socketing_bench",
 			p -> new BlockItem(ModBlocks.SOCKETING_BENCH, p), new Item.Properties().useBlockDescriptionPrefix());
+	public static final Item CRYSTAL_LAMP = register("crystal_lamp",
+			p -> new BlockItem(ModBlocks.CRYSTAL_LAMP, p), new Item.Properties().useBlockDescriptionPrefix());
 
 	/**
 	 * Registers an item under {@code socket-sorcery:<name>}. The registry key has to be stamped onto

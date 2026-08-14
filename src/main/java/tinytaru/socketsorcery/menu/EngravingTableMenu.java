@@ -30,6 +30,7 @@ import tinytaru.socketsorcery.advancement.ModCriteria;
 import tinytaru.socketsorcery.block.EngravingTableBlockEntity;
 import tinytaru.socketsorcery.component.CarvingData;
 import tinytaru.socketsorcery.component.EngravingData;
+import tinytaru.socketsorcery.component.GlassPaneEngravingData;
 import tinytaru.socketsorcery.item.ChiselItem;
 import tinytaru.socketsorcery.pattern.Carvings;
 import tinytaru.socketsorcery.pattern.GridBits;
@@ -84,7 +85,8 @@ public class EngravingTableMenu extends AbstractContainerMenu {
 		this.addSlot(new Slot(table, SLOT_GEM, 20, 20) {
 			@Override
 			public boolean mayPlace(ItemStack stack) {
-				return Patterns.isEngravableGem(registries, stack.getItem())
+				return isGlassPane(stack)
+						|| Patterns.isEngravableGem(registries, stack.getItem())
 						|| Patterns.isEngravableRing(registries, stack.getItem());
 			}
 
@@ -142,6 +144,15 @@ public class EngravingTableMenu extends AbstractContainerMenu {
 		return table.getItem(SLOT_CHISEL);
 	}
 
+	/** True when the workpiece slot holds the plain pane used for freeform Crystal Lamp etchings. */
+	public boolean isGlassPane() {
+		return isGlassPane(gemStack());
+	}
+
+	private static boolean isGlassPane(ItemStack stack) {
+		return stack.is(Items.GLASS_PANE);
+	}
+
 	/** The registry view this menu resolves patterns/modifiers against (valid on both sides). */
 	public HolderLookup.Provider registries() {
 		return registries;
@@ -166,6 +177,9 @@ public class EngravingTableMenu extends AbstractContainerMenu {
 	/** True when a chisel and a gem this pattern accepts are both present, so strokes will land. */
 	public boolean canCarve() {
 		ItemStack gem = gemStack();
+		if (isGlassPane(gem)) {
+			return chiselStack().getItem() instanceof ChiselItem;
+		}
 		Holder.Reference<Pattern> pattern = targetPattern();
 		return pattern != null
 				&& !gem.isEmpty()
@@ -178,6 +192,9 @@ public class EngravingTableMenu extends AbstractContainerMenu {
 		ItemStack gem = gemStack();
 		if (gem.isEmpty()) {
 			return null;
+		}
+		if (isGlassPane(gem)) {
+			return null; // freeform panes erase without spending a gem-derived material
 		}
 		return gem.getItem() instanceof tinytaru.socketsorcery.item.RingItem
 				? Items.GOLD_NUGGET : ModItems.dustFor(gem.getItem());
@@ -231,6 +248,9 @@ public class EngravingTableMenu extends AbstractContainerMenu {
 	 * local copy of the cells, which is simply discarded if the stroke turns out unaffordable.
 	 */
 	public EngraveFeedbackS2CPayload chisel(ServerPlayer player, int cell, ChiselC2SPayload.Action action) {
+		if (isGlassPane()) {
+			return chiselGlassPane(cell, action);
+		}
 		if (!canCarve()) {
 			return null;
 		}
@@ -287,6 +307,52 @@ public class EngravingTableMenu extends AbstractContainerMenu {
 		celebrate(pattern, patternComplete, formed);
 		ModCriteria.ENGRAVE.trigger(player, patternId, !modifiers.isEmpty());
 		return new EngraveFeedbackS2CPayload(patternComplete, Modifiers.ordered(formed));
+	}
+
+	/**
+	 * The decorative branch of the table: a glass pane is a blank 16×16 canvas rather than a
+	 * pattern puzzle. Left-clicking lights a cell, right-clicking clears it, and Reset erases the
+	 * complete design. Only fresh cuts wear the chisel; edits stay cheap so builders can iterate.
+	 */
+	private EngraveFeedbackS2CPayload chiselGlassPane(int cell, ChiselC2SPayload.Action action) {
+		if (!canCarve()) {
+			return null;
+		}
+		ItemStack pane = gemStack();
+		GlassPaneEngravingData before = pane.getOrDefault(ModComponents.GLASS_PANE_ENGRAVING,
+				GlassPaneEngravingData.EMPTY);
+		GlassPaneEngravingData after;
+		if (action == ChiselC2SPayload.Action.CLEAR) {
+			if (before.isEmpty()) {
+				return null;
+			}
+			after = GlassPaneEngravingData.EMPTY;
+		} else {
+			if (cell < 0 || cell >= Pattern.GRID * Pattern.GRID) {
+				return null;
+			}
+			if (action == ChiselC2SPayload.Action.EASE) {
+				if (!before.isEtched(cell)) {
+					return null;
+				}
+				after = before.erase(cell);
+			} else {
+				if (before.isEtched(cell)) {
+					return null;
+				}
+				after = before.etch(cell);
+				damageChisel(GridBits.count(before.etched()));
+			}
+		}
+
+		if (after.isEmpty()) {
+			pane.remove(ModComponents.GLASS_PANE_ENGRAVING);
+		} else {
+			pane.set(ModComponents.GLASS_PANE_ENGRAVING, after);
+		}
+		table.setChanged();
+		broadcastChanges();
+		return null;
 	}
 
 	/**
@@ -441,7 +507,8 @@ public class EngravingTableMenu extends AbstractContainerMenu {
 			if (!this.moveItemStackTo(inSlot, invStart, invEnd, true)) {
 				return ItemStack.EMPTY;
 			}
-		} else if (Patterns.isEngravableGem(registries, inSlot.getItem())
+		} else if (isGlassPane(inSlot)
+				|| Patterns.isEngravableGem(registries, inSlot.getItem())
 				|| Patterns.isEngravableRing(registries, inSlot.getItem())) {
 			if (!this.moveItemStackTo(inSlot, SLOT_GEM, SLOT_GEM + 1, false)) {
 				return ItemStack.EMPTY;

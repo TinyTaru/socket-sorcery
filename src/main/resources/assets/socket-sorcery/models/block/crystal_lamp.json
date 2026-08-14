@@ -1,0 +1,63 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "glass": "minecraft:block/glass",
+    "glow": "minecraft:block/glowstone",
+    "cap": "minecraft:block/amethyst_block",
+    "particle": "minecraft:block/glowstone"
+  },
+  "elements": [
+    {
+      "from": [3, 0, 3],
+      "to": [13, 2, 13],
+      "faces": {
+        "north": { "texture": "#cap" }, "east": { "texture": "#cap" },
+        "south": { "texture": "#cap" }, "west": { "texture": "#cap" },
+        "up": { "texture": "#cap" }, "down": { "texture": "#cap" }
+      }
+    },
+    {
+      "from": [4, 2, 4],
+      "to": [12, 14, 12],
+      "faces": {
+        "north": { "texture": "#glow" }, "east": { "texture": "#glow" },
+        "south": { "texture": "#glow" }, "west": { "texture": "#glow" },
+        "up": { "texture": "#glow" }, "down": { "texture": "#glow" }
+      }
+    },
+    {
+      "from": [3, 14, 3],
+      "to": [13, 16, 13],
+      "faces": {
+        "north": { "texture": "#cap" }, "east": { "texture": "#cap" },
+        "south": { "texture": "#cap" }, "west": { "texture": "#cap" },
+        "up": { "texture": "#cap" }, "down": { "texture": "#cap" }
+      }
+    },
+    {
+      "from": [2, 2, 2],
+      "to": [14, 14, 3],
+      "faces": { "north": { "texture": "#glass" }, "south": { "texture": "#glass" } }
+    },
+    {
+      "from": [2, 2, 13],
+      "to": [14, 14, 14],
+      "faces": { "north": { "texture": "#glass" }, "south": { "texture": "#glass" } }
+    },
+    {
+      "from": [2, 2, 3],
+      "to": [3, 14, 13],
+      "faces": { "east": { "texture": "#glass" }, "west": { "texture": "#glass" } }
+    },
+    {
+      "from": [13, 2, 3],
+      "to": [14, 14, 13],
+      "faces": { "east": { "texture": "#glass" }, "west": { "texture": "#glass" } }
+    },
+    {
+      "from": [3, 13, 3],
+      "to": [13, 14, 13],
+      "faces": { "up": { "texture": "#glass" }, "down": { "texture": "#glass" } }
+    }
+  ]
+}

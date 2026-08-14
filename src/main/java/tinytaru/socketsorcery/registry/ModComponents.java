@@ -7,7 +7,9 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import tinytaru.socketsorcery.SocketSorcery;
 import tinytaru.socketsorcery.component.CarvingData;
+import tinytaru.socketsorcery.component.CrystalLampData;
 import tinytaru.socketsorcery.component.EngravingData;
+import tinytaru.socketsorcery.component.GlassPaneEngravingData;
 import tinytaru.socketsorcery.component.SocketData;
 import tinytaru.socketsorcery.component.ScrollDrawingData;
 
@@ -26,6 +28,15 @@ public final class ModComponents {
 
 	public static final DataComponentType<CarvingData> CARVING = register("carving",
 			builder -> builder.persistent(CarvingData.CODEC).networkSynchronized(CarvingData.STREAM_CODEC));
+
+	/** Freeform 16×16 etching on a glass pane, used exclusively by Crystal Lamps. */
+	public static final DataComponentType<GlassPaneEngravingData> GLASS_PANE_ENGRAVING = register("glass_pane_engraving",
+			builder -> builder.persistent(GlassPaneEngravingData.CODEC)
+					.networkSynchronized(GlassPaneEngravingData.STREAM_CODEC));
+
+	/** The five freeform light masks stored by a Crystal Lamp block or item. */
+	public static final DataComponentType<CrystalLampData> CRYSTAL_LAMP = register("crystal_lamp",
+			builder -> builder.persistent(CrystalLampData.CODEC).networkSynchronized(CrystalLampData.STREAM_CODEC));
 
 	public static final DataComponentType<SocketData> SOCKETS = register("sockets",
 			builder -> builder.persistent(SocketData.CODEC).networkSynchronized(SocketData.STREAM_CODEC));

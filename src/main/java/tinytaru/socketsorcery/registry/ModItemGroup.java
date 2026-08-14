@@ -22,6 +22,7 @@ public final class ModItemGroup {
 					.displayItems((params, output) -> {
 						output.accept(ModItems.ENGRAVING_TABLE);
 						output.accept(ModItems.SOCKETING_BENCH);
+						output.accept(ModItems.CRYSTAL_LAMP);
 						output.accept(ModItems.CHISEL);
 						output.accept(ModItems.DIAMOND_CHISEL);
 						output.accept(ModItems.NETHERITE_CHISEL);

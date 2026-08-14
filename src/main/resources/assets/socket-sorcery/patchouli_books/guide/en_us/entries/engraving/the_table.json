@@ -6,7 +6,7 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "The $(item)Engraving Table$() holds three things: the gem, the teaching scroll, and a chisel to do the cutting. All three must be in place before the first cut."
+      "text": "The $(item)Engraving Table$() holds three things: the gem, the teaching scroll, and a chisel to do the cutting. All three must be in place before the first cut. $(br2)$(item)Glass Panes$() are the exception: place one with a chisel to draw a freeform Crystal Lamp design. No scroll is needed."
     },
     {
       "type": "patchouli:crafting",

@@ -29,6 +29,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import tinytaru.socketsorcery.component.CarvingData;
+import tinytaru.socketsorcery.component.GlassPaneEngravingData;
 import tinytaru.socketsorcery.menu.EngravingTableMenu;
 import tinytaru.socketsorcery.net.ChiselC2SPayload;
 import tinytaru.socketsorcery.pattern.Carvings;
@@ -214,6 +215,21 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 		if (gem == null) {
 			return;
 		}
+		if (this.menu.isGlassPane()) {
+			int[][] pixels = new int[GRID][GRID];
+			boolean[][] opaque = new boolean[GRID][GRID];
+			for (int row = 0; row < GRID; row++) {
+				for (int col = 0; col < GRID; col++) {
+					// A full, subtly chequered canvas makes every one of the 256 cells available, unlike
+					// the narrow silhouette of the vanilla glass-pane inventory icon.
+					pixels[row][col] = ((row + col) & 1) == 0 ? 0xFF8CC9D7 : 0xFF78B8C8;
+					opaque[row][col] = true;
+				}
+			}
+			gemPixels = pixels;
+			gemOpaque = opaque;
+			return;
+		}
 
 		Identifier itemId = BuiltInRegistries.ITEM.getKey(gem);
 		Identifier texture = Identifier.fromNamespaceAndPath(
@@ -251,11 +267,21 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 	 * {@code force} skips the window entirely, for when the gem in the slot changes outright.
 	 */
 	private void reconcileWithGem(boolean force) {
-		CarvingData carve = Carvings.on(this.menu.registries(), this.menu.gemStack());
 		int[][] saved = new int[GRID][GRID];
-		if (carve != null) {
+		if (this.menu.isGlassPane()) {
+			GlassPaneEngravingData etching = this.menu.gemStack().getOrDefault(
+					ModComponents.GLASS_PANE_ENGRAVING, GlassPaneEngravingData.EMPTY);
 			for (int cell = 0; cell < GRID * GRID; cell++) {
-				saved[cell / GRID][cell % GRID] = Carvings.depth(carve.carved(), carve.deep(), cell);
+				if (etching.isEtched(cell)) {
+					saved[cell / GRID][cell % GRID] = 1;
+				}
+			}
+		} else {
+			CarvingData carve = Carvings.on(this.menu.registries(), this.menu.gemStack());
+			if (carve != null) {
+				for (int cell = 0; cell < GRID * GRID; cell++) {
+					saved[cell / GRID][cell % GRID] = Carvings.depth(carve.carved(), carve.deep(), cell);
+				}
 			}
 		}
 		if (Arrays.deepEquals(saved, depth) || (!force && strokeGraceTicks > 0)) {
@@ -430,7 +456,8 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 			action = ChiselC2SPayload.Action.EASE;
 			depth[row][col] = before - 1;
 		} else {
-			if (before >= 2) {
+			int maxDepth = this.menu.isGlassPane() ? 1 : 2;
+			if (before >= maxDepth) {
 				return;
 			}
 			action = ChiselC2SPayload.Action.DEEPEN;
@@ -565,6 +592,7 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 	private void renderGrid(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
 		Holder.Reference<Pattern> holder = this.menu.targetPattern();
 		Pattern pattern = holder == null ? null : holder.value();
+		boolean glassPane = this.menu.isGlassPane();
 		int ox = this.leftPos + GRID_X;
 		int oy = this.topPos + GRID_Y;
 		int size = GRID * CELL;
@@ -583,7 +611,11 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 				}
 
 				int d = depth[row][col];
-				if (d >= 2) {
+				if (glassPane && d >= 1) {
+					// Etched cells are the portions that will shine through the lamp's glass and onto
+					// nearby surfaces. Keep them warm like the glowstone core rather than spell-coloured.
+					g.fill(x1, y1, x2, y2, 0xFFFFEEA3);
+				} else if (d >= 2) {
 					g.fill(x1, y1, x2, y2, 0xEE070707); // deep cut — slightly darker
 				} else if (d == 1) {
 					g.fill(x1, y1, x2, y2, 0xCC141414); // carved groove
@@ -595,7 +627,7 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 
 		// Tint the cells of each correctly-formed modifier in its own colour: feedback on what you've
 		// shaped, without revealing where unformed modifiers live (the discovery is the point).
-		Set<Identifier> accepted = pattern == null ? null : acceptedModifiers();
+		Set<Identifier> accepted = glassPane || pattern == null ? null : acceptedModifiers();
 		if (accepted != null) {
 			for (Identifier id : accepted) {
 				Holder.Reference<Modifier> modifier = Modifiers.get(this.menu.registries(), id);
@@ -695,6 +727,11 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 		Holder.Reference<Pattern> holder = this.menu.targetPattern();
 		if (gem.isEmpty()) {
 			return Component.translatable("screen.socket-sorcery.need_gem").withStyle(ChatFormatting.DARK_GRAY);
+		}
+		if (this.menu.isGlassPane()) {
+			return this.menu.canCarve()
+					? Component.translatable("screen.socket-sorcery.glass_pane").withStyle(ChatFormatting.GOLD)
+					: Component.translatable("screen.socket-sorcery.need_chisel").withStyle(ChatFormatting.DARK_GRAY);
 		}
 		if (holder == null) {
 			return Component.translatable("screen.socket-sorcery.need_scroll").withStyle(ChatFormatting.DARK_GRAY);

@@ -7,6 +7,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import tinytaru.socketsorcery.SocketSorcery;
 import tinytaru.socketsorcery.block.EngravingTableBlockEntity;
+import tinytaru.socketsorcery.block.CrystalLampBlockEntity;
 import tinytaru.socketsorcery.block.SocketingBenchBlockEntity;
 
 public final class ModBlockEntities {
@@ -17,6 +18,9 @@ public final class ModBlockEntities {
 
 	public static final BlockEntityType<SocketingBenchBlockEntity> SOCKETING_BENCH = register("socketing_bench",
 			FabricBlockEntityTypeBuilder.create(SocketingBenchBlockEntity::new, ModBlocks.SOCKETING_BENCH));
+
+	public static final BlockEntityType<CrystalLampBlockEntity> CRYSTAL_LAMP = register("crystal_lamp",
+			FabricBlockEntityTypeBuilder.create(CrystalLampBlockEntity::new, ModBlocks.CRYSTAL_LAMP));
 
 	private static <T extends BlockEntity> BlockEntityType<T> register(String name,
 			FabricBlockEntityTypeBuilder<T> builder) {

@@ -18,6 +18,8 @@ import tinytaru.socketsorcery.registry.ModItemGroup;
 import tinytaru.socketsorcery.registry.ModItems;
 import tinytaru.socketsorcery.registry.ModLoot;
 import tinytaru.socketsorcery.registry.ModMenus;
+
+import tinytaru.socketsorcery.registry.ModRecipes;
 import tinytaru.socketsorcery.registry.ModSounds;
 
 public class SocketSorcery implements ModInitializer {
@@ -46,6 +48,7 @@ public class SocketSorcery implements ModInitializer {
 		ModBlockEntities.init();
 		ModEntities.init();
 		ModItems.init();
+		ModRecipes.init();
 		RingReactions.init();
 		ModMenus.init();
 		ModItemGroup.init();

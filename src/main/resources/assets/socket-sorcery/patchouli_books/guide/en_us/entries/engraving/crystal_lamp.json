@@ -1,0 +1,16 @@
+{
+  "category": "socket-sorcery:engraving",
+  "name": "Crystal Lamps",
+  "icon": "socket-sorcery:crystal_lamp",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "A $(item)Glass Pane$() and chisel make a freeform 16x16 canvas at the $(item)Engraving Table$(). $(bold)Left-click$() lights a cell; $(bold)right-click$() removes it. These decorative cuts do not need a scroll or gem dust, so iterate until the image is right.$(br2)A fresh glowing cell uses one point of chisel durability. Reset and right-click edits are free."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Craft five non-empty engraved panes around a $(item)Glowstone$() block:$(br2)$(bold)Up$()  $(bold)North$()  Empty$(br)$(bold)West$()  $(item)Glowstone$()  $(bold)East$()$(br)Empty  $(bold)South$()  Empty$(br2)The five positions choose which face receives each full-face image. Every opening casts its own ray up to twelve blocks, spreading the design across walls, floors, slabs, stairs, fences, and other shaped surfaces."
+    }
+  ]
+}

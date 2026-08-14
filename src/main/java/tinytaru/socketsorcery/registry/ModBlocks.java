@@ -12,6 +12,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 import tinytaru.socketsorcery.SocketSorcery;
 import tinytaru.socketsorcery.block.EngravingTableBlock;
+import tinytaru.socketsorcery.block.CrystalLampBlock;
 import tinytaru.socketsorcery.block.SocketingBenchBlock;
 
 public final class ModBlocks {
@@ -23,6 +24,10 @@ public final class ModBlocks {
 	public static final Block SOCKETING_BENCH = register("socketing_bench", SocketingBenchBlock::new,
 			BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(2.5F)
 					.sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion());
+
+	public static final Block CRYSTAL_LAMP = register("crystal_lamp", CrystalLampBlock::new,
+			BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_YELLOW).strength(0.3F)
+					.sound(SoundType.GLASS).lightLevel(state -> 15).noOcclusion());
 
 	/** As in {@link ModItems}: the registry key must be stamped onto the properties pre-construction. */
 	private static <T extends Block> T register(String name, Function<BlockBehaviour.Properties, T> factory,
