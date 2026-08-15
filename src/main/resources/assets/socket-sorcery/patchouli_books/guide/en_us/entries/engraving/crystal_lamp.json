@@ -10,7 +10,7 @@
     },
     {
       "type": "patchouli:text",
-      "text": "Craft five non-empty engraved panes around a $(item)Glowstone$() block:$(br2)$(bold)Up$()  $(bold)North$()  Empty$(br)$(bold)West$()  $(item)Glowstone$()  $(bold)East$()$(br)Empty  $(bold)South$()  Empty$(br2)The five positions choose which face receives each full-face image. Every opening casts its own ray up to twelve blocks, spreading the design across walls, floors, slabs, stairs, fences, and other shaped surfaces."
+      "text": "Craft five non-empty engraved panes around a $(item)Glowstone$() block:$(br2)$(bold)Up$()  $(bold)North$()  Empty$(br)$(bold)West$()  $(item)Glowstone$()  $(bold)East$()$(br)Empty  $(bold)South$()  Empty$(br2)The five positions choose which face projects each full-face image. Each engraving now behaves like a real cutout in front of a small light source: the image spreads with distance, keeps its 16x16 pixel structure with a subtle edge blur, fades with distance, dims on glancing surfaces, and is blocked by intervening geometry. Projections can land on floors, walls, slabs, stairs, fences, and other shaped surfaces up to twelve blocks away."
     }
   ]
 }
