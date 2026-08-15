@@ -15,19 +15,30 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 
+import org.joml.Vector3fc;
+
 import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.geom.builders.UVPair;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.block.BlockStateModelSet;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -67,6 +78,10 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 	private static final double VIRTUAL_SOURCE_OFFSET = 0.78;
 	private static final double CONE_SLOPE = PANEL_HALF_SIZE / (VIRTUAL_SOURCE_OFFSET + PANEL_PLANE);
 	private static final double DECAL_OFFSET = 0.0025;
+	// Model-based receivers (grass, vines, flowers, crops, etc.) are drawn directly over the
+	// baked model. Give those overlays their own tiny normal-space bias so the decal does not
+	// fight the original cutout texture in the depth buffer.
+	private static final double MODEL_DECAL_OFFSET = 0.0035;
 	private static final double SHADOW_RAY_EPSILON = 0.012;
 	private static final long CACHE_TICKS = 10;
 
@@ -81,9 +96,15 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 	private static long tuningRevision;
 
 	private static final RenderPipeline PROJECTION_PIPELINE = createProjectionPipeline();
+	private static final RenderPipeline MODEL_PROJECTION_PIPELINE = createModelProjectionPipeline();
 	private static final RenderType PROJECTION_TYPE = RenderType.create(
 			"socket_sorcery_crystal_lamp_projection",
 			RenderSetup.builder(PROJECTION_PIPELINE).createRenderSetup());
+	private static final RenderType MODEL_PROJECTION_TYPE = RenderType.create(
+			"socket_sorcery_crystal_lamp_model_projection",
+			RenderSetup.builder(MODEL_PROJECTION_PIPELINE)
+					.withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS)
+					.createRenderSetup());
 
 	private final Map<CrystalLampBlockEntity, ProjectionCache> projectionCache = new WeakHashMap<>();
 
@@ -147,11 +168,20 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 			}
 		}
 		for (CrystalLampRenderState.ProjectionBatch batch : state.projections) {
-			collector.submitCustomGeometry(poseStack, PROJECTION_TYPE, (pose, consumer) -> {
-				for (CrystalLampRenderState.SurfaceQuad quad : batch.quads()) {
-					emitSurfaceQuad(consumer, pose, quad);
-				}
-			});
+			if (!batch.quads().isEmpty()) {
+				collector.submitCustomGeometry(poseStack, PROJECTION_TYPE, (pose, consumer) -> {
+					for (CrystalLampRenderState.SurfaceQuad quad : batch.quads()) {
+						emitSurfaceQuad(consumer, pose, quad);
+					}
+				});
+			}
+			if (!batch.modelQuads().isEmpty()) {
+				collector.submitCustomGeometry(poseStack, MODEL_PROJECTION_TYPE, (pose, consumer) -> {
+					for (CrystalLampRenderState.ModelSurfaceQuad quad : batch.modelQuads()) {
+						emitModelSurfaceQuad(consumer, pose, quad);
+					}
+				});
+			}
 		}
 	}
 
@@ -169,6 +199,19 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 				.build());
 	}
 
+	private static RenderPipeline createModelProjectionPipeline() {
+		return RenderPipelines.register(RenderPipeline.builder(RenderPipelines.MATRICES_PROJECTION_SNIPPET)
+				.withLocation(SocketSorcery.id("pipeline/crystal_lamp_model_projection"))
+				.withVertexShader(SocketSorcery.id("core/crystal_lamp_model_projection"))
+				.withFragmentShader(SocketSorcery.id("core/crystal_lamp_model_projection"))
+				.withSampler("Sampler0")
+				.withVertexFormat(DefaultVertexFormat.POSITION_TEX_COLOR, VertexFormat.Mode.QUADS)
+				.withColorTargetState(new ColorTargetState(BlendFunction.LIGHTNING))
+				.withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false))
+				.withCull(false)
+				.build());
+	}
+
 	private List<CrystalLampRenderState.ProjectionBatch> buildProjectors(CrystalLampBlockEntity lamp,
 			CrystalLampData data) {
 		Level level = lamp.getLevel();
@@ -177,6 +220,8 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 		}
 
 		SocketSorceryConfig tuning = SocketSorceryConfig.get();
+		BlockStateModelSet modelSet = Minecraft.getInstance().getModelManager().getBlockStateModelSet();
+		RandomSource modelRandom = RandomSource.create();
 		List<CrystalLampRenderState.ProjectionBatch> batches = new ArrayList<>();
 		BlockPos origin = lamp.getBlockPos();
 		Vec3 lampCenter = Vec3.atCenterOf(origin);
@@ -191,6 +236,7 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 			float[] projectorUp = up(projectorFace);
 			float[] projectorForward = directionVector(projectorFace);
 			List<CrystalLampRenderState.SurfaceQuad> quads = new ArrayList<>();
+			List<CrystalLampRenderState.ModelSurfaceQuad> modelQuads = new ArrayList<>();
 
 			for (int depth = 1; depth <= MAX_DISTANCE; depth++) {
 				double farHalfWidth = projectionHalfWidth(depth + 1.0);
@@ -201,6 +247,24 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 								projectorUp, vertical);
 						BlockState blockState = level.getBlockState(target);
 						VoxelShape shape = blockState.getShape(level, target, CollisionContext.empty());
+
+						// Thin/cutout blocks are visually defined by their baked model, not by their voxel shape.
+						// Render the light on that actual model (and preserve its texture alpha) so grass, vines,
+						// flowers, crops, panes, rails, etc. do not glow as crude hitboxes.
+						boolean useRenderedModel = blockState.getRenderShape() == RenderShape.MODEL
+								&& (!blockState.isSolidRender() || shape.isEmpty());
+						if (useRenderedModel) {
+							Vec3 modelOffset = blockState.getOffset(target);
+							AABB modelBounds = new AABB(target).move(modelOffset).inflate(0.35);
+							if (boxTouchesProjectorFrustum(modelBounds, lampCenter, projectorRight,
+									projectorUp, projectorForward, tuning)) {
+								addLitModel(level, origin, lampCenter, projectorFace, projectorRight,
+										projectorUp, projectorForward, mask, target, blockState, modelSet,
+										modelRandom, tuning, modelQuads);
+							}
+							continue;
+						}
+
 						if (shape.isEmpty()) {
 							continue;
 						}
@@ -220,8 +284,9 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 				}
 			}
 
-			if (!quads.isEmpty()) {
-				batches.add(new CrystalLampRenderState.ProjectionBatch(projectorFace, List.copyOf(quads)));
+			if (!quads.isEmpty() || !modelQuads.isEmpty()) {
+				batches.add(new CrystalLampRenderState.ProjectionBatch(projectorFace, List.copyOf(quads),
+						List.copyOf(modelQuads)));
 			}
 		}
 		return List.copyOf(batches);
@@ -247,6 +312,148 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 		double blurMargin = halfWidth * tuning.lampLightCullMarginFactor + tuning.lampLightCullMarginBase;
 		return Math.abs(horizontal) - horizontalExtent <= halfWidth + blurMargin
 				&& Math.abs(vertical) - verticalExtent <= halfWidth + blurMargin;
+	}
+
+	private static void addLitModel(Level level, BlockPos lampOrigin, Vec3 lampCenter, Direction projectorFace,
+			float[] projectorRight, float[] projectorUp, float[] projectorForward, long[] mask, BlockPos target,
+			BlockState blockState, BlockStateModelSet modelSet, RandomSource modelRandom, SocketSorceryConfig tuning,
+			List<CrystalLampRenderState.ModelSurfaceQuad> output) {
+		BlockStateModel model = modelSet.get(blockState);
+		List<BlockStateModelPart> parts = new ArrayList<>();
+		modelRandom.setSeed(blockState.getSeed(target));
+		model.collectParts(modelRandom, parts);
+		if (parts.isEmpty()) {
+			return;
+		}
+
+		Vec3 modelOrigin = Vec3.atLowerCornerOf(target).add(blockState.getOffset(target));
+		for (BlockStateModelPart part : parts) {
+			for (Direction cullFace : SURFACE_FACES) {
+				addLitModelQuads(level, lampOrigin, lampCenter, projectorFace, projectorRight, projectorUp,
+						projectorForward, mask, modelOrigin, part.getQuads(cullFace), tuning, output);
+			}
+			addLitModelQuads(level, lampOrigin, lampCenter, projectorFace, projectorRight, projectorUp,
+					projectorForward, mask, modelOrigin, part.getQuads(null), tuning, output);
+		}
+	}
+
+	private static void addLitModelQuads(Level level, BlockPos lampOrigin, Vec3 lampCenter,
+			Direction projectorFace, float[] projectorRight, float[] projectorUp, float[] projectorForward,
+			long[] mask, Vec3 modelOrigin, List<BakedQuad> bakedQuads, SocketSorceryConfig tuning,
+			List<CrystalLampRenderState.ModelSurfaceQuad> output) {
+		for (BakedQuad quad : bakedQuads) {
+			addLitModelQuad(level, lampOrigin, lampCenter, projectorFace, projectorRight, projectorUp,
+					projectorForward, mask, modelOrigin, quad, tuning, output);
+		}
+	}
+
+	private static void addLitModelQuad(Level level, BlockPos lampOrigin, Vec3 lampCenter,
+			Direction projectorFace, float[] projectorRight, float[] projectorUp, float[] projectorForward,
+			long[] mask, Vec3 modelOrigin, BakedQuad quad, SocketSorceryConfig tuning,
+			List<CrystalLampRenderState.ModelSurfaceQuad> output) {
+		Vec3 q0 = modelPoint(modelOrigin, quad.position0());
+		Vec3 q1 = modelPoint(modelOrigin, quad.position1());
+		Vec3 q2 = modelPoint(modelOrigin, quad.position2());
+		Vec3 q3 = modelPoint(modelOrigin, quad.position3());
+
+		Vec3 normal = q1.subtract(q0).cross(q3.subtract(q0));
+		double normalLength = normal.length();
+		if (normalLength <= 1.0E-7) {
+			return;
+		}
+		normal = normal.scale(1.0 / normalLength);
+
+		Vec3 quadCenter = q0.add(q1).add(q2).add(q3).scale(0.25);
+		// Baked cutout quads are commonly two-sided. Bias the projected-light copy toward the
+		// lamp-facing side so the overlay is consistently in front of the source model instead
+		// of sitting exactly coplanar with it (which causes Z-fighting on grass/cave vines).
+		if (normal.dot(lampCenter.subtract(quadCenter)) < 0.0) {
+			normal = normal.scale(-1.0);
+		}
+		double forwardAtCenter = dot(quadCenter.subtract(lampCenter), projectorForward);
+		if (forwardAtCenter < PANEL_PLANE - 0.75 || forwardAtCenter > MAX_DISTANCE + 0.75) {
+			return;
+		}
+
+		double edgeU = Math.max(q0.distanceTo(q3), q1.distanceTo(q2));
+		double edgeV = Math.max(q0.distanceTo(q1), q3.distanceTo(q2));
+		if (edgeU <= 1.0E-6 || edgeV <= 1.0E-6) {
+			return;
+		}
+
+		double representativeForward = Math.max(PANEL_PLANE, forwardAtCenter);
+		double projectedCellSize = (projectionHalfWidth(representativeForward) * 2.0) / 16.0;
+		int stepsPerBlock = clampInt((int) Math.ceil(tuning.lampLightSamplesPerPatternCell
+				/ Math.max(0.035, projectedCellSize)), MIN_MESH_STEPS_PER_BLOCK, MAX_MESH_STEPS_PER_BLOCK);
+		int stepsU = Math.max(1, (int) Math.ceil(edgeU * stepsPerBlock));
+		int stepsV = Math.max(1, (int) Math.ceil(edgeV * stepsPerBlock));
+
+		float quadU0 = UVPair.unpackU(quad.packedUV0());
+		float quadV0 = UVPair.unpackV(quad.packedUV0());
+		float quadU1 = UVPair.unpackU(quad.packedUV1());
+		float quadV1 = UVPair.unpackV(quad.packedUV1());
+		float quadU2 = UVPair.unpackU(quad.packedUV2());
+		float quadV2 = UVPair.unpackV(quad.packedUV2());
+		float quadU3 = UVPair.unpackU(quad.packedUV3());
+		float quadV3 = UVPair.unpackV(quad.packedUV3());
+
+		for (int y = 0; y < stepsV; y++) {
+			double t0 = (double) y / stepsV;
+			double t1 = (double) (y + 1) / stepsV;
+			for (int x = 0; x < stepsU; x++) {
+				double s0 = (double) x / stepsU;
+				double s1 = (double) (x + 1) / stepsU;
+
+				Vec3 p0 = bilerp(q0, q1, q2, q3, s0, t0);
+				Vec3 p1 = bilerp(q0, q1, q2, q3, s0, t1);
+				Vec3 p2 = bilerp(q0, q1, q2, q3, s1, t1);
+				Vec3 p3 = bilerp(q0, q1, q2, q3, s1, t0);
+
+				double a0 = unshadowedIntensity(mask, lampCenter, projectorRight, projectorUp,
+						projectorForward, normal, true, p0, tuning);
+				double a1 = unshadowedIntensity(mask, lampCenter, projectorRight, projectorUp,
+						projectorForward, normal, true, p1, tuning);
+				double a2 = unshadowedIntensity(mask, lampCenter, projectorRight, projectorUp,
+						projectorForward, normal, true, p2, tuning);
+				double a3 = unshadowedIntensity(mask, lampCenter, projectorRight, projectorUp,
+						projectorForward, normal, true, p3, tuning);
+
+				Vec3 center = p0.add(p1).add(p2).add(p3).scale(0.25);
+				double centerIntensity = unshadowedIntensity(mask, lampCenter, projectorRight, projectorUp,
+						projectorForward, normal, true, center, tuning);
+				double peak = Math.max(centerIntensity, Math.max(Math.max(a0, a1), Math.max(a2, a3)));
+				if (peak < tuning.lampLightMinOpacity) {
+					continue;
+				}
+
+				if (centerIntensity > 0.0) {
+					double centerFloor = centerIntensity * tuning.lampLightCenterFloor;
+					a0 = Math.max(a0, centerFloor);
+					a1 = Math.max(a1, centerFloor);
+					a2 = Math.max(a2, centerFloor);
+					a3 = Math.max(a3, centerFloor);
+				}
+
+				double visibility = softVisibility(level, lampCenter, projectorFace, projectorRight,
+						projectorUp, projectorForward, center, tuning);
+				if (visibility <= 0.001) {
+					continue;
+				}
+
+				float u0 = bilerp(quadU0, quadU1, quadU2, quadU3, s0, t0);
+				float v0 = bilerp(quadV0, quadV1, quadV2, quadV3, s0, t0);
+				float u1 = bilerp(quadU0, quadU1, quadU2, quadU3, s0, t1);
+				float v1 = bilerp(quadV0, quadV1, quadV2, quadV3, s0, t1);
+				float u2 = bilerp(quadU0, quadU1, quadU2, quadU3, s1, t1);
+				float v2 = bilerp(quadV0, quadV1, quadV2, quadV3, s1, t1);
+				float u3 = bilerp(quadU0, quadU1, quadU2, quadU3, s1, t0);
+				float v3 = bilerp(quadV0, quadV1, quadV2, quadV3, s1, t0);
+
+				output.add(modelSurfaceQuad(lampOrigin, normal,
+						p0, a0 * visibility, u0, v0, p1, a1 * visibility, u1, v1,
+						p2, a2 * visibility, u2, v2, p3, a3 * visibility, u3, v3));
+			}
+		}
 	}
 
 	private static void addLitSurface(Level level, BlockPos lampOrigin, Vec3 lampCenter, Direction projectorFace,
@@ -337,6 +544,14 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 	private static double unshadowedIntensity(long[] mask, Vec3 lampCenter, float[] projectorRight,
 			float[] projectorUp, float[] projectorForward, Direction surfaceFace, Vec3 point,
 			SocketSorceryConfig tuning) {
+		Vec3 normal = new Vec3(surfaceFace.getStepX(), surfaceFace.getStepY(), surfaceFace.getStepZ());
+		return unshadowedIntensity(mask, lampCenter, projectorRight, projectorUp, projectorForward, normal,
+				false, point, tuning);
+	}
+
+	private static double unshadowedIntensity(long[] mask, Vec3 lampCenter, float[] projectorRight,
+			float[] projectorUp, float[] projectorForward, Vec3 surfaceNormal, boolean twoSided, Vec3 point,
+			SocketSorceryConfig tuning) {
 		Vec3 relative = point.subtract(lampCenter);
 		double forward = dot(relative, projectorForward);
 		if (forward < PANEL_PLANE - 0.02 || forward > MAX_DISTANCE + 0.35) {
@@ -357,8 +572,12 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 		}
 
 		Vec3 towardLamp = relative.scale(-1.0).normalize();
-		double incidence = Math.max(0.0, towardLamp.x * surfaceFace.getStepX()
-				+ towardLamp.y * surfaceFace.getStepY() + towardLamp.z * surfaceFace.getStepZ());
+		double incidence = towardLamp.dot(surfaceNormal);
+		if (twoSided) {
+			incidence = Math.abs(incidence);
+		} else {
+			incidence = Math.max(0.0, incidence);
+		}
 		if (incidence <= 0.0) {
 			return 0.0;
 		}
@@ -468,6 +687,38 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 				(float) d.x, (float) d.y, (float) d.z, (float) clamp(alphaD, 0.0, 1.0));
 	}
 
+	private static CrystalLampRenderState.ModelSurfaceQuad modelSurfaceQuad(BlockPos lampOrigin, Vec3 surfaceNormal,
+			Vec3 a, double alphaA, float uA, float vA, Vec3 b, double alphaB, float uB, float vB,
+			Vec3 c, double alphaC, float uC, float vC, Vec3 d, double alphaD, float uD, float vD) {
+		Vec3 origin = Vec3.atLowerCornerOf(lampOrigin);
+		Vec3 decalBias = surfaceNormal.scale(MODEL_DECAL_OFFSET);
+		a = a.add(decalBias).subtract(origin);
+		b = b.add(decalBias).subtract(origin);
+		c = c.add(decalBias).subtract(origin);
+		d = d.add(decalBias).subtract(origin);
+		return new CrystalLampRenderState.ModelSurfaceQuad(
+				(float) a.x, (float) a.y, (float) a.z, (float) clamp(alphaA, 0.0, 1.0), uA, vA,
+				(float) b.x, (float) b.y, (float) b.z, (float) clamp(alphaB, 0.0, 1.0), uB, vB,
+				(float) c.x, (float) c.y, (float) c.z, (float) clamp(alphaC, 0.0, 1.0), uC, vC,
+				(float) d.x, (float) d.y, (float) d.z, (float) clamp(alphaD, 0.0, 1.0), uD, vD);
+	}
+
+	private static Vec3 modelPoint(Vec3 modelOrigin, Vector3fc local) {
+		return modelOrigin.add(local.x(), local.y(), local.z());
+	}
+
+	private static Vec3 bilerp(Vec3 q0, Vec3 q1, Vec3 q2, Vec3 q3, double s, double t) {
+		Vec3 top = q0.lerp(q3, s);
+		Vec3 bottom = q1.lerp(q2, s);
+		return top.lerp(bottom, t);
+	}
+
+	private static float bilerp(float q0, float q1, float q2, float q3, double s, double t) {
+		double top = q0 + (q3 - q0) * s;
+		double bottom = q1 + (q2 - q1) * s;
+		return (float) (top + (bottom - top) * t);
+	}
+
 	private static double projectionHalfWidth(double forward) {
 		return Math.max(0.001, (forward + VIRTUAL_SOURCE_OFFSET) * CONE_SLOPE);
 	}
@@ -561,6 +812,21 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 	private static void surfaceVertex(VertexConsumer consumer, PoseStack.Pose pose, float x, float y, float z,
 			float alpha) {
 		consumer.addVertex(pose, x, y, z).setColor(LIGHT_RED, LIGHT_GREEN, LIGHT_BLUE, alpha);
+	}
+
+	private static void emitModelSurfaceQuad(VertexConsumer consumer, PoseStack.Pose pose,
+			CrystalLampRenderState.ModelSurfaceQuad q) {
+		modelSurfaceVertex(consumer, pose, q.x0(), q.y0(), q.z0(), q.a0(), q.u0(), q.v0());
+		modelSurfaceVertex(consumer, pose, q.x1(), q.y1(), q.z1(), q.a1(), q.u1(), q.v1());
+		modelSurfaceVertex(consumer, pose, q.x2(), q.y2(), q.z2(), q.a2(), q.u2(), q.v2());
+		modelSurfaceVertex(consumer, pose, q.x3(), q.y3(), q.z3(), q.a3(), q.u3(), q.v3());
+	}
+
+	private static void modelSurfaceVertex(VertexConsumer consumer, PoseStack.Pose pose, float x, float y, float z,
+			float alpha, float u, float v) {
+		consumer.addVertex(pose, x, y, z)
+				.setColor(LIGHT_RED, LIGHT_GREEN, LIGHT_BLUE, alpha)
+				.setUv(u, v);
 	}
 
 	private static void emitFaceQuad(VertexConsumer consumer, PoseStack.Pose pose, float cx, float cy, float cz,

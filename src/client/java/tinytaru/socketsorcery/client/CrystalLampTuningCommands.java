@@ -38,10 +38,10 @@ public final class CrystalLampTuningCommands {
 			root.then(ClientCommands.literal("reset")
 					.executes(context -> reset(context.getSource())));
 
-			// Friendly high-level controls. A value of 1.0 means the bundled default.
+			// Friendly high-level controls. Blur 0 is crisp; blur 1 restores the reference soft edge.
 			root.then(valueCommand("blur", 0.0, 8.0, (config, scale) -> {
-				config.lampLightBlurBase = SocketSorceryConfig.DEFAULT_LAMP_LIGHT_BLUR_BASE * scale;
-				config.lampLightBlurPerBlock = SocketSorceryConfig.DEFAULT_LAMP_LIGHT_BLUR_PER_BLOCK * scale;
+				config.lampLightBlurBase = SocketSorceryConfig.LAMP_LIGHT_BLUR_REFERENCE_BASE * scale;
+				config.lampLightBlurPerBlock = SocketSorceryConfig.LAMP_LIGHT_BLUR_REFERENCE_PER_BLOCK * scale;
 			}));
 			root.then(valueCommand("brightness", 0.0, 2.0,
 					(config, value) -> config.lampLightBrightness = value));
@@ -110,9 +110,9 @@ public final class CrystalLampTuningCommands {
 	private static int show(FabricClientCommandSource source) {
 		SocketSorceryConfig config = SocketSorceryConfig.get();
 		double blurScale = averageRatio(config.lampLightBlurBase,
-				SocketSorceryConfig.DEFAULT_LAMP_LIGHT_BLUR_BASE,
+				SocketSorceryConfig.LAMP_LIGHT_BLUR_REFERENCE_BASE,
 				config.lampLightBlurPerBlock,
-				SocketSorceryConfig.DEFAULT_LAMP_LIGHT_BLUR_PER_BLOCK);
+				SocketSorceryConfig.LAMP_LIGHT_BLUR_REFERENCE_PER_BLOCK);
 		double falloffScale = averageRatio(config.lampLightLinearFalloff,
 				SocketSorceryConfig.DEFAULT_LAMP_LIGHT_LINEAR_FALLOFF,
 				config.lampLightQuadraticFalloff,
@@ -142,7 +142,7 @@ public final class CrystalLampTuningCommands {
 	private static int help(FabricClientCommandSource source) {
 		source.sendFeedback(Component.literal(
 				"Crystal Lamp live tuning\n"
-				+ "/lamplight blur <0-8> - overall blur (1 = default)\n"
+				+ "/lamplight blur <0-8> - overall blur (0 = crisp default, 1 = soft reference)\n"
 				+ "/lamplight brightness <0-2> - light strength\n"
 				+ "/lamplight falloff <0-8> - distance dimming (1 = default)\n"
 				+ "Fine controls: blurbase, blurdistance, wideblur, edgefill, samples, cutoff, cullmargin, cullbase, "

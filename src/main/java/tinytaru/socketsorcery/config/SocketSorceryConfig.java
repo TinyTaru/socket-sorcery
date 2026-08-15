@@ -43,18 +43,22 @@ public class SocketSorceryConfig implements ConfigData {
 
 	/** Default values are mirrored by the /lamplight reset command. */
 	public static final double DEFAULT_LAMP_LIGHT_BRIGHTNESS = 0.62;
-	public static final double DEFAULT_LAMP_LIGHT_BLUR_BASE = 0.0012;
-	public static final double DEFAULT_LAMP_LIGHT_BLUR_PER_BLOCK = 0.0004;
-	public static final double DEFAULT_LAMP_LIGHT_WIDE_BLUR_WEIGHT = 0.06;
+	public static final double DEFAULT_LAMP_LIGHT_BLUR_BASE = 0.0;
+	public static final double DEFAULT_LAMP_LIGHT_BLUR_PER_BLOCK = 0.0;
+	public static final double DEFAULT_LAMP_LIGHT_WIDE_BLUR_WEIGHT = 0.0;
 	public static final double DEFAULT_LAMP_LIGHT_MIN_OPACITY = 0.003;
-	public static final double DEFAULT_LAMP_LIGHT_CULL_MARGIN_FACTOR = 0.028;
+	public static final double DEFAULT_LAMP_LIGHT_CULL_MARGIN_FACTOR = 0.001;
 	public static final double DEFAULT_LAMP_LIGHT_CULL_MARGIN_BASE = 0.03;
 	public static final double DEFAULT_LAMP_LIGHT_LINEAR_FALLOFF = 0.045;
 	public static final double DEFAULT_LAMP_LIGHT_QUADRATIC_FALLOFF = 0.015;
 	public static final double DEFAULT_LAMP_LIGHT_RANGE_FADE_START = 0.78;
 	public static final double DEFAULT_LAMP_LIGHT_SHADOW_SOFTNESS = 0.020;
-	public static final double DEFAULT_LAMP_LIGHT_CENTER_FLOOR = 0.28;
-	public static final double DEFAULT_LAMP_LIGHT_SAMPLES_PER_PATTERN_CELL = 1.35;
+	public static final double DEFAULT_LAMP_LIGHT_CENTER_FLOOR = 0.03;
+	public static final double DEFAULT_LAMP_LIGHT_SAMPLES_PER_PATTERN_CELL = 1.0;
+
+	/** Reference softness used by /lamplight blur 1.0; defaults can still be fully crisp. */
+	public static final double LAMP_LIGHT_BLUR_REFERENCE_BASE = 0.0012;
+	public static final double LAMP_LIGHT_BLUR_REFERENCE_PER_BLOCK = 0.0004;
 
 	/** Overall projected-light strength. */
 	public double lampLightBrightness = DEFAULT_LAMP_LIGHT_BRIGHTNESS;
