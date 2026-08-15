@@ -39,6 +39,44 @@ public class SocketSorceryConfig implements ConfigData {
 	/** How far the bangle's targeting ray (and Blink teleport) reaches, in blocks. */
 	public double bangleReach = Balance.BANGLE_REACH;
 
+	// --- Crystal Lamp lighting ---
+
+	/** Default values are mirrored by the /lamplight reset command. */
+	public static final double DEFAULT_LAMP_LIGHT_BRIGHTNESS = 0.62;
+	public static final double DEFAULT_LAMP_LIGHT_BLUR_BASE = 0.0012;
+	public static final double DEFAULT_LAMP_LIGHT_BLUR_PER_BLOCK = 0.0004;
+	public static final double DEFAULT_LAMP_LIGHT_WIDE_BLUR_WEIGHT = 0.06;
+	public static final double DEFAULT_LAMP_LIGHT_MIN_OPACITY = 0.003;
+	public static final double DEFAULT_LAMP_LIGHT_CULL_MARGIN_FACTOR = 0.028;
+	public static final double DEFAULT_LAMP_LIGHT_CULL_MARGIN_BASE = 0.03;
+	public static final double DEFAULT_LAMP_LIGHT_LINEAR_FALLOFF = 0.045;
+	public static final double DEFAULT_LAMP_LIGHT_QUADRATIC_FALLOFF = 0.015;
+	public static final double DEFAULT_LAMP_LIGHT_RANGE_FADE_START = 0.78;
+	public static final double DEFAULT_LAMP_LIGHT_SHADOW_SOFTNESS = 0.020;
+
+	/** Overall projected-light strength. */
+	public double lampLightBrightness = DEFAULT_LAMP_LIGHT_BRIGHTNESS;
+	/** Near-field blur radius in projector UV space. */
+	public double lampLightBlurBase = DEFAULT_LAMP_LIGHT_BLUR_BASE;
+	/** Extra blur added for every block of distance from the lamp. */
+	public double lampLightBlurPerBlock = DEFAULT_LAMP_LIGHT_BLUR_PER_BLOCK;
+	/** Strength of the faint, wider blur lobe around each projected pixel. */
+	public double lampLightWideBlurWeight = DEFAULT_LAMP_LIGHT_WIDE_BLUR_WEIGHT;
+	/** Lowest opacity retained in the projection mesh. Lower values preserve softer tails. */
+	public double lampLightMinOpacity = DEFAULT_LAMP_LIGHT_MIN_OPACITY;
+	/** Distance-scaled padding used while deciding which blocks can receive the soft edge. */
+	public double lampLightCullMarginFactor = DEFAULT_LAMP_LIGHT_CULL_MARGIN_FACTOR;
+	/** Fixed padding used while deciding which blocks can receive the soft edge. */
+	public double lampLightCullMarginBase = DEFAULT_LAMP_LIGHT_CULL_MARGIN_BASE;
+	/** Linear component of distance attenuation. */
+	public double lampLightLinearFalloff = DEFAULT_LAMP_LIGHT_LINEAR_FALLOFF;
+	/** Quadratic component of distance attenuation. */
+	public double lampLightQuadraticFalloff = DEFAULT_LAMP_LIGHT_QUADRATIC_FALLOFF;
+	/** Fraction of max range where the final range fade begins. */
+	public double lampLightRangeFadeStart = DEFAULT_LAMP_LIGHT_RANGE_FADE_START;
+	/** Radius of the tiny area light used to soften blocker shadows. */
+	public double lampLightShadowSoftness = DEFAULT_LAMP_LIGHT_SHADOW_SOFTNESS;
+
 	@Override
 	public void validatePostLoad() {
 		scrollDropChance = Mth.clamp(scrollDropChance, 0.0F, 1.0F);
@@ -47,6 +85,33 @@ public class SocketSorceryConfig implements ConfigData {
 		artifactMaxGems = Mth.clamp(artifactMaxGems, artifactMinGems, 5);
 		cooldownMultiplier = Mth.clamp(cooldownMultiplier, 0.0, 10.0);
 		bangleReach = Mth.clamp(bangleReach, 1.0, 64.0);
+
+		lampLightBrightness = Mth.clamp(lampLightBrightness, 0.0, 2.0);
+		lampLightBlurBase = Mth.clamp(lampLightBlurBase, 0.0, 0.05);
+		lampLightBlurPerBlock = Mth.clamp(lampLightBlurPerBlock, 0.0, 0.02);
+		lampLightWideBlurWeight = Mth.clamp(lampLightWideBlurWeight, 0.0, 1.0);
+		lampLightMinOpacity = Mth.clamp(lampLightMinOpacity, 0.0, 0.1);
+		lampLightCullMarginFactor = Mth.clamp(lampLightCullMarginFactor, 0.0, 0.5);
+		lampLightCullMarginBase = Mth.clamp(lampLightCullMarginBase, 0.0, 1.0);
+		lampLightLinearFalloff = Mth.clamp(lampLightLinearFalloff, 0.0, 1.0);
+		lampLightQuadraticFalloff = Mth.clamp(lampLightQuadraticFalloff, 0.0, 1.0);
+		lampLightRangeFadeStart = Mth.clamp(lampLightRangeFadeStart, 0.0, 0.99);
+		lampLightShadowSoftness = Mth.clamp(lampLightShadowSoftness, 0.0, 0.25);
+	}
+
+	/** Restores only the Crystal Lamp rendering controls, leaving gameplay settings untouched. */
+	public void resetLampLighting() {
+		lampLightBrightness = DEFAULT_LAMP_LIGHT_BRIGHTNESS;
+		lampLightBlurBase = DEFAULT_LAMP_LIGHT_BLUR_BASE;
+		lampLightBlurPerBlock = DEFAULT_LAMP_LIGHT_BLUR_PER_BLOCK;
+		lampLightWideBlurWeight = DEFAULT_LAMP_LIGHT_WIDE_BLUR_WEIGHT;
+		lampLightMinOpacity = DEFAULT_LAMP_LIGHT_MIN_OPACITY;
+		lampLightCullMarginFactor = DEFAULT_LAMP_LIGHT_CULL_MARGIN_FACTOR;
+		lampLightCullMarginBase = DEFAULT_LAMP_LIGHT_CULL_MARGIN_BASE;
+		lampLightLinearFalloff = DEFAULT_LAMP_LIGHT_LINEAR_FALLOFF;
+		lampLightQuadraticFalloff = DEFAULT_LAMP_LIGHT_QUADRATIC_FALLOFF;
+		lampLightRangeFadeStart = DEFAULT_LAMP_LIGHT_RANGE_FADE_START;
+		lampLightShadowSoftness = DEFAULT_LAMP_LIGHT_SHADOW_SOFTNESS;
 	}
 
 	/** The live config instance. */

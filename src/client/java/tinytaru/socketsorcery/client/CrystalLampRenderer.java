@@ -38,6 +38,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import tinytaru.socketsorcery.SocketSorcery;
 import tinytaru.socketsorcery.block.CrystalLampBlockEntity;
 import tinytaru.socketsorcery.component.CrystalLampData;
+import tinytaru.socketsorcery.config.SocketSorceryConfig;
 import tinytaru.socketsorcery.pattern.GridBits;
 import tinytaru.socketsorcery.registry.ModBlockEntities;
 
@@ -67,7 +68,6 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 	private static final double CONE_SLOPE = PANEL_HALF_SIZE / (VIRTUAL_SOURCE_OFFSET + PANEL_PLANE);
 	private static final double DECAL_OFFSET = 0.0025;
 	private static final double SHADOW_RAY_EPSILON = 0.012;
-	private static final double SHADOW_SOURCE_RADIUS = 0.020;
 	private static final long CACHE_TICKS = 10;
 
 	private static final int MIN_MESH_STEPS_PER_BLOCK = 2;
@@ -77,8 +77,9 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 	private static final float LIGHT_RED = 1.00F;
 	private static final float LIGHT_GREEN = 0.78F;
 	private static final float LIGHT_BLUE = 0.32F;
-	private static final double BASE_OPACITY = 0.62;
-	private static final double MIN_VISIBLE_OPACITY = 0.006;
+
+	/** Incremented by the /lamplight command so cached projection meshes rebuild immediately. */
+	private static long tuningRevision;
 
 	private static final RenderPipeline PROJECTION_PIPELINE = createProjectionPipeline();
 	private static final RenderType PROJECTION_TYPE = RenderType.create(
@@ -94,6 +95,11 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 	@SuppressWarnings("deprecation")
 	public static void register() {
 		BlockEntityRendererRegistry.register(ModBlockEntities.CRYSTAL_LAMP, CrystalLampRenderer::new);
+	}
+
+	/** Forces all lamp projection meshes to rebuild on the next render-state extraction. */
+	public static void invalidateTuning() {
+		tuningRevision++;
 	}
 
 	@Override
@@ -123,8 +129,9 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 		}
 		long tick = level.getGameTime();
 		ProjectionCache cached = projectionCache.get(lamp);
-		if (cached == null || !cached.data().equals(state.lampData) || tick - cached.tick() >= CACHE_TICKS) {
-			cached = new ProjectionCache(state.lampData, tick, buildProjectors(lamp, state.lampData));
+		if (cached == null || !cached.data().equals(state.lampData) || cached.tuningRevision() != tuningRevision
+				|| tick - cached.tick() >= CACHE_TICKS) {
+			cached = new ProjectionCache(state.lampData, tick, tuningRevision, buildProjectors(lamp, state.lampData));
 			projectionCache.put(lamp, cached);
 		}
 		state.projections = cached.batches();
@@ -170,6 +177,7 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 			return List.of();
 		}
 
+		SocketSorceryConfig tuning = SocketSorceryConfig.get();
 		List<CrystalLampRenderState.ProjectionBatch> batches = new ArrayList<>();
 		BlockPos origin = lamp.getBlockPos();
 		Vec3 lampCenter = Vec3.atCenterOf(origin);
@@ -201,12 +209,12 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 						for (AABB localBox : shape.toAabbs()) {
 							AABB worldBox = localBox.move(target);
 							if (!boxTouchesProjectorFrustum(worldBox, lampCenter, projectorRight,
-									projectorUp, projectorForward)) {
+									projectorUp, projectorForward, tuning)) {
 								continue;
 							}
 							for (Direction surfaceFace : SURFACE_FACES) {
 								addLitSurface(level, origin, lampCenter, projectorFace, projectorRight,
-										projectorUp, projectorForward, mask, worldBox, surfaceFace, quads);
+										projectorUp, projectorForward, mask, worldBox, surfaceFace, tuning, quads);
 							}
 						}
 					}
@@ -221,7 +229,7 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 	}
 
 	private static boolean boxTouchesProjectorFrustum(AABB box, Vec3 lampCenter, float[] projectorRight,
-			float[] projectorUp, float[] projectorForward) {
+			float[] projectorUp, float[] projectorForward, SocketSorceryConfig tuning) {
 		Vec3 center = box.getCenter();
 		Vec3 relative = center.subtract(lampCenter);
 		double forward = dot(relative, projectorForward);
@@ -237,14 +245,14 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 		double vertical = dot(relative, projectorUp);
 		double horizontalExtent = tangentExtent(box, projectorRight);
 		double verticalExtent = tangentExtent(box, projectorUp);
-		double blurMargin = halfWidth * 0.075 + 0.08;
+		double blurMargin = halfWidth * tuning.lampLightCullMarginFactor + tuning.lampLightCullMarginBase;
 		return Math.abs(horizontal) - horizontalExtent <= halfWidth + blurMargin
 				&& Math.abs(vertical) - verticalExtent <= halfWidth + blurMargin;
 	}
 
 	private static void addLitSurface(Level level, BlockPos lampOrigin, Vec3 lampCenter, Direction projectorFace,
 			float[] projectorRight, float[] projectorUp, float[] projectorForward, long[] mask, AABB box,
-			Direction surfaceFace, List<CrystalLampRenderState.SurfaceQuad> output) {
+			Direction surfaceFace, SocketSorceryConfig tuning, List<CrystalLampRenderState.SurfaceQuad> output) {
 		Vec3 faceCenter = faceCenter(box, surfaceFace);
 		Vec3 toLamp = lampCenter.subtract(faceCenter);
 		double facing = toLamp.x * surfaceFace.getStepX() + toLamp.y * surfaceFace.getStepY()
@@ -288,19 +296,19 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 				Vec3 p3 = surfacePoint(faceCenter, surfaceRight, surfaceUp, u1, v1);
 
 				double a0 = unshadowedIntensity(mask, lampCenter, projectorRight, projectorUp,
-						projectorForward, surfaceFace, p0);
+						projectorForward, surfaceFace, p0, tuning);
 				double a1 = unshadowedIntensity(mask, lampCenter, projectorRight, projectorUp,
-						projectorForward, surfaceFace, p1);
+						projectorForward, surfaceFace, p1, tuning);
 				double a2 = unshadowedIntensity(mask, lampCenter, projectorRight, projectorUp,
-						projectorForward, surfaceFace, p2);
+						projectorForward, surfaceFace, p2, tuning);
 				double a3 = unshadowedIntensity(mask, lampCenter, projectorRight, projectorUp,
-						projectorForward, surfaceFace, p3);
+						projectorForward, surfaceFace, p3, tuning);
 
 				Vec3 center = p0.add(p1).add(p2).add(p3).scale(0.25);
 				double centerIntensity = unshadowedIntensity(mask, lampCenter, projectorRight, projectorUp,
-						projectorForward, surfaceFace, center);
+						projectorForward, surfaceFace, center, tuning);
 				double peak = Math.max(centerIntensity, Math.max(Math.max(a0, a1), Math.max(a2, a3)));
-				if (peak < MIN_VISIBLE_OPACITY) {
+				if (peak < tuning.lampLightMinOpacity) {
 					continue;
 				}
 
@@ -315,7 +323,7 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 				}
 
 				double visibility = softVisibility(level, lampCenter, projectorFace, projectorRight,
-						projectorUp, projectorForward, center);
+						projectorUp, projectorForward, center, tuning);
 				if (visibility <= 0.001) {
 					continue;
 				}
@@ -327,7 +335,8 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 	}
 
 	private static double unshadowedIntensity(long[] mask, Vec3 lampCenter, float[] projectorRight,
-			float[] projectorUp, float[] projectorForward, Direction surfaceFace, Vec3 point) {
+			float[] projectorUp, float[] projectorForward, Direction surfaceFace, Vec3 point,
+			SocketSorceryConfig tuning) {
 		Vec3 relative = point.subtract(lampCenter);
 		double forward = dot(relative, projectorForward);
 		if (forward < PANEL_PLANE - 0.02 || forward > MAX_DISTANCE + 0.35) {
@@ -341,8 +350,8 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 		double u = 0.5 + dot(relative, projectorRight) / (halfWidth * 2.0);
 		double v = 0.5 - dot(relative, projectorUp) / (halfWidth * 2.0);
 		double distance = relative.length();
-		double blur = (0.0065 + Math.max(0.0, distance - 0.5) * 0.00215) * 0.5;
-		double aperture = blurredMask(mask, u, v, blur);
+		double blur = tuning.lampLightBlurBase + Math.max(0.0, distance - 0.5) * tuning.lampLightBlurPerBlock;
+		double aperture = blurredMask(mask, u, v, blur, tuning.lampLightWideBlurWeight);
 		if (aperture <= 0.0001) {
 			return 0.0;
 		}
@@ -357,14 +366,15 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 
 		// A game-friendly inverse-square-ish rolloff. Pure inverse-square is much too harsh at Minecraft
 		// block scale, so the constant/linear terms keep the near field readable.
-		double attenuation = 1.0 / (1.0 + 0.045 * distance + 0.015 * distance * distance);
-		double rangeStart = MAX_DISTANCE * 0.78;
+		double attenuation = 1.0 / (1.0 + tuning.lampLightLinearFalloff * distance
+				+ tuning.lampLightQuadraticFalloff * distance * distance);
+		double rangeStart = MAX_DISTANCE * tuning.lampLightRangeFadeStart;
 		double rangeFade = 1.0 - smoothstep(rangeStart, MAX_DISTANCE, distance);
-		return BASE_OPACITY * aperture * incidence * attenuation * rangeFade;
+		return tuning.lampLightBrightness * aperture * incidence * attenuation * rangeFade;
 	}
 
 	/** 3x3 Gaussian-ish aperture sample plus a faint wider lobe for a restrained penumbra. */
-	private static double blurredMask(long[] mask, double u, double v, double radius) {
+	private static double blurredMask(long[] mask, double u, double v, double radius, double wideWeight) {
 		double narrow = maskAt(mask, u, v) * 4.0
 				+ maskAt(mask, u - radius, v) * 2.0
 				+ maskAt(mask, u + radius, v) * 2.0
@@ -379,7 +389,7 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 		double wideRadius = radius * 2.15;
 		double wide = (maskAt(mask, u - wideRadius, v) + maskAt(mask, u + wideRadius, v)
 				+ maskAt(mask, u, v - wideRadius) + maskAt(mask, u, v + wideRadius)) * 0.25;
-		return narrow * 0.88 + wide * 0.12;
+		return narrow * (1.0 - wideWeight) + wide * wideWeight;
 	}
 
 	private static double maskAt(long[] mask, double u, double v) {
@@ -396,7 +406,8 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 	 * instead of the binary cutout/shadow boundary made by a single ray.
 	 */
 	private static double softVisibility(Level level, Vec3 lampCenter, Direction projectorFace,
-			float[] projectorRight, float[] projectorUp, float[] projectorForward, Vec3 point) {
+			float[] projectorRight, float[] projectorUp, float[] projectorForward, Vec3 point,
+			SocketSorceryConfig tuning) {
 		Vec3 relative = point.subtract(lampCenter);
 		double forward = dot(relative, projectorForward);
 		double halfWidth = projectionHalfWidth(forward);
@@ -410,8 +421,8 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 		Vec3 diagonal = new Vec3(projectorRight[0] + projectorUp[0],
 				projectorRight[1] + projectorUp[1], projectorRight[2] + projectorUp[2]).normalize();
 		double visibility = rayVisible(level, aperture, point);
-		visibility += rayVisible(level, aperture.add(diagonal.scale(SHADOW_SOURCE_RADIUS)), point);
-		visibility += rayVisible(level, aperture.add(diagonal.scale(-SHADOW_SOURCE_RADIUS)), point);
+		visibility += rayVisible(level, aperture.add(diagonal.scale(tuning.lampLightShadowSoftness)), point);
+		visibility += rayVisible(level, aperture.add(diagonal.scale(-tuning.lampLightShadowSoftness)), point);
 		return visibility / 3.0;
 	}
 
@@ -600,7 +611,7 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 		};
 	}
 
-	private record ProjectionCache(CrystalLampData data, long tick,
+	private record ProjectionCache(CrystalLampData data, long tick, long tuningRevision,
 			List<CrystalLampRenderState.ProjectionBatch> batches) {
 	}
 }
