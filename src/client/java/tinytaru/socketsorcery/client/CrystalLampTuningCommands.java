@@ -57,6 +57,10 @@ public final class CrystalLampTuningCommands {
 					(config, value) -> config.lampLightBlurPerBlock = value));
 			root.then(valueCommand("wideblur", 0.0, 1.0,
 					(config, value) -> config.lampLightWideBlurWeight = value));
+			root.then(valueCommand("edgefill", 0.0, 1.0,
+					(config, value) -> config.lampLightCenterFloor = value));
+			root.then(valueCommand("samples", 0.25, 8.0,
+					(config, value) -> config.lampLightSamplesPerPatternCell = value));
 			root.then(valueCommand("cutoff", 0.0, 0.1,
 					(config, value) -> config.lampLightMinOpacity = value));
 			root.then(valueCommand("cullmargin", 0.0, 0.5,
@@ -121,6 +125,8 @@ public final class CrystalLampTuningCommands {
 				+ "blurbase=" + format(config.lampLightBlurBase)
 				+ "  blurdistance=" + format(config.lampLightBlurPerBlock)
 				+ "  wideblur=" + format(config.lampLightWideBlurWeight) + "\n"
+				+ "edgefill=" + format(config.lampLightCenterFloor)
+				+ "  samples=" + format(config.lampLightSamplesPerPatternCell) + "\n"
 				+ "cutoff=" + format(config.lampLightMinOpacity)
 				+ "  cullmargin=" + format(config.lampLightCullMarginFactor)
 				+ "  cullbase=" + format(config.lampLightCullMarginBase) + "\n"
@@ -139,7 +145,7 @@ public final class CrystalLampTuningCommands {
 				+ "/lamplight blur <0-8> - overall blur (1 = default)\n"
 				+ "/lamplight brightness <0-2> - light strength\n"
 				+ "/lamplight falloff <0-8> - distance dimming (1 = default)\n"
-				+ "Fine controls: blurbase, blurdistance, wideblur, cutoff, cullmargin, cullbase, "
+				+ "Fine controls: blurbase, blurdistance, wideblur, edgefill, samples, cutoff, cullmargin, cullbase, "
 				+ "linearfalloff, quadraticfalloff, rangefade, shadowsoftness\n"
 				+ "/lamplight show | copy | reset\n"
 				+ "Every changed value is saved immediately to config/socket-sorcery.json."));
@@ -153,6 +159,8 @@ public final class CrystalLampTuningCommands {
 				+ "lampLightBlurBase = " + format(config.lampLightBlurBase) + ";\n"
 				+ "lampLightBlurPerBlock = " + format(config.lampLightBlurPerBlock) + ";\n"
 				+ "lampLightWideBlurWeight = " + format(config.lampLightWideBlurWeight) + ";\n"
+				+ "lampLightCenterFloor = " + format(config.lampLightCenterFloor) + ";\n"
+				+ "lampLightSamplesPerPatternCell = " + format(config.lampLightSamplesPerPatternCell) + ";\n"
 				+ "lampLightMinOpacity = " + format(config.lampLightMinOpacity) + ";\n"
 				+ "lampLightCullMarginFactor = " + format(config.lampLightCullMarginFactor) + ";\n"
 				+ "lampLightCullMarginBase = " + format(config.lampLightCullMarginBase) + ";\n"

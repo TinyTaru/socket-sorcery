@@ -72,7 +72,6 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 
 	private static final int MIN_MESH_STEPS_PER_BLOCK = 2;
 	private static final int MAX_MESH_STEPS_PER_BLOCK = 16;
-	private static final double SAMPLES_PER_PATTERN_CELL = 1.35;
 
 	private static final float LIGHT_RED = 1.00F;
 	private static final float LIGHT_GREEN = 0.78F;
@@ -278,7 +277,8 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 		double representativeForward = Math.max(PANEL_PLANE,
 				forwardAtCenter + tangentExtent(box, projectorForward) * 0.5);
 		double projectedCellSize = (projectionHalfWidth(representativeForward) * 2.0) / 16.0;
-		int stepsPerBlock = clampInt((int) Math.ceil(SAMPLES_PER_PATTERN_CELL / Math.max(0.035, projectedCellSize)),
+		int stepsPerBlock = clampInt((int) Math.ceil(tuning.lampLightSamplesPerPatternCell
+				/ Math.max(0.035, projectedCellSize)),
 				MIN_MESH_STEPS_PER_BLOCK, MAX_MESH_STEPS_PER_BLOCK);
 		int stepsRight = Math.max(1, (int) Math.ceil(halfRight * 2.0 * stepsPerBlock));
 		int stepsUp = Math.max(1, (int) Math.ceil(halfUp * 2.0 * stepsPerBlock));
@@ -315,7 +315,7 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 				// If a tiny engraving opening falls between mesh vertices, retain enough of the center sample
 				// to prevent the 16x16 pattern from disappearing at close range.
 				if (centerIntensity > 0.0) {
-					double centerFloor = centerIntensity * 0.28;
+					double centerFloor = centerIntensity * tuning.lampLightCenterFloor;
 					a0 = Math.max(a0, centerFloor);
 					a1 = Math.max(a1, centerFloor);
 					a2 = Math.max(a2, centerFloor);

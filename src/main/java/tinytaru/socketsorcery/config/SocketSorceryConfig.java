@@ -53,6 +53,8 @@ public class SocketSorceryConfig implements ConfigData {
 	public static final double DEFAULT_LAMP_LIGHT_QUADRATIC_FALLOFF = 0.015;
 	public static final double DEFAULT_LAMP_LIGHT_RANGE_FADE_START = 0.78;
 	public static final double DEFAULT_LAMP_LIGHT_SHADOW_SOFTNESS = 0.020;
+	public static final double DEFAULT_LAMP_LIGHT_CENTER_FLOOR = 0.28;
+	public static final double DEFAULT_LAMP_LIGHT_SAMPLES_PER_PATTERN_CELL = 1.35;
 
 	/** Overall projected-light strength. */
 	public double lampLightBrightness = DEFAULT_LAMP_LIGHT_BRIGHTNESS;
@@ -76,6 +78,10 @@ public class SocketSorceryConfig implements ConfigData {
 	public double lampLightRangeFadeStart = DEFAULT_LAMP_LIGHT_RANGE_FADE_START;
 	/** Radius of the tiny area light used to soften blocker shadows. */
 	public double lampLightShadowSoftness = DEFAULT_LAMP_LIGHT_SHADOW_SOFTNESS;
+	/** How much a lit cell's center sample is allowed to fill its corners; lower = crisper edges. */
+	public double lampLightCenterFloor = DEFAULT_LAMP_LIGHT_CENTER_FLOOR;
+	/** Mesh density used to approximate soft pixel edges; higher = sharper/finer transitions. */
+	public double lampLightSamplesPerPatternCell = DEFAULT_LAMP_LIGHT_SAMPLES_PER_PATTERN_CELL;
 
 	@Override
 	public void validatePostLoad() {
@@ -97,6 +103,8 @@ public class SocketSorceryConfig implements ConfigData {
 		lampLightQuadraticFalloff = Mth.clamp(lampLightQuadraticFalloff, 0.0, 1.0);
 		lampLightRangeFadeStart = Mth.clamp(lampLightRangeFadeStart, 0.0, 0.99);
 		lampLightShadowSoftness = Mth.clamp(lampLightShadowSoftness, 0.0, 0.25);
+		lampLightCenterFloor = Mth.clamp(lampLightCenterFloor, 0.0, 1.0);
+		lampLightSamplesPerPatternCell = Mth.clamp(lampLightSamplesPerPatternCell, 0.25, 8.0);
 	}
 
 	/** Restores only the Crystal Lamp rendering controls, leaving gameplay settings untouched. */
@@ -112,6 +120,8 @@ public class SocketSorceryConfig implements ConfigData {
 		lampLightQuadraticFalloff = DEFAULT_LAMP_LIGHT_QUADRATIC_FALLOFF;
 		lampLightRangeFadeStart = DEFAULT_LAMP_LIGHT_RANGE_FADE_START;
 		lampLightShadowSoftness = DEFAULT_LAMP_LIGHT_SHADOW_SOFTNESS;
+		lampLightCenterFloor = DEFAULT_LAMP_LIGHT_CENTER_FLOOR;
+		lampLightSamplesPerPatternCell = DEFAULT_LAMP_LIGHT_SAMPLES_PER_PATTERN_CELL;
 	}
 
 	/** The live config instance. */
