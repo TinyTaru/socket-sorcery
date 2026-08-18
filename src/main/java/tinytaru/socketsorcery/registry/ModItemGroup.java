@@ -23,6 +23,12 @@ public final class ModItemGroup {
 						output.accept(ModItems.ENGRAVING_TABLE);
 						output.accept(ModItems.SOCKETING_BENCH);
 						output.accept(ModItems.CRYSTAL_LAMP);
+						output.accept(ModItems.ENGRAVED_DEEPSLATE);
+						output.accept(ModItems.ENGRAVED_DIORITE);
+						output.accept(ModItems.GLOWING_ENGRAVED_DEEPSLATE);
+						output.accept(ModItems.GLOWING_ENGRAVED_DIORITE);
+						output.accept(ModItems.GLOWING_ENGRAVED_DEEPSLATE_TOP);
+						output.accept(ModItems.GLOWING_ENGRAVED_DIORITE_TOP);
 						output.accept(ModItems.CHISEL);
 						output.accept(ModItems.DIAMOND_CHISEL);
 						output.accept(ModItems.NETHERITE_CHISEL);

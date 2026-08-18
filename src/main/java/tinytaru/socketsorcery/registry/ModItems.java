@@ -155,6 +155,18 @@ public final class ModItems {
 			p -> new BlockItem(ModBlocks.SOCKETING_BENCH, p), new Item.Properties().useBlockDescriptionPrefix());
 	public static final Item CRYSTAL_LAMP = register("crystal_lamp",
 			p -> new BlockItem(ModBlocks.CRYSTAL_LAMP, p), new Item.Properties().useBlockDescriptionPrefix());
+	public static final Item ENGRAVED_DEEPSLATE = register("engraved_deepslate",
+			p -> new BlockItem(ModBlocks.ENGRAVED_DEEPSLATE, p), new Item.Properties().useBlockDescriptionPrefix());
+	public static final Item ENGRAVED_DIORITE = register("engraved_diorite",
+			p -> new BlockItem(ModBlocks.ENGRAVED_DIORITE, p), new Item.Properties().useBlockDescriptionPrefix());
+	public static final Item GLOWING_ENGRAVED_DEEPSLATE = register("glowing_engraved_deepslate",
+			p -> new BlockItem(ModBlocks.GLOWING_ENGRAVED_DEEPSLATE, p), new Item.Properties().useBlockDescriptionPrefix());
+	public static final Item GLOWING_ENGRAVED_DIORITE = register("glowing_engraved_diorite",
+			p -> new BlockItem(ModBlocks.GLOWING_ENGRAVED_DIORITE, p), new Item.Properties().useBlockDescriptionPrefix());
+	public static final Item GLOWING_ENGRAVED_DEEPSLATE_TOP = register("glowing_engraved_deepslate_top",
+			p -> new BlockItem(ModBlocks.GLOWING_ENGRAVED_DEEPSLATE_TOP, p), new Item.Properties().useBlockDescriptionPrefix());
+	public static final Item GLOWING_ENGRAVED_DIORITE_TOP = register("glowing_engraved_diorite_top",
+			p -> new BlockItem(ModBlocks.GLOWING_ENGRAVED_DIORITE_TOP, p), new Item.Properties().useBlockDescriptionPrefix());
 
 	/**
 	 * Registers an item under {@code socket-sorcery:<name>}. The registry key has to be stamped onto

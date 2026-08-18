@@ -1,8 +1,13 @@
 package tinytaru.socketsorcery.block;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -45,6 +50,20 @@ public class CrystalLampBlockEntity extends BlockEntity {
 	protected void saveAdditional(ValueOutput output) {
 		super.saveAdditional(output);
 		output.store("lamp", CrystalLampData.CODEC, lampData);
+	}
+
+	/**
+	 * The projection is client-rendered, so the masks must be sent both when the lamp changes and
+	 * when its chunk is first loaded after joining a world.
+	 */
+	@Override
+	public Packet<ClientGamePacketListener> getUpdatePacket() {
+		return ClientboundBlockEntityDataPacket.create(this);
+	}
+
+	@Override
+	public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+		return saveWithoutMetadata(registries);
 	}
 
 	@Override

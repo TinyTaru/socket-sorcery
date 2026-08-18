@@ -68,6 +68,12 @@
 	"block.socket-sorcery.engraving_table": "Engraving Table",
 	"block.socket-sorcery.socketing_bench": "Socketing Bench",
 	"block.socket-sorcery.crystal_lamp": "Crystal Lamp",
+	"block.socket-sorcery.engraved_deepslate": "Engraved Deepslate",
+	"block.socket-sorcery.engraved_diorite": "Engraved Diorite",
+	"block.socket-sorcery.glowing_engraved_deepslate": "Glowing Engraved Deepslate",
+	"block.socket-sorcery.glowing_engraved_diorite": "Glowing Engraved Diorite",
+	"block.socket-sorcery.glowing_engraved_deepslate_top": "Glowing Engraved Deepslate (Top)",
+	"block.socket-sorcery.glowing_engraved_diorite_top": "Glowing Engraved Diorite (Top)",
 	"entity.socket-sorcery.spike": "Spike",
 
 	"pattern.socket-sorcery.fire": "Fire",

@@ -27,6 +27,7 @@ import tinytaru.socketsorcery.registry.ModComponents;
 public final class ScrollItemRenderer extends DynamicIconRenderer {
 	public static final Identifier ID = SocketSorcery.id("scroll");
 	private static final ScrollItemRenderer INSTANCE = new ScrollItemRenderer();
+	private static final int TRIGGER_PATTERN_RAISE = 3;
 	private final Map<Identifier, Pixels> bases = new HashMap<>();
 
 	private ScrollItemRenderer() { super("scroll_icon"); }
@@ -94,11 +95,14 @@ public final class ScrollItemRenderer extends DynamicIconRenderer {
 	private NativeImage compose(Identifier baseTexture, long[] marks, int color) {
 		Pixels base = bases.computeIfAbsent(baseTexture, this::loadBase);
 		if (base == null || base.width() != SIZE || base.height() != SIZE) return null;
+		int markRowOffset = baseTexture.getPath().endsWith("_trigger.png") ? TRIGGER_PATTERN_RAISE : 0;
 		NativeImage image = new NativeImage(SIZE, SIZE, false);
 		for (int row = 0; row < SIZE; row++) for (int col = 0; col < SIZE; col++) {
 			int pixel = base.get(col, row);
 			image.setPixel(col, row, ((pixel >>> 24) & 0xFF) <= 16 ? 0
-					: tinytaru.socketsorcery.pattern.GridBits.get(marks, row, col) ? color : pixel);
+					: row + markRowOffset < SIZE
+							&& tinytaru.socketsorcery.pattern.GridBits.get(marks, row + markRowOffset, col)
+									? color : pixel);
 		}
 		return image;
 	}

@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "socket-sorcery:block/glowing_engraved_deepslate_top", "y": 180 },
+    "facing=east": { "model": "socket-sorcery:block/glowing_engraved_deepslate_top", "y": 270 },
+    "facing=south": { "model": "socket-sorcery:block/glowing_engraved_deepslate_top" },
+    "facing=west": { "model": "socket-sorcery:block/glowing_engraved_deepslate_top", "y": 90 }
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "minecraft:block/polished_deepslate",
+    "down": "minecraft:block/polished_deepslate",
+    "up": "minecraft:block/polished_deepslate",
+    "north": "socket-sorcery:block/glowing_engraved_deepslate",
+    "south": "socket-sorcery:block/glowing_engraved_deepslate",
+    "east": "socket-sorcery:block/glowing_engraved_deepslate",
+    "west": "socket-sorcery:block/glowing_engraved_deepslate",
+    "emissive_side": "socket-sorcery:block/glowing_engraved_deepslate_emissive",
+    "emissive_half": "socket-sorcery:block/glowing_engraved_deepslate_emissive_half"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0],
+      "to": [16, 16, 16],
+      "faces": {
+        "down": { "texture": "#down", "cullface": "down" },
+        "up": { "texture": "#up", "cullface": "up" },
+        "north": { "texture": "#north", "cullface": "north" },
+        "south": { "texture": "#south", "cullface": "south" },
+        "east": { "texture": "#east", "cullface": "east" },
+        "west": { "texture": "#west", "cullface": "west" }
+      }
+    },
+    {
+      "from": [0, 0, 0],
+      "to": [16, 16, 16],
+      "shade": false,
+      "light_emission": 15,
+      "faces": {
+        "north": { "texture": "#emissive_side" },
+        "south": { "texture": "#emissive_side" },
+        "east": { "texture": "#emissive_side" },
+        "west": { "texture": "#emissive_side" }
+      }
+    },
+    {
+      "from": [0, 0, 0],
+      "to": [16, 16, 16],
+      "shade": false,
+      "light_emission": 8,
+      "faces": {
+        "north": { "texture": "#emissive_half" },
+        "south": { "texture": "#emissive_half" },
+        "east": { "texture": "#emissive_half" },
+        "west": { "texture": "#emissive_half" }
+      }
+    }
+  ]
+}
