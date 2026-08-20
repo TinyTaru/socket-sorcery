@@ -111,6 +111,11 @@ public abstract class DynamicIconRenderer extends SimpleReloadListener<Void>
 		return null;
 	}
 
+	/** Render layer used by the regular item-model path. Subclasses may opt into an item-specific layer. */
+	protected RenderType renderType(Identifier texture) {
+		return RenderTypes.entityCutout(texture);
+	}
+
 	/** Hook for subclasses to clear their own caches on resource reload. */
 	protected void onReload() {
 	}
@@ -132,8 +137,8 @@ public abstract class DynamicIconRenderer extends SimpleReloadListener<Void>
 		if (icon == null) {
 			return;
 		}
-		RenderType backType = RenderTypes.entityCutout(icon.backTexture());
-		RenderType frontType = RenderTypes.entityCutout(icon.texture());
+		RenderType backType = renderType(icon.backTexture());
+		RenderType frontType = renderType(icon.texture());
 		collector.submitCustomGeometry(poseStack, backType,
 				(pose, consumer) -> quad(consumer, pose, light, overlay, true));
 		collector.submitCustomGeometry(poseStack, frontType, (pose, consumer) -> {
@@ -340,10 +345,19 @@ public abstract class DynamicIconRenderer extends SimpleReloadListener<Void>
 			float zOffset) {
 		float z = (back ? BACK_Z : FRONT_Z) + zOffset;
 		float n = back ? 1.0F : -1.0F; // outward
-		vertex(vc, pose, 0, 0, z, 0, 1, light, overlay, 0, 0, n);
-		vertex(vc, pose, 1, 0, z, 1, 1, light, overlay, 0, 0, n);
-		vertex(vc, pose, 1, 1, z, 1, 0, light, overlay, 0, 0, n);
-		vertex(vc, pose, 0, 1, z, 0, 0, light, overlay, 0, 0, n);
+		if (back) {
+			vertex(vc, pose, 0, 0, z, 0, 1, light, overlay, 0, 0, n);
+			vertex(vc, pose, 1, 0, z, 1, 1, light, overlay, 0, 0, n);
+			vertex(vc, pose, 1, 1, z, 1, 0, light, overlay, 0, 0, n);
+			vertex(vc, pose, 0, 1, z, 0, 0, light, overlay, 0, 0, n);
+		} else {
+			// The front points toward -Z. Its winding must agree so item-cutout's face culling keeps
+			// it when the table renderer rotates it upward.
+			vertex(vc, pose, 0, 1, z, 0, 0, light, overlay, 0, 0, n);
+			vertex(vc, pose, 1, 1, z, 1, 0, light, overlay, 0, 0, n);
+			vertex(vc, pose, 1, 0, z, 1, 1, light, overlay, 0, 0, n);
+			vertex(vc, pose, 0, 0, z, 0, 1, light, overlay, 0, 0, n);
+		}
 	}
 
 	/**

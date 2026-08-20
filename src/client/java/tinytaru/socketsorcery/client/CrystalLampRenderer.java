@@ -1,6 +1,7 @@
 package tinytaru.socketsorcery.client;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -36,6 +37,7 @@ import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.RenderShape;
@@ -74,6 +76,7 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 
 	private static final int MAX_DISTANCE = 12;
 	private static final double PANEL_HALF_SIZE = 0.49;
+	private static final float PANEL_FACE_OFFSET = 0.005F;
 	private static final double PANEL_PLANE = 0.502;
 	private static final double VIRTUAL_SOURCE_OFFSET = 0.78;
 	private static final double CONE_SLOPE = PANEL_HALF_SIZE / (VIRTUAL_SOURCE_OFFSET + PANEL_PLANE);
@@ -83,7 +86,10 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 	// fight the original cutout texture in the depth buffer.
 	private static final double MODEL_DECAL_OFFSET = 0.0035;
 	private static final double SHADOW_RAY_EPSILON = 0.012;
-	private static final long CACHE_TICKS = 10;
+	/** Safety refresh only. Normal rebuilds are driven by relevant client-world changes. */
+	private static final long CACHE_TICKS = 20L * 5L;
+	/** Includes the final receiver block at the edge of a maximum-range projection. */
+	private static final int PROJECTION_INVALIDATION_RADIUS = MAX_DISTANCE + 1;
 
 	private static final int MIN_MESH_STEPS_PER_BLOCK = 2;
 	private static final int MAX_MESH_STEPS_PER_BLOCK = 16;
@@ -94,6 +100,12 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 
 	/** Incremented by the /lamplight command so cached projection meshes rebuild immediately. */
 	private static long tuningRevision;
+	/**
+	 * Per-chunk revisions let a lamp ignore world changes outside its projection volume. The client
+	 * receives both server block updates and local prediction updates through ClientLevel#setBlock.
+	 */
+	private static final Map<Long, Long> projectionGeometryRevisions = new HashMap<>();
+	private static long projectionGeometryRevision;
 
 	private static final RenderPipeline PROJECTION_PIPELINE = createProjectionPipeline();
 	private static final RenderPipeline MODEL_PROJECTION_PIPELINE = createModelProjectionPipeline();
@@ -120,6 +132,22 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 	/** Forces all lamp projection meshes to rebuild on the next render-state extraction. */
 	public static void invalidateTuning() {
 		tuningRevision++;
+	}
+
+	/** Marks all lamps whose receiver volume overlaps this chunk as dirty on their next render. */
+	public static void invalidateProjectionGeometry(BlockPos pos) {
+		invalidateProjectionGeometry(ChunkPos.containing(pos));
+	}
+
+	/** Marks all lamps whose receiver volume overlaps this chunk as dirty on their next render. */
+	public static void invalidateProjectionGeometry(ChunkPos chunkPos) {
+		projectionGeometryRevisions.put(chunkPos.pack(), ++projectionGeometryRevision);
+	}
+
+	/** Clears client-world bookkeeping when disconnecting, preventing stale chunk revisions from accumulating. */
+	public static void clearProjectionGeometryInvalidation() {
+		projectionGeometryRevisions.clear();
+		projectionGeometryRevision = 0L;
 	}
 
 	@Override
@@ -150,11 +178,34 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 		long tick = level.getGameTime();
 		ProjectionCache cached = projectionCache.get(lamp);
 		if (cached == null || !cached.data().equals(state.lampData) || cached.tuningRevision() != tuningRevision
-				|| tick - cached.tick() >= CACHE_TICKS) {
-			cached = new ProjectionCache(state.lampData, tick, tuningRevision, buildProjectors(lamp, state.lampData));
+				|| projectionGeometryChanged(cached) || tick - cached.tick() >= CACHE_TICKS) {
+			cached = new ProjectionCache(state.lampData, tick, tuningRevision, projectionGeometryRevision,
+					projectionMinChunk(lamp.getBlockPos().getX()), projectionMaxChunk(lamp.getBlockPos().getX()),
+					projectionMinChunk(lamp.getBlockPos().getZ()), projectionMaxChunk(lamp.getBlockPos().getZ()),
+					buildProjectors(lamp, state.lampData));
 			projectionCache.put(lamp, cached);
 		}
 		state.projections = cached.batches();
+	}
+
+	private static boolean projectionGeometryChanged(ProjectionCache cached) {
+		for (int chunkX = cached.minChunkX(); chunkX <= cached.maxChunkX(); chunkX++) {
+			for (int chunkZ = cached.minChunkZ(); chunkZ <= cached.maxChunkZ(); chunkZ++) {
+				if (projectionGeometryRevisions.getOrDefault(ChunkPos.pack(chunkX, chunkZ), 0L)
+						> cached.geometryRevision()) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	private static int projectionMinChunk(int blockCoordinate) {
+		return Math.floorDiv(blockCoordinate - PROJECTION_INVALIDATION_RADIUS, 16);
+	}
+
+	private static int projectionMaxChunk(int blockCoordinate) {
+		return Math.floorDiv(blockCoordinate + PROJECTION_INVALIDATION_RADIUS, 16);
 	}
 
 	@Override
@@ -594,6 +645,10 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 
 	/** 3x3 Gaussian-ish aperture sample plus a faint wider lobe for a restrained penumbra. */
 	private static double blurredMask(long[] mask, double u, double v, double radius, double wideWeight) {
+		// Crisp light is the normal setting. Avoid thirteen identical bit lookups for that case.
+		if (radius <= 0.0 && wideWeight <= 0.0) {
+			return maskAt(mask, u, v);
+		}
 		double narrow = maskAt(mask, u, v) * 4.0
 				+ maskAt(mask, u - radius, v) * 2.0
 				+ maskAt(mask, u + radius, v) * 2.0
@@ -604,6 +659,9 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 				+ maskAt(mask, u - radius, v + radius)
 				+ maskAt(mask, u + radius, v + radius);
 		narrow /= 16.0;
+		if (wideWeight <= 0.0) {
+			return narrow;
+		}
 
 		double wideRadius = radius * 2.15;
 		double wide = (maskAt(mask, u - wideRadius, v) + maskAt(mask, u + wideRadius, v)
@@ -620,10 +678,7 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 		return GridBits.getIndex(mask, row * 16 + col) ? 1.0 : 0.0;
 	}
 
-	/**
-	 * Three nearby visibility rays approximate a small area source. This produces a soft blocker edge
-	 * instead of the binary cutout/shadow boundary made by a single ray.
-	 */
+	/** One, two, or three visibility rays approximate a small area source at the selected quality. */
 	private static double softVisibility(Level level, Vec3 lampCenter, Direction projectorFace,
 			float[] projectorRight, float[] projectorUp, float[] projectorForward, Vec3 point,
 			SocketSorceryConfig tuning) {
@@ -636,12 +691,22 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 		double u = 0.5 + dot(relative, projectorRight) / (halfWidth * 2.0);
 		double v = 0.5 - dot(relative, projectorUp) / (halfWidth * 2.0);
 		Vec3 aperture = aperturePoint(lampCenter, projectorFace, projectorRight, projectorUp, u, v);
+		int samples = tuning.lampLightShadowSamples;
+		if (samples <= 1 || tuning.lampLightShadowSoftness <= 0.0) {
+			return rayVisible(level, aperture, point);
+		}
 
 		Vec3 diagonal = new Vec3(projectorRight[0] + projectorUp[0],
 				projectorRight[1] + projectorUp[1], projectorRight[2] + projectorUp[2]).normalize();
+		double offset = tuning.lampLightShadowSoftness;
+		if (samples == 2) {
+			double visibility = rayVisible(level, aperture.add(diagonal.scale(offset * 0.5)), point);
+			visibility += rayVisible(level, aperture.add(diagonal.scale(-offset * 0.5)), point);
+			return visibility * 0.5;
+		}
 		double visibility = rayVisible(level, aperture, point);
-		visibility += rayVisible(level, aperture.add(diagonal.scale(tuning.lampLightShadowSoftness)), point);
-		visibility += rayVisible(level, aperture.add(diagonal.scale(-tuning.lampLightShadowSoftness)), point);
+		visibility += rayVisible(level, aperture.add(diagonal.scale(offset)), point);
+		visibility += rayVisible(level, aperture.add(diagonal.scale(-offset)), point);
 		return visibility / 3.0;
 	}
 
@@ -796,7 +861,7 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 				float rightEdge = -0.49F + (col + 1) * 0.98F / 16.0F;
 				float top = 0.49F - row * 0.98F / 16.0F;
 				float bottom = 0.49F - (row + 1) * 0.98F / 16.0F;
-				emitFaceQuad(consumer, pose, cx, cy, cz, right, up, left, rightEdge, bottom, top);
+				emitFaceQuad(consumer, pose, cx, cy, cz, right, up, normal, left, rightEdge, bottom, top);
 			}
 		});
 	}
@@ -830,11 +895,24 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 	}
 
 	private static void emitFaceQuad(VertexConsumer consumer, PoseStack.Pose pose, float cx, float cy, float cz,
-			float[] right, float[] up, float left, float rightEdge, float bottom, float top) {
-		faceVertex(consumer, pose, point(cx, cy, cz, right, up, left, top));
-		faceVertex(consumer, pose, point(cx, cy, cz, right, up, left, bottom));
-		faceVertex(consumer, pose, point(cx, cy, cz, right, up, rightEdge, bottom));
-		faceVertex(consumer, pose, point(cx, cy, cz, right, up, rightEdge, top));
+			float[] right, float[] up, Direction normal, float left, float rightEdge, float bottom, float top) {
+		float[] topLeft = point(cx, cy, cz, right, up, left, top);
+		float[] bottomLeft = point(cx, cy, cz, right, up, left, bottom);
+		float[] bottomRight = point(cx, cy, cz, right, up, rightEdge, bottom);
+		float[] topRight = point(cx, cy, cz, right, up, rightEdge, top);
+		if (normal == Direction.UP) {
+			faceVertex(consumer, pose, topLeft);
+			faceVertex(consumer, pose, bottomLeft);
+			faceVertex(consumer, pose, bottomRight);
+			faceVertex(consumer, pose, topRight);
+		} else {
+			// The side-face basis points inward with the normal winding; reverse it so the
+			// exterior-facing pattern is retained when the render type culls back faces.
+			faceVertex(consumer, pose, topLeft);
+			faceVertex(consumer, pose, topRight);
+			faceVertex(consumer, pose, bottomRight);
+			faceVertex(consumer, pose, bottomLeft);
+		}
 	}
 
 	private static void faceVertex(VertexConsumer consumer, PoseStack.Pose pose, float[] point) {
@@ -843,11 +921,11 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 
 	private static float[] panelCenter(Direction direction) {
 		return switch (direction) {
-			case NORTH -> new float[] { 0.5F, 0.5F, -0.002F };
-			case EAST -> new float[] { 1.002F, 0.5F, 0.5F };
-			case SOUTH -> new float[] { 0.5F, 0.5F, 1.002F };
-			case WEST -> new float[] { -0.002F, 0.5F, 0.5F };
-			case UP -> new float[] { 0.5F, 1.002F, 0.5F };
+			case NORTH -> new float[] { 0.5F, 0.5F, -PANEL_FACE_OFFSET };
+			case EAST -> new float[] { 1.0F + PANEL_FACE_OFFSET, 0.5F, 0.5F };
+			case SOUTH -> new float[] { 0.5F, 0.5F, 1.0F + PANEL_FACE_OFFSET };
+			case WEST -> new float[] { -PANEL_FACE_OFFSET, 0.5F, 0.5F };
+			case UP -> new float[] { 0.5F, 1.0F + PANEL_FACE_OFFSET, 0.5F };
 			case DOWN -> throw new IllegalArgumentException("Crystal Lamps do not have a lower glass panel");
 		};
 	}
@@ -877,7 +955,8 @@ public class CrystalLampRenderer implements BlockEntityRenderer<CrystalLampBlock
 		};
 	}
 
-	private record ProjectionCache(CrystalLampData data, long tick, long tuningRevision,
+	private record ProjectionCache(CrystalLampData data, long tick, long tuningRevision, long geometryRevision,
+			int minChunkX, int maxChunkX, int minChunkZ, int maxChunkZ,
 			List<CrystalLampRenderState.ProjectionBatch> batches) {
 	}
 }

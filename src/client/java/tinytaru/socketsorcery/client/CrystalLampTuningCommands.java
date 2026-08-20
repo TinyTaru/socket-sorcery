@@ -2,8 +2,10 @@ package tinytaru.socketsorcery.client;
 
 import java.util.Locale;
 import java.util.function.ObjDoubleConsumer;
+import java.util.function.ObjIntConsumer;
 
 import com.mojang.brigadier.arguments.DoubleArgumentType;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 
 import me.shedaniel.autoconfig.AutoConfig;
@@ -75,6 +77,8 @@ public final class CrystalLampTuningCommands {
 					(config, value) -> config.lampLightRangeFadeStart = value));
 			root.then(valueCommand("shadowsoftness", 0.0, 0.25,
 					(config, value) -> config.lampLightShadowSoftness = value));
+			root.then(integerCommand("shadowsamples", 1, 3,
+					(config, value) -> config.lampLightShadowSamples = value));
 
 			dispatcher.register(root);
 		});
@@ -90,6 +94,19 @@ public final class CrystalLampTuningCommands {
 							setter.accept(config, value);
 							config.validatePostLoad();
 							return save(context.getSource(), name + " = " + format(value));
+						}));
+	}
+
+	private static LiteralArgumentBuilder<FabricClientCommandSource> integerCommand(String name, int min, int max,
+			ObjIntConsumer<SocketSorceryConfig> setter) {
+		return ClientCommands.literal(name)
+				.then(ClientCommands.argument("value", IntegerArgumentType.integer(min, max))
+						.executes(context -> {
+							int value = IntegerArgumentType.getInteger(context, "value");
+							SocketSorceryConfig config = SocketSorceryConfig.get();
+							setter.accept(config, value);
+							config.validatePostLoad();
+							return save(context.getSource(), name + " = " + value);
 						}));
 	}
 
@@ -134,6 +151,7 @@ public final class CrystalLampTuningCommands {
 				+ "  quadraticfalloff=" + format(config.lampLightQuadraticFalloff)
 				+ "  rangefade=" + format(config.lampLightRangeFadeStart) + "\n"
 				+ "shadowsoftness=" + format(config.lampLightShadowSoftness)
+				+ "  shadowsamples=" + config.lampLightShadowSamples
 				+ "\nUse /lamplight help for commands.";
 		source.sendFeedback(Component.literal(message));
 		return 1;
@@ -146,7 +164,7 @@ public final class CrystalLampTuningCommands {
 				+ "/lamplight brightness <0-2> - light strength\n"
 				+ "/lamplight falloff <0-8> - distance dimming (1 = default)\n"
 				+ "Fine controls: blurbase, blurdistance, wideblur, edgefill, samples, cutoff, cullmargin, cullbase, "
-				+ "linearfalloff, quadraticfalloff, rangefade, shadowsoftness\n"
+				+ "linearfalloff, quadraticfalloff, rangefade, shadowsoftness, shadowsamples\n"
 				+ "/lamplight show | copy | reset\n"
 				+ "Every changed value is saved immediately to config/socket-sorcery.json."));
 		return 1;
@@ -167,7 +185,8 @@ public final class CrystalLampTuningCommands {
 				+ "lampLightLinearFalloff = " + format(config.lampLightLinearFalloff) + ";\n"
 				+ "lampLightQuadraticFalloff = " + format(config.lampLightQuadraticFalloff) + ";\n"
 				+ "lampLightRangeFadeStart = " + format(config.lampLightRangeFadeStart) + ";\n"
-				+ "lampLightShadowSoftness = " + format(config.lampLightShadowSoftness) + ";";
+				+ "lampLightShadowSoftness = " + format(config.lampLightShadowSoftness) + ";\n"
+				+ "lampLightShadowSamples = " + config.lampLightShadowSamples + ";";
 		source.getClient().keyboardHandler.setClipboard(values);
 		source.sendFeedback(Component.literal("Copied current Crystal Lamp tuning values to the clipboard."));
 		return 1;

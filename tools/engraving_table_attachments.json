@@ -1,0 +1,106 @@
+{
+	"format_version": "1.21.11",
+	"credit": "Socket Sorcery — editable Blockbench attachment guides",
+	"texture_size": [64, 64],
+	"textures": {
+		"0": "tools:block/engraving_table",
+		"particle": "tools:block/engraving_table",
+		"gem": "tools:item/engravable_emerald",
+		"chisel": "tools:item/chisel"
+	},
+	"elements": [
+		{
+			"from": [1, 0, 1],
+			"to": [4, 14, 4],
+			"rotation": {"angle": 0, "axis": "y", "origin": [1, 0, 1]},
+			"faces": {
+				"north": {"uv": [4, 0, 4.75, 3.5], "texture": "#0"},
+				"east": {"uv": [4, 3.5, 4.75, 7], "texture": "#0"},
+				"south": {"uv": [4.75, 0, 5.5, 3.5], "texture": "#0"},
+				"west": {"uv": [4.75, 3.5, 5.5, 7], "texture": "#0"},
+				"up": {"uv": [8.5, 6.25, 7.75, 5.5], "texture": "#0"},
+				"down": {"uv": [8.5, 6.25, 7.75, 7], "texture": "#0"}
+			}
+		},
+		{
+			"from": [12, 0, 1],
+			"to": [15, 14, 4],
+			"rotation": {"angle": 0, "axis": "y", "origin": [13, 0, 1]},
+			"faces": {
+				"north": {"uv": [5.5, 0, 6.25, 3.5], "texture": "#0"},
+				"east": {"uv": [5.5, 3.5, 6.25, 7], "texture": "#0"},
+				"south": {"uv": [6.25, 0, 7, 3.5], "texture": "#0"},
+				"west": {"uv": [6.25, 3.5, 7, 7], "texture": "#0"},
+				"up": {"uv": [8.5, 7.75, 7.75, 7], "texture": "#0"},
+				"down": {"uv": [8.5, 7.75, 7.75, 8.5], "texture": "#0"}
+			}
+		},
+		{
+			"from": [1, 0, 12],
+			"to": [4, 14, 15],
+			"rotation": {"angle": 0, "axis": "y", "origin": [1, 0, 13]},
+			"faces": {
+				"north": {"uv": [7, 0, 7.75, 3.5], "texture": "#0"},
+				"east": {"uv": [7, 3.5, 7.75, 7], "texture": "#0"},
+				"south": {"uv": [4, 7, 4.75, 10.5], "texture": "#0"},
+				"west": {"uv": [4.75, 7, 5.5, 10.5], "texture": "#0"},
+				"up": {"uv": [0.75, 8.75, 0, 8], "texture": "#0"},
+				"down": {"uv": [1.5, 8, 0.75, 8.75], "texture": "#0"}
+			}
+		},
+		{
+			"from": [12, 0, 12],
+			"to": [15, 14, 15],
+			"rotation": {"angle": 0, "axis": "y", "origin": [13, 0, 13]},
+			"faces": {
+				"north": {"uv": [5.5, 7, 6.25, 10.5], "texture": "#0"},
+				"east": {"uv": [6.25, 7, 7, 10.5], "texture": "#0"},
+				"south": {"uv": [7, 7, 7.75, 10.5], "texture": "#0"},
+				"west": {"uv": [7.75, 0, 8.5, 3.5], "texture": "#0"},
+				"up": {"uv": [2.25, 8.75, 1.5, 8], "texture": "#0"},
+				"down": {"uv": [3, 8, 2.25, 8.75], "texture": "#0"}
+			}
+		},
+		{
+			"from": [0, 12, 0],
+			"to": [16, 15, 16],
+			"rotation": {"angle": 0, "axis": "y", "origin": [0, 13, 0]},
+			"faces": {
+				"north": {"uv": [7.75, 3.5, 11.75, 4.25], "texture": "#0"},
+				"east": {"uv": [7.75, 4, 11.75, 4.75], "texture": "#0"},
+				"south": {"uv": [7.75, 4.5, 11.75, 5.25], "texture": "#0"},
+				"west": {"uv": [7.75, 4.75, 11.75, 5.5], "texture": "#0"},
+				"up": {"uv": [4, 4, 0, 0], "texture": "#0"},
+				"down": {"uv": [4, 4, 0, 8], "texture": "#0"}
+			}
+		},
+		{
+			"name": "GEM_ATTACHMENT",
+			"from": [3.32, 14.874, 3.32],
+			"to": [11.32, 15.374, 11.32],
+			"rotation": {"angle": 0, "axis": "y", "origin": [-1, 0, -1]},
+			"faces": {
+				"north": {"uv": [0, 0, 16, 16], "texture": "#gem"},
+				"east": {"uv": [0, 0, 16, 16], "texture": "#gem"},
+				"south": {"uv": [0, 0, 16, 16], "texture": "#gem"},
+				"west": {"uv": [0, 0, 16, 16], "texture": "#gem"},
+				"up": {"uv": [0, 0, 16, 16], "texture": "#gem"},
+				"down": {"uv": [0, 0, 16, 16], "texture": "#gem"}
+			}
+		},
+		{
+			"name": "CHISEL_ATTACHMENT",
+			"from": [8.86268, 14.874, 6.87612],
+			"to": [16.22268, 15.334, 14.23612],
+			"rotation": {"angle": 22.5, "axis": "y", "origin": [12.16, 15.104, 11.48]},
+			"faces": {
+				"north": {"uv": [0, 0, 16, 16], "texture": "#chisel"},
+				"east": {"uv": [0, 0, 16, 16], "texture": "#chisel"},
+				"south": {"uv": [0, 0, 16, 16], "texture": "#chisel"},
+				"west": {"uv": [0, 0, 16, 16], "texture": "#chisel"},
+				"up": {"uv": [0, 0, 16, 16], "texture": "#chisel"},
+				"down": {"uv": [0, 0, 16, 16], "texture": "#chisel"}
+			}
+		}
+	]
+}

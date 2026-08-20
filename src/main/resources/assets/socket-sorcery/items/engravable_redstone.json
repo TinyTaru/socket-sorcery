@@ -3,10 +3,7 @@
     "type": "minecraft:condition",
     "property": "minecraft:has_component",
     "component": "socket-sorcery:engraving",
-    "on_false": {
-      "type": "minecraft:model",
-      "model": "socket-sorcery:item/engravable_redstone"
-    },
+    "on_false": { "type": "minecraft:condition", "property": "minecraft:has_component", "component": "socket-sorcery:carving", "on_false": { "type": "minecraft:model", "model": "socket-sorcery:item/engravable_redstone" }, "on_true": { "type": "minecraft:special", "base": "socket-sorcery:item/engravable_redstone", "model": { "type": "socket-sorcery:engraved_gem" } } },
     "on_true": {
       "type": "minecraft:special",
       "base": "socket-sorcery:item/engravable_redstone",

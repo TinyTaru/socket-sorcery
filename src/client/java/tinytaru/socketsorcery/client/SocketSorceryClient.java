@@ -23,6 +23,7 @@ public class SocketSorceryClient implements ClientModInitializer {
 		// Spikes raised by pattern effects — the one entity the mod draws itself.
 		SpikeRenderer.register();
 		CrystalLampRenderer.register();
+		EngravingTableRenderer.register();
 		CrystalLampTuningCommands.register();
 		// The old "engraving" model predicate is gone: item model definitions select the engraved
 		// variant with vanilla's minecraft:has_component condition instead (see assets/…/items/).
