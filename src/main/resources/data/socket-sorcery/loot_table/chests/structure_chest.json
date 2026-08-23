@@ -1,0 +1,154 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": {
+        "type": "minecraft:uniform",
+        "min": 3.0,
+        "max": 5.0
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:iron_ingot",
+          "weight": 10,
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": {
+                "type": "minecraft:uniform",
+                "min": 1.0,
+                "max": 4.0
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:gold_ingot",
+          "weight": 7,
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": {
+                "type": "minecraft:uniform",
+                "min": 1.0,
+                "max": 3.0
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:emerald",
+          "weight": 5,
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": {
+                "type": "minecraft:uniform",
+                "min": 1.0,
+                "max": 2.0
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:lapis_lazuli",
+          "weight": 5,
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": {
+                "type": "minecraft:uniform",
+                "min": 3.0,
+                "max": 8.0
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:ender_pearl",
+          "weight": 3
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:blank_scroll",
+          "weight": 5
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:ink_well",
+          "weight": 4
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:scroll_ink_red",
+          "weight": 2
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:scroll_ink_blue",
+          "weight": 2
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:scroll_ink_green",
+          "weight": 2
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:scroll_ink_yellow",
+          "weight": 2
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:scroll_ink_purple",
+          "weight": 2
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:engraving_table",
+          "weight": 1
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:engravable_redstone",
+          "weight": 4
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:engravable_lapis",
+          "weight": 4
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:engravable_echo",
+          "weight": 3
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:scroll_fire",
+          "weight": 2
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:scroll_frost",
+          "weight": 2
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:scroll_healing",
+          "weight": 2
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:scroll_haste",
+          "weight": 2
+        }
+      ]
+    }
+  ]
+}

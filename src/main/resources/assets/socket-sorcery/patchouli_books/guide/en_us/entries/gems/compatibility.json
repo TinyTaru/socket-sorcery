@@ -7,7 +7,7 @@
     {
       "type": "patchouli:text",
       "title": "Craftable gems",
-      "text": "$(item)Diamond$(): Frost, Healing$(br)$(item)Redstone$(): Fire, Lightning$(br)$(item)Lapis$(): Frost, Leaping$(br)$(item)Emerald$(): Healing, Leaping$(br)$(item)Quartz$(): Fire, Frost$(br)$(item)Amethyst$(): Lightning, Frost$(br)$(item)Prismarine$(): Earth, Spikes$(br)$(item)Glowstone$(): Haste, Healing$(br)$(item)Copper$(): Lifesteal, Fire$(br)$(item)Ender Pearl$(): Blink, Wind"
+      "text": "$(item)Diamond$(): Frost, Healing$(br)$(item)Redstone$(): Fire, Lightning$(br)$(item)Lapis$(): Frost, Leaping$(br)$(item)Emerald$(): Healing, Leaping$(br)$(item)Quartz$(): Fire, Frost$(br)$(item)Amethyst$(): Lightning, Frost$(br)$(item)Prismarine$(): Earth, Spikes$(br)$(item)Glowstone$(): Haste, Healing$(br)$(item)Echo Shard$(): Lifesteal$(br)$(item)Ender Pearl$(): Blink, Wind"
     },
     {
       "type": "patchouli:text",

@@ -48,14 +48,14 @@ public final class ModItems {
 	public static final Item ENGRAVABLE_QUARTZ = registerGem("engravable_quartz");
 	public static final Item ENGRAVABLE_PRISMARINE = registerGem("engravable_prismarine");
 	public static final Item ENGRAVABLE_GLOWSTONE = registerGem("engravable_glowstone");
-	public static final Item ENGRAVABLE_COPPER = registerGem("engravable_copper");
+	public static final Item ENGRAVABLE_ECHO = registerGem("engravable_echo");
 	public static final Item ENGRAVABLE_ENDER = registerGem("engravable_ender");
 
 	/** Every engravable gem (custom + vanilla-derived), for client renderers and the creative tab. */
 	public static final Item[] GEMS = {
 			RUBY, SAPPHIRE, PERIDOT, AMETHYST, TOPAZ,
 			ENGRAVABLE_DIAMOND, ENGRAVABLE_REDSTONE, ENGRAVABLE_LAPIS, ENGRAVABLE_EMERALD, ENGRAVABLE_QUARTZ,
-			ENGRAVABLE_PRISMARINE, ENGRAVABLE_GLOWSTONE, ENGRAVABLE_COPPER, ENGRAVABLE_ENDER
+			ENGRAVABLE_PRISMARINE, ENGRAVABLE_GLOWSTONE, ENGRAVABLE_ECHO, ENGRAVABLE_ENDER
 	};
 
 	// Gem dust: ground from its matching gem (one gem -> nine dust, see data/.../recipe/*_dust.json).
@@ -72,14 +72,14 @@ public final class ModItems {
 	public static final Item QUARTZ_DUST = registerDust("quartz_dust");
 	public static final Item PRISMARINE_DUST = registerDust("prismarine_dust");
 	public static final Item GLOWSTONE_DUST = registerDust("glowstone_dust");
-	public static final Item COPPER_DUST = registerDust("copper_dust");
+	public static final Item ECHO_DUST = registerDust("echo_dust");
 	public static final Item ENDER_DUST = registerDust("ender_dust");
 
 	/** Every gem dust, in the same order as {@link #GEMS} — index {@code i} matches {@code GEMS[i]}. */
 	public static final Item[] GEM_DUSTS = {
 			RUBY_DUST, SAPPHIRE_DUST, PERIDOT_DUST, AMETHYST_DUST, TOPAZ_DUST,
 			DIAMOND_DUST, REDSTONE_DUST, LAPIS_DUST, EMERALD_DUST, QUARTZ_DUST,
-			PRISMARINE_DUST, GLOWSTONE_DUST, COPPER_DUST, ENDER_DUST
+			PRISMARINE_DUST, GLOWSTONE_DUST, ECHO_DUST, ENDER_DUST
 	};
 
 	private static final Map<Item, Item> DUST_BY_GEM = buildDustByGem();

@@ -35,13 +35,13 @@ public class EngravingTableRenderer
 
 	// CHISEL_ATTACHMENT: 22.5° around [12.16, 15.104, 11.48]. Its rotated centre is
 	// [12.16, 15.104, 10.48], which is the centre used by the item renderer below. The item sprite
-	// is laid flat by a 90° X rotation, so its visible horizontal rotation is the inverse of the
-	// Blockbench up-face rotation.
+	// begins vertical and is laid flat by a 90° X rotation, so its texture axes are 90° offset from
+	// Blockbench's top-face texture axes.
 	private static final float CHISEL_X = 12.16F * MODEL_UNIT;
 	private static final float CHISEL_Y = 15.104F * MODEL_UNIT;
 	private static final float CHISEL_Z = 10.48F * MODEL_UNIT;
 	private static final float CHISEL_SCALE = 7.36F * MODEL_UNIT;
-	private static final float CHISEL_YAW = -22.5F;
+	private static final float CHISEL_YAW = 90.0F + 22.5F;
 	private final ItemModelResolver itemModelResolver;
 
 	private EngravingTableRenderer(BlockEntityRendererProvider.Context context) {

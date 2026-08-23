@@ -26,7 +26,7 @@
     }
   },
   "gems": [
-    "socket-sorcery:engravable_copper"
+    "socket-sorcery:engravable_echo"
   ],
   "scroll": "socket-sorcery:scroll_lifesteal",
   "necklace_effects": [

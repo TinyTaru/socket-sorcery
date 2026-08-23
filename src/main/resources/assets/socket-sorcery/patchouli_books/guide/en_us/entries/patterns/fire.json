@@ -16,7 +16,7 @@
     {
       "type": "patchouli:text",
       "title": "Fire",
-      "text": "$(bold)Necklace:$() grants Fire Resistance.$(br2)$(bold)Bangle / Ring:$() ignites the target, or kindles a fire on the block you aim at.$(br2)$(bold)Cooldown:$() 2.0s per cast.$(br2)$(bold)Held by:$() Ruby*, Topaz*, Engravable Redstone, Engravable Quartz, Engravable Copper. $(o)(* creative only)$()"
+      "text": "$(bold)Necklace:$() grants Fire Resistance.$(br2)$(bold)Bangle / Ring:$() ignites the target, or kindles a fire on the block you aim at.$(br2)$(bold)Cooldown:$() 2.0s per cast.$(br2)$(bold)Held by:$() Ruby*, Topaz*, Engravable Redstone, Engravable Quartz. $(o)(* creative only)$()"
     }
   ]
 }

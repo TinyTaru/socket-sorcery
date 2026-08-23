@@ -9,7 +9,7 @@ set your engraved gems into worn accessories at the **Socketing Bench**.
 1. **Find a scroll.** Pattern scrolls hide in structure loot (dungeons, mineshafts, temples,
    strongholds, mansions, buried treasure).
 2. **Craft a gem.** Engravable gems are crafted from vanilla materials (diamond, redstone, lapis,
-   emerald, quartz, amethyst, prismarine, glowstone, copper, ender pearl) in a plus shape.
+   emerald, quartz, amethyst, prismarine, glowstone, echo shard, ender pearl) in a plus shape.
 3. **Engrave it.** At the Engraving Table, chisel the scroll's 16×16 symbol onto the gem.
    Cutting certain cells *deeper* adds modifiers — Power, Duration, Range, and four Aim
    directions — discovered by experimentation.

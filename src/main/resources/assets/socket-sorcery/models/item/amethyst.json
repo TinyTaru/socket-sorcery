@@ -1,4 +1,4 @@
 {
   "parent": "minecraft:item/generated",
-  "textures": { "layer0": "socket-sorcery:item/amethyst" }
+  "textures": { "layer0": "socket-sorcery:item/engravable_amethyst" }
 }

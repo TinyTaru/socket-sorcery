@@ -9,6 +9,7 @@ import eu.pb4.trinkets.api.TrinketsApi;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
@@ -29,8 +30,10 @@ import tinytaru.socketsorcery.registry.ModItems;
 
 /** Server-side trigger routing for engraved rings. */
 public final class RingReactions {
+	private static final int RADIUS_CHECK_INTERVAL = 5;
 	private static final Map<UUID, FallState> FALLING = new HashMap<>();
 	private static final Map<UUID, Boolean> LOW_HEALTH = new HashMap<>();
+	private static int radiusTick;
 
 	public static void init() {
 		ServerLivingEntityEvents.AFTER_DAMAGE.register((entity, source, base, damage, blocked) -> {
@@ -50,16 +53,38 @@ public final class RingReactions {
 			}
 			return InteractionResult.PASS;
 		});
-		ServerTickEvents.END_SERVER_TICK.register(server -> server.getAllLevels().forEach(level -> {
-			for (ServerPlayer player : level.players()) {
-				checkFall(player);
-				checkHealth(player);
-				if (player.level().getEntitiesOfClass(LivingEntity.class,
-						player.getBoundingBox().inflate(4.0), e -> e.isAlive() && e instanceof Enemy).stream().findAny().isPresent()) {
-					trigger(player, RingTrigger.IN_RADIUS, miss(player));
+		ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
+			UUID id = handler.player.getUUID();
+			FALLING.remove(id);
+			LOW_HEALTH.remove(id);
+		});
+		ServerTickEvents.END_SERVER_TICK.register(server -> {
+			boolean checkRadius = ++radiusTick % RADIUS_CHECK_INTERVAL == 0;
+			server.getAllLevels().forEach(level -> {
+				for (ServerPlayer player : level.players()) {
+					checkFall(player);
+					checkHealth(player);
+					if (checkRadius && hasReadyTrigger(player, RingTrigger.IN_RADIUS)
+							&& player.level().getEntitiesOfClass(LivingEntity.class,
+							player.getBoundingBox().inflate(4.0), e -> e.isAlive() && e instanceof Enemy)
+							.stream().findAny().isPresent()) {
+						trigger(player, RingTrigger.IN_RADIUS, miss(player));
+					}
 				}
+			});
+		});
+	}
+
+	private static boolean hasReadyTrigger(ServerPlayer player, RingTrigger wanted) {
+		for (TrinketSlotAccess slot : TrinketsApi.getAttachment(player)
+				.equipped(stack -> stack.getItem() instanceof RingItem, false)) {
+			ItemStack ring = slot.get();
+			if (ringTrigger(player, ring) == wanted && !player.getCooldowns().isOnCooldown(ring)
+					&& !AccessoryItem.getSockets(ring).isEmpty()) {
+				return true;
 			}
-		}));
+		}
+		return false;
 	}
 
 	private static void checkFall(ServerPlayer player) {

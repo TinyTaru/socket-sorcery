@@ -3,10 +3,15 @@ package tinytaru.socketsorcery.item;
 import java.util.function.Consumer;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
+import tinytaru.socketsorcery.component.EngravingData;
+import tinytaru.socketsorcery.pattern.Pattern;
+import tinytaru.socketsorcery.pattern.Patterns;
 import tinytaru.socketsorcery.registry.ModComponents;
 
 /**
@@ -36,6 +41,15 @@ public class RingItem extends AccessoryItem {
 	@Override
 	public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display,
 			Consumer<Component> tooltip, TooltipFlag flag) {
+		EngravingData engraving = stack.get(ModComponents.ENGRAVING);
+		if (engraving != null) {
+			Holder.Reference<Pattern> pattern = Patterns.get(context.registries(), engraving.pattern());
+			Identifier id = engraving.pattern();
+			Component name = pattern != null ? pattern.value().coloredName(pattern.key().identifier())
+					: Component.literal(id.toString());
+			tooltip.accept(Component.translatable("tooltip.socket-sorcery.ring_trigger")
+					.withStyle(ChatFormatting.GRAY).append(Component.literal(" ")).append(name));
+		}
 		super.appendHoverText(stack, context, display, tooltip, flag);
 		if (context.registries() != null) {
 			int cooldown = Cooldowns.forBangle(stack, context.registries());
@@ -44,6 +58,8 @@ public class RingItem extends AccessoryItem {
 				tooltip.accept(Component.translatable("tooltip.socket-sorcery.cooldown", seconds).withStyle(ChatFormatting.GRAY));
 			}
 		}
-		tooltip.accept(Component.translatable("tooltip.socket-sorcery.ring_hint").withStyle(ChatFormatting.DARK_GRAY));
+		String hint = engraving == null ? "tooltip.socket-sorcery.ring_hint_blank"
+				: "tooltip.socket-sorcery.ring_hint";
+		tooltip.accept(Component.translatable(hint).withStyle(ChatFormatting.DARK_GRAY));
 	}
 }

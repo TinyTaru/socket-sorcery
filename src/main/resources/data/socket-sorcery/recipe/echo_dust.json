@@ -2,10 +2,10 @@
 	"type": "minecraft:crafting_shapeless",
 	"category": "misc",
 	"ingredients": [
-		"socket-sorcery:engravable_copper"
+		"socket-sorcery:engravable_echo"
 	],
 	"result": {
-		"id": "socket-sorcery:copper_dust",
+		"id": "socket-sorcery:echo_dust",
 		"count": 9
 	}
 }

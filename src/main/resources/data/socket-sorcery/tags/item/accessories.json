@@ -3,6 +3,8 @@
   "values": [
     "socket-sorcery:necklace",
     "socket-sorcery:bangle",
+    "socket-sorcery:copper_bangle",
+    "socket-sorcery:netherite_bangle",
     "socket-sorcery:ring"
   ]
 }

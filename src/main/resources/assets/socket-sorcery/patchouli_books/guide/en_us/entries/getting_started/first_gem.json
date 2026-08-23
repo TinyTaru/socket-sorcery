@@ -6,7 +6,7 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "Engravable gems can be crafted from all most any vanilla gem or crystal. Diamond, redstone, lapis, emerald, quartz, amethyst shards, prismarine shards, glowstone dust, copper and ender pearls all work.$(br2)Each material accepts only certain patterns — see $(l:socket-sorcery:gems/compatibility)Compatibility$(/l)."
+      "text": "Engravable gems can be crafted from almost any vanilla gem or crystal. Diamond, redstone, lapis, emerald, quartz, amethyst shards, prismarine shards, glowstone dust, echo shards and ender pearls all work.$(br2)Each material accepts only certain patterns — see $(l:socket-sorcery:gems/compatibility)Compatibility$(/l)."
     },
     {
       "type": "patchouli:crafting",

@@ -84,6 +84,12 @@ public final class RegistryValidation {
 	 */
 	private static boolean checkRoundTrips(HolderLookup.Provider registries, Identifier id, Pattern pattern,
 			List<Holder.Reference<Modifier>> modifiers, int[] checkedCombos) {
+		// Ring triggers are engraved directly onto the accessory and deliberately accept only their
+		// base symbol. Modifier geometry may overlap their compact masks, but it is never offered or
+		// accepted by the table, so testing those impossible combinations only creates false warnings.
+		if (pattern.ringTrigger().isPresent()) {
+			return false;
+		}
 		List<Holder.Reference<Modifier>> applicable = modifiers.stream()
 				.filter(m -> m.value().cellMask(pattern) != null)
 				.filter(m -> pattern.allows(m.key().identifier())) // refused ones can never be engraved

@@ -16,7 +16,7 @@
     {
       "type": "patchouli:text",
       "title": "Lifesteal",
-      "text": "$(bold)Necklace:$() grants Health Boost.$(br2)$(bold)Bangle / Ring:$() wounds the target and heals you for the same amount.$(br2)$(bold)Cooldown:$() 3.0s per cast.$(br2)$(bold)Held by:$() Engravable Copper."
+      "text": "$(bold)Necklace:$() grants Health Boost.$(br2)$(bold)Bangle / Ring:$() wounds the target and heals you for the same amount.$(br2)$(bold)Cooldown:$() 3.0s per cast.$(br2)$(bold)Held by:$() Engravable Echo Shard."
     }
   ]
 }

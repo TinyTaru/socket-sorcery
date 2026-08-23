@@ -5,6 +5,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -47,8 +48,28 @@ public record TeleportComponent(double aimScale) implements PatternEffectCompone
 		if (aimScale > 0.0 && mods.hasAim()) {
 			destination = destination.add(mods.worldAim(player).scale(aimScale));
 		}
+		destination = safeDestination(player, destination);
 		player.teleportTo(destination.x, destination.y, destination.z);
 		player.fallDistance = 0.0F;
+	}
+
+	/** Walks back toward the caster until the player's full collision box fits at the destination. */
+	private static Vec3 safeDestination(ServerPlayer player, Vec3 wanted) {
+		if (!Double.isFinite(wanted.x) || !Double.isFinite(wanted.y) || !Double.isFinite(wanted.z)) {
+			return player.position();
+		}
+		Vec3 origin = player.position();
+		Vec3 travel = wanted.subtract(origin);
+		int steps = Math.max(1, Math.min(256, (int) Math.ceil(travel.length() * 4.0)));
+		for (int i = 0; i <= steps; i++) {
+			double scale = 1.0 - (double) i / steps;
+			Vec3 candidate = origin.add(travel.scale(scale));
+			AABB box = player.getBoundingBox().move(candidate.subtract(origin));
+			if (player.level().noCollision(player, box)) {
+				return candidate;
+			}
+		}
+		return origin;
 	}
 
 	/** Where a blind jump lands: straight ahead to the modified reach, stopping short of anything hit. */

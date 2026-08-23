@@ -1,0 +1,243 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": {
+        "type": "minecraft:uniform",
+        "min": 4.0,
+        "max": 6.0
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:diamond",
+          "weight": 8,
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": {
+                "type": "minecraft:uniform",
+                "min": 1.0,
+                "max": 3.0
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:emerald",
+          "weight": 8,
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": {
+                "type": "minecraft:uniform",
+                "min": 2.0,
+                "max": 5.0
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:golden_apple",
+          "weight": 4
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:ender_pearl",
+          "weight": 4,
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": {
+                "type": "minecraft:uniform",
+                "min": 1.0,
+                "max": 3.0
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:experience_bottle",
+          "weight": 5,
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": {
+                "type": "minecraft:uniform",
+                "min": 2.0,
+                "max": 6.0
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:diamond_chisel",
+          "weight": 3
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:socketing_bench",
+          "weight": 2
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:engravable_diamond",
+          "weight": 5
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:engravable_emerald",
+          "weight": 5
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:engravable_ender",
+          "weight": 4
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:scroll_ink_red",
+          "weight": 5
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:scroll_ink_blue",
+          "weight": 5
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:scroll_ink_green",
+          "weight": 5
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:scroll_ink_yellow",
+          "weight": 5
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:scroll_ink_purple",
+          "weight": 5
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:scroll_fire",
+          "weight": 3
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:scroll_frost",
+          "weight": 3
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:scroll_healing",
+          "weight": 3
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:scroll_lightning",
+          "weight": 3
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:scroll_leaping",
+          "weight": 3
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:scroll_wind",
+          "weight": 3
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:scroll_earth",
+          "weight": 3
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:scroll_lifesteal",
+          "weight": 3
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:scroll_blink",
+          "weight": 3
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:scroll_haste",
+          "weight": 3
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:scroll_spikes",
+          "weight": 3
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:scroll_ring_on_hit",
+          "weight": 1
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:scroll_ring_on_attack",
+          "weight": 1
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:scroll_ring_on_falling",
+          "weight": 1
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:scroll_ring_on_kill",
+          "weight": 1
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:scroll_ring_hp_threshold",
+          "weight": 1
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:scroll_ring_in_radius",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "rolls": 1.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:necklace",
+          "weight": 2,
+          "functions": [
+            {
+              "function": "socket-sorcery:socket_artifact"
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "socket-sorcery:bangle",
+          "weight": 3,
+          "functions": [
+            {
+              "function": "socket-sorcery:socket_artifact"
+            }
+          ]
+        },
+        {
+          "type": "minecraft:empty",
+          "weight": 14
+        }
+      ]
+    }
+  ]
+}

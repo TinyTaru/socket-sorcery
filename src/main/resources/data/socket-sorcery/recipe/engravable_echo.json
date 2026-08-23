@@ -7,10 +7,10 @@
 		" X "
 	],
 	"key": {
-		"X": "minecraft:copper_ingot"
+		"X": "minecraft:echo_shard"
 	},
 	"result": {
-		"id": "socket-sorcery:engravable_copper",
+		"id": "socket-sorcery:engravable_echo",
 		"count": 1
 	}
 }

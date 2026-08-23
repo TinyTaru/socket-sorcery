@@ -30,8 +30,7 @@
     "socket-sorcery:ruby",
     "socket-sorcery:topaz",
     "socket-sorcery:engravable_redstone",
-    "socket-sorcery:engravable_quartz",
-    "socket-sorcery:engravable_copper"
+    "socket-sorcery:engravable_quartz"
   ],
   "scroll": "socket-sorcery:scroll_fire",
   "necklace_effects": [

@@ -66,7 +66,7 @@ public class SocketingBenchMenu extends AbstractContainerMenu {
 			this.addSlot(new Slot(sockets, i, 35 + i * 22, 58) {
 				@Override
 				public boolean mayPlace(ItemStack stack) {
-					return GemItem.isEngravedGem(stack)
+					return isSocketableGem(stack)
 							&& socketIndex < sockets.capacity()
 							&& socketIndex <= sockets.currentCount();
 				}
@@ -141,7 +141,7 @@ public class SocketingBenchMenu extends AbstractContainerMenu {
 			if (!this.moveItemStackTo(inSlot, ACCESSORY_SLOT, ACCESSORY_SLOT + 1, false)) {
 				return ItemStack.EMPTY;
 			}
-		} else if (GemItem.isEngravedGem(inSlot)) {
+		} else if (isSocketableGem(inSlot)) {
 			if (!this.moveItemStackTo(inSlot, SOCKET_START, SOCKET_END, false)) {
 				return ItemStack.EMPTY;
 			}
@@ -159,6 +159,11 @@ public class SocketingBenchMenu extends AbstractContainerMenu {
 		}
 		slot.onTake(player, inSlot);
 		return moved;
+	}
+
+	/** Engraved rings carry trigger data, but are accessories rather than socket payloads. */
+	private static boolean isSocketableGem(ItemStack stack) {
+		return GemItem.isEngravedGem(stack) && !(stack.getItem() instanceof AccessoryItem);
 	}
 
 	@Override
