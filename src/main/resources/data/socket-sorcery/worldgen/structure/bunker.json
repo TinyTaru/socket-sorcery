@@ -6,10 +6,10 @@
   "size": 1,
   "spawn_overrides": {},
   "start_height": {
-    "absolute": -2
+    "absolute": 0
   },
   "start_pool": "socket-sorcery:bunker_start",
   "step": "surface_structures",
-  "terrain_adaptation": "beard_thin",
+  "terrain_adaptation": "none",
   "use_expansion_hack": true
 }

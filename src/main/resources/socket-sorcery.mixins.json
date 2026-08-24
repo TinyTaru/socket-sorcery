@@ -1,0 +1,9 @@
+{
+  "required": true,
+  "package": "tinytaru.socketsorcery.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "BeardifierTempleMixin",
+    "JigsawStructureWaterMixin"
+  ]
+}
