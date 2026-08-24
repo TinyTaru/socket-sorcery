@@ -1,11 +1,14 @@
 package tinytaru.socketsorcery.pattern.rule;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 import com.mojang.serialization.MapCodec;
 
 import tinytaru.socketsorcery.pattern.ModifierCellRule;
 import tinytaru.socketsorcery.pattern.Pattern;
 
-/** The symbol's top-centre and bottom-centre lit cells. */
+/** The symbol's top-centre and bottom-centre lit cells, including tied pixels around an even midpoint. */
 public record TopBottomRule() implements ModifierCellRule {
 
 	public static final TopBottomRule INSTANCE = new TopBottomRule();
@@ -20,10 +23,14 @@ public record TopBottomRule() implements ModifierCellRule {
 	public int[] cells(Pattern pattern) {
 		boolean[][] mask = pattern.mask();
 		int[] box = RuleGeometry.bbox(mask);
-		int midCol = (box[2] + box[3]) / 2;
-		return new int[] {
-				RuleGeometry.cell(box[0], RuleGeometry.nearestLitCol(mask, box[0], midCol)),
-				RuleGeometry.cell(box[1], RuleGeometry.nearestLitCol(mask, box[1], midCol))
-		};
+		Set<Integer> cells = new LinkedHashSet<>();
+		int centerNumerator = box[2] + box[3];
+		int[] rows = box[0] == box[1] ? new int[] { box[0] } : new int[] { box[0], box[1] };
+		for (int row : rows) {
+			for (int col : RuleGeometry.nearestLitCols(mask, row, centerNumerator)) {
+				cells.add(RuleGeometry.idx(row, col));
+			}
+		}
+		return cells.stream().mapToInt(Integer::intValue).toArray();
 	}
 }

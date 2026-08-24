@@ -1,5 +1,7 @@
 package tinytaru.socketsorcery.pattern.rule;
 
+import java.util.Arrays;
+
 import tinytaru.socketsorcery.pattern.GridBits;
 import tinytaru.socketsorcery.pattern.Pattern;
 
@@ -51,22 +53,31 @@ final class RuleGeometry {
 		return -1;
 	}
 
-	static int nearestLitCol(boolean[][] mask, int row, int targetCol) {
+	/**
+	 * The lit columns nearest the symbol's horizontal centre. {@code centerNumerator} is twice the
+	 * centre column, so an even-width bounding box can preserve both equally-near centre columns
+	 * instead of rounding to one side.
+	 */
+	static int[] nearestLitCols(boolean[][] mask, int row, int centerNumerator) {
 		if (row < 0 || row >= GRID) {
-			return -1;
+			return new int[0];
 		}
-		int best = -1;
+		int[] best = new int[GRID];
+		int count = 0;
 		int bestDist = Integer.MAX_VALUE;
 		for (int col = 0; col < GRID; col++) {
 			if (mask[row][col]) {
-				int dist = Math.abs(col - targetCol);
+				int dist = Math.abs(2 * col - centerNumerator);
 				if (dist < bestDist) {
 					bestDist = dist;
-					best = col;
+					count = 0;
+					best[count++] = col;
+				} else if (dist == bestDist) {
+					best[count++] = col;
 				}
 			}
 		}
-		return best;
+		return Arrays.copyOf(best, count);
 	}
 
 	static int idx(int row, int col) {
