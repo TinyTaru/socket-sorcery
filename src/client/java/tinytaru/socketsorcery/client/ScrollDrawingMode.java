@@ -1,7 +1,7 @@
 package tinytaru.socketsorcery.client;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -9,21 +9,17 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import tinytaru.socketsorcery.item.BlankScrollItem;
-import tinytaru.socketsorcery.item.ScrollInkColor;
 import tinytaru.socketsorcery.net.TranscribeCellC2SPayload;
-import tinytaru.socketsorcery.pattern.GridBits;
-import tinytaru.socketsorcery.pattern.Pattern;
-import tinytaru.socketsorcery.pattern.Patterns;
+import tinytaru.socketsorcery.component.ScrollDrawingData;
 import tinytaru.socketsorcery.registry.ModComponents;
-
-import java.util.Optional;
 
 /** Client-only state for the cursor-enabled, held-up Blank Scroll. */
 public final class ScrollDrawingMode {
 	private static boolean active;
 	private static boolean leftHeld;
 	private static boolean completed;
-	private static final Set<Integer> requestedCells = new HashSet<>();
+	private static final long RETRY_DELAY_MS = 150L;
+	private static final Map<Integer, Long> requestedCells = new HashMap<>();
 
 	public static void register() {
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
@@ -66,9 +62,18 @@ public final class ScrollDrawingMode {
 		if (!active || completed || client.player == null
 				|| !(client.player.getMainHandItem().getItem() instanceof BlankScrollItem)) return;
 		int cell = cellAtCursor(client);
-		if (cell < 0 || !requestedCells.add(cell)) return;
-		ClientPlayNetworking.send(new TranscribeCellC2SPayload(InteractionHand.MAIN_HAND, cell,
-				inkForNextCell(client, cell)));
+		if (cell < 0) return;
+		ScrollDrawingData drawing = client.player.getMainHandItem()
+				.getOrDefault(ModComponents.SCROLL_DRAWING, ScrollDrawingData.EMPTY);
+		if (drawing.isPainted(cell)) {
+			requestedCells.remove(cell);
+			return;
+		}
+		long now = System.currentTimeMillis();
+		Long previous = requestedCells.get(cell);
+		if (previous != null && now - previous < RETRY_DELAY_MS) return;
+		requestedCells.put(cell, now);
+		ClientPlayNetworking.send(new TranscribeCellC2SPayload(InteractionHand.MAIN_HAND, cell));
 	}
 
 	/** Receives raw mouse buttons before vanilla can recapture the released cursor. */
@@ -85,28 +90,6 @@ public final class ScrollDrawingMode {
 
 	public static boolean isDrawingStack(ItemStack stack) {
 		return stack.getItem() instanceof BlankScrollItem || stack.has(ModComponents.TRANSCRIBED_SCROLL);
-	}
-
-	private static Optional<ScrollInkColor> inkForNextCell(Minecraft client, int cell) {
-		long[] bits = new long[Pattern.WORDS];
-		for (int requested : requestedCells) GridBits.setIndex(bits, requested);
-		if (client.level != null) {
-			var match = Patterns.all(client.level.registryAccess())
-					.filter(holder -> holder.value().matchesCarved(bits))
-					.findFirst().orElse(null);
-			if (match != null) return Optional.of(match.value().ink());
-		}
-		return preferredInk(client);
-	}
-
-	private static Optional<ScrollInkColor> preferredInk(Minecraft client) {
-		ScrollInkColor offhand = ScrollInkColor.fromItem(client.player.getOffhandItem());
-		if (offhand != null) return Optional.of(offhand);
-		for (ItemStack stack : client.player.getInventory().getNonEquipmentItems()) {
-			ScrollInkColor color = ScrollInkColor.fromItem(stack);
-			if (color != null) return Optional.of(color);
-		}
-		return Optional.empty();
 	}
 
 	/** Camera-plane pose shared exactly with {@code ItemInHandRendererMixin}. */

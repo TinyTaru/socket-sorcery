@@ -65,7 +65,8 @@ public final class ModNetworking {
 		}
 		ScrollDrawingData drawing = stack.getOrDefault(ModComponents.SCROLL_DRAWING, ScrollDrawingData.EMPTY);
 		if (drawing.isPainted(cell)) return;
-		ScrollInkColor ink = payload.ink().orElseGet(() -> drawing.ink().orElseGet(() -> firstInk(player)));
+		ScrollInkColor ink = ScrollInkColor.fromItem(player.getOffhandItem());
+		if (ink == null) return;
 		if (ink == null) return;
 		ScrollDrawingData completedDrawing = drawing.paint(cell, ink);
 		var match = tinytaru.socketsorcery.pattern.Patterns.all(player.registryAccess())
@@ -76,7 +77,7 @@ public final class ModNetworking {
 			// cell untouched so the player can try again with the right ink.
 			return;
 		}
-		if (!useOneInk(player, ink)) return;
+		if (!useOffhandInk(player, ink)) return;
 		if (match == null || match.value().scroll().isEmpty()) {
 			stack.set(ModComponents.SCROLL_DRAWING, completedDrawing);
 			return;
@@ -91,35 +92,22 @@ public final class ModNetworking {
 		player.setItemInHand(payload.hand(), transcribed);
 	}
 
-	private static boolean useOneInk(ServerPlayer player, ScrollInkColor color) {
+	private static boolean useOffhandInk(ServerPlayer player, ScrollInkColor color) {
 		if (player.getAbilities().instabuild) return true;
-		for (int slot = 0; slot < player.getInventory().getNonEquipmentItems().size(); slot++) {
-			ItemStack inventoryStack = player.getInventory().getNonEquipmentItems().get(slot);
-			if (color.matches(inventoryStack)) {
-				// The pre-color scroll ink remains usable for old worlds, but it has no durability
-				// component. Preserve its old one-use behavior instead of converting the whole stack.
-				if (inventoryStack.is(ModItems.SCROLL_INK)) {
-					inventoryStack.shrink(1);
-					return true;
-				}
-				int damage = inventoryStack.getDamageValue() + 1;
-				if (damage >= inventoryStack.getMaxDamage()) {
-					player.getInventory().setItem(slot, new ItemStack(ModItems.INK_WELL));
-				} else {
-					inventoryStack.setDamageValue(damage);
-				}
-				return true;
-			}
+		ItemStack inkStack = player.getOffhandItem();
+		if (!color.matches(inkStack)) return false;
+		// The pre-colour scroll ink remains usable for old worlds, but it has no durability component.
+		if (inkStack.is(ModItems.SCROLL_INK)) {
+			inkStack.shrink(1);
+			return true;
 		}
-		return false;
-	}
-
-	private static ScrollInkColor firstInk(ServerPlayer player) {
-		for (ItemStack inventoryStack : player.getInventory().getNonEquipmentItems()) {
-			ScrollInkColor color = ScrollInkColor.fromItem(inventoryStack);
-			if (color != null) return color;
+		int damage = inkStack.getDamageValue() + 1;
+		if (damage >= inkStack.getMaxDamage()) {
+			player.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(ModItems.INK_WELL));
+		} else {
+			inkStack.setDamageValue(damage);
 		}
-		return null;
+		return true;
 	}
 
 	private static void activateBangles(ServerPlayer player) {

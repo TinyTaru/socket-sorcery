@@ -78,6 +78,12 @@ public class GemItem extends Item {
 							.append(modifier.value().coloredName(modifier.key().identifier())));
 				}
 			}
+			int cooldown = Cooldowns.forGem(stack, registries);
+			if (cooldown > 0) {
+				String seconds = String.format("%.1f", cooldown / 20.0);
+				tooltip.accept(Component.translatable("tooltip.socket-sorcery.cooldown_cost", seconds)
+						.withStyle(ChatFormatting.GRAY));
+			}
 		} else if (registries != null) {
 			tooltip.accept(Component.translatable("tooltip.socket-sorcery.supports").withStyle(ChatFormatting.DARK_GRAY));
 			for (Identifier id : Patterns.patternsFor(registries, this)) {

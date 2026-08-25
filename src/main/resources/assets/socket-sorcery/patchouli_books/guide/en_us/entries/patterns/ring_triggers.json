@@ -1,0 +1,17 @@
+{
+  "category": "socket-sorcery:patterns",
+  "name": "Ring Trigger Patterns",
+  "icon": "socket-sorcery:scroll_ring_on_hit",
+  "sortnum": 12,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Ring Trigger scrolls are engraved onto a $(l:socket-sorcery:socketing/ring)ring$(/l), not a gem. They carry no spell of their own: the ring's socketed engraved gem provides the spell, while this pattern decides when it fires.$(br2)Triggers cannot take modifiers; carve modifiers into the socketed gem instead."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Available triggers",
+      "text": "$(bold)On Hit$() — after taking damage$(br)$(bold)On Attack$() — when you attack$(br)$(bold)On Falling$() — after a dangerous fall$(br)$(bold)On Kill$() — when you slay a foe$(br)$(bold)HP Threshold$() — when health drops low$(br)$(bold)In Radius$() — while a monster is nearby"
+    }
+  ]
+}

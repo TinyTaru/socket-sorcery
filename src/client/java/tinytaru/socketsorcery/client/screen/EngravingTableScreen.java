@@ -16,6 +16,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.core.Holder;
@@ -26,8 +27,11 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import tinytaru.socketsorcery.SocketSorcery;
+import tinytaru.socketsorcery.block.EngravingTableBlockEntity;
 import tinytaru.socketsorcery.component.CarvingData;
 import tinytaru.socketsorcery.component.GlassPaneEngravingData;
 import tinytaru.socketsorcery.menu.EngravingTableMenu;
@@ -62,8 +66,12 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 
 	private static final int GRID = Pattern.GRID; // 16
 	private static final int CELL = 8;
+	private static final int GRID_LINE_WIDTH = 1;
 	private static final int GRID_X = 64;
 	private static final int GRID_Y = 18;
+	private static final Identifier EMPTY_GEM_TEXTURE = SocketSorcery.id("textures/gui/empty_engraved_gem.png");
+	private static final Identifier EMPTY_SCROLL_TEXTURE = SocketSorcery.id("textures/gui/empty_scroll.png");
+	private static final Identifier EMPTY_CHISEL_TEXTURE = SocketSorcery.id("textures/gui/empty_chisel.png");
 
 	/** How long a completion pulse runs, and how long a status banner lingers, in ticks. */
 	private static final int PULSE_TICKS = 24;
@@ -574,9 +582,15 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 		g.fill(left + this.imageWidth - 1, top, left + this.imageWidth, top + this.imageHeight, 0xFF555555);
 		g.fill(left, top + this.imageHeight - 1, left + this.imageWidth, top + this.imageHeight, 0xFF555555);
 
-		for (var slot : this.menu.slots) {
+		for (int slotIndex = 0; slotIndex < this.menu.slots.size(); slotIndex++) {
+			Slot slot = this.menu.slots.get(slotIndex);
 			if (slot.isActive()) {
-				drawSlot(g, left + slot.x, top + slot.y);
+				int x = left + slot.x;
+				int y = top + slot.y;
+				drawSlot(g, x, y);
+				if (slotIndex < EngravingTableBlockEntity.SIZE && !slot.hasItem()) {
+					drawEmptySlotHint(g, slotIndex, x, y);
+				}
 			}
 		}
 
@@ -587,6 +601,18 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 		g.fill(x - 1, y - 1, x + 17, y + 17, 0xFF373737);
 		g.fill(x - 1, y - 1, x + 17, y, 0xFF8B8B8B);
 		g.fill(x - 1, y - 1, x, y + 17, 0xFF8B8B8B);
+	}
+
+	private static void drawEmptySlotHint(GuiGraphicsExtractor g, int slotIndex, int x, int y) {
+		Identifier texture = switch (slotIndex) {
+			case EngravingTableBlockEntity.SLOT_GEM -> EMPTY_GEM_TEXTURE;
+			case EngravingTableBlockEntity.SLOT_SCROLL -> EMPTY_SCROLL_TEXTURE;
+			case EngravingTableBlockEntity.SLOT_CHISEL -> EMPTY_CHISEL_TEXTURE;
+			default -> null;
+		};
+		if (texture != null) {
+			g.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, 0.0F, 0.0F, 16, 16, 16, 16);
+		}
 	}
 
 	private void renderGrid(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
@@ -620,7 +646,8 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 				} else if (d == 1) {
 					g.fill(x1, y1, x2, y2, 0xCC141414); // carved groove
 				} else if (opaque && pattern != null && pattern.isCellCarved(row, col)) {
-					g.fill(x1, y1, x2, y2, 0x66FFFFFF); // faint hint of the base symbol
+					g.fill(x1, y1, x2, y2, 0x18000000); // subtle dark hint of the base symbol
+					drawCellBorder(g, x1, y1, CELL, GRID_LINE_WIDTH, 0x69000000); // 41% black edge so pale gems still reveal the symbol
 				}
 			}
 		}
@@ -671,9 +698,16 @@ public class EngravingTableScreen extends AbstractContainerScreen<EngravingTable
 		}
 
 		for (int i = 0; i <= GRID; i++) {
-			g.fill(ox + i * CELL, oy, ox + i * CELL + 1, oy + size, 0x18FFFFFF);
-			g.fill(ox, oy + i * CELL, ox + size, oy + i * CELL + 1, 0x18FFFFFF);
+			g.fill(ox + i * CELL, oy, ox + i * CELL + GRID_LINE_WIDTH, oy + size, 0x18FFFFFF);
+			g.fill(ox, oy + i * CELL, ox + size, oy + i * CELL + GRID_LINE_WIDTH, 0x18FFFFFF);
 		}
+	}
+
+	private static void drawCellBorder(GuiGraphicsExtractor g, int x, int y, int size, int width, int color) {
+		g.fill(x, y, x + size, y + width, color);
+		g.fill(x, y + size - width, x + size, y + size, color);
+		g.fill(x, y, x + width, y + size, color);
+		g.fill(x + size - width, y, x + size, y + size, color);
 	}
 
 	/**

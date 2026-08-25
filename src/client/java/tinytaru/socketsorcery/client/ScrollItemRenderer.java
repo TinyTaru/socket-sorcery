@@ -63,9 +63,7 @@ public final class ScrollItemRenderer extends DynamicIconRenderer {
 	protected Identifier backTexture(ItemStack stack) {
 		if (stack.getItem() instanceof BlankScrollItem) {
 			ScrollDrawingData drawing = stack.getOrDefault(ModComponents.SCROLL_DRAWING, ScrollDrawingData.EMPTY);
-			return composeCached("blank|" + drawing.ink() + "|" + java.util.Arrays.toString(drawing.painted()),
-					() -> compose(baseTexture(stack), drawing.painted(), 0xFF000000 | drawing.ink()
-							.map(ScrollInkColor::rgb).orElse(0x111111)));
+			return composeCached("blank|" + drawing.cacheKey(), () -> composeBlank(baseTexture(stack), drawing));
 		}
 		if (!(stack.getItem() instanceof ScrollItem scroll)) return baseTexture(stack);
 		HolderLookup.Provider registries = Minecraft.getInstance().level == null ? null : Minecraft.getInstance().level.registryAccess();
@@ -103,6 +101,21 @@ public final class ScrollItemRenderer extends DynamicIconRenderer {
 					: row + markRowOffset < SIZE
 							&& tinytaru.socketsorcery.pattern.GridBits.get(marks, row + markRowOffset, col)
 									? color : pixel);
+		}
+		return image;
+	}
+
+	/** Draws incomplete scroll cells from their individual pigment layers. */
+	private NativeImage composeBlank(Identifier baseTexture, ScrollDrawingData drawing) {
+		Pixels base = bases.computeIfAbsent(baseTexture, this::loadBase);
+		if (base == null || base.width() != SIZE || base.height() != SIZE) return null;
+		NativeImage image = new NativeImage(SIZE, SIZE, false);
+		for (int row = 0; row < SIZE; row++) for (int col = 0; col < SIZE; col++) {
+			int pixel = base.get(col, row);
+			int cell = row * SIZE + col;
+			ScrollInkColor color = drawing.inkAt(cell);
+			image.setPixel(col, row, ((pixel >>> 24) & 0xFF) <= 16 ? 0
+					: drawing.isPainted(cell) ? 0xFF000000 | (color == null ? 0x111111 : color.rgb()) : pixel);
 		}
 		return image;
 	}

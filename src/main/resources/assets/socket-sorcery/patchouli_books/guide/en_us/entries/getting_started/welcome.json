@@ -7,11 +7,11 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "Socket sorcery is worked in four steps:$(br2)1. $(l:socket-sorcery:getting_started/finding_scrolls)Find a pattern scroll$(/l).$(br)2. $(l:socket-sorcery:gems/engravable_gems)Craft a gem$(/l) that can hold its pattern.$(br)3. $(l:socket-sorcery:engraving/chiselling)Engrave$(/l) the symbol onto the gem.$(br)4. $(l:socket-sorcery:socketing/the_bench)Socket$(/l) the gem into an accessory and wear it."
+      "text": "Socket sorcery is worked in four steps:$(br2)1. $(l:socket-sorcery:getting_started/finding_scrolls)Find a pattern scroll$(/l).$(br)2. $(l:socket-sorcery:gems/engravable_gems)Craft a gem$(/l) that can hold it — or a ring for a Ring Trigger scroll.$(br)3. $(l:socket-sorcery:engraving/chiselling)Engrave$(/l) the symbol onto that workpiece.$(br)4. $(l:socket-sorcery:socketing/the_bench)Socket$(/l) engraved gems into an accessory and wear it."
     },
     {
       "type": "patchouli:text",
-      "text": "The same engraved gem behaves differently depending on where it sits: passive in a $(l:socket-sorcery:socketing/necklace)necklace$(/l), cast on command from a $(l:socket-sorcery:socketing/bangle)bangle$(/l), and automatic retaliation from a $(l:socket-sorcery:socketing/ring)ring$(/l).$(br2)Socket order matters — gems fire in the order they were set."
+      "text": "The same engraved gem behaves differently depending on where it sits: passive in a $(l:socket-sorcery:socketing/necklace)necklace$(/l), cast on command from a $(l:socket-sorcery:socketing/bangle)bangle$(/l), and cast automatically by a $(l:socket-sorcery:socketing/ring)ring$(/l). A ring's own trigger engraving decides when it casts.$(br2)Socket order matters — gems fire in the order they were set."
     }
   ]
 }

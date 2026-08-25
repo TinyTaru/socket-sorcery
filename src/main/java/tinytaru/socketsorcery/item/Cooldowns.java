@@ -22,17 +22,22 @@ public final class Cooldowns {
 	public static int forBangle(ItemStack bangle, HolderLookup.Provider registries) {
 		int total = 0;
 		for (ItemStack gem : AccessoryItem.getSockets(bangle).gems()) {
-			EngravingData data = gem.get(ModComponents.ENGRAVING);
-			if (data == null) {
-				continue;
-			}
-			Holder.Reference<Pattern> pattern = Patterns.get(registries, data.pattern());
-			int base = pattern != null ? pattern.value().cooldown() : Balance.COOLDOWN_DEFAULT_BASE;
-			double multiplier = 1.0 + Balance.COOLDOWN_MOD_SURCHARGE * data.modifiers().size();
-			total += (int) Math.round(base * multiplier);
+			total += forGem(gem, registries);
 		}
 		double tierReduction = bangle.getItem() instanceof BangleItem item ? item.cooldownReduction() : 0.0;
 		return (int) Math.round(total * (1.0 - tierReduction) * SocketSorceryConfig.get().cooldownMultiplier);
+	}
+
+	/** One engraved gem's contribution to an accessory activation cooldown, before tier reductions. */
+	public static int forGem(ItemStack gem, HolderLookup.Provider registries) {
+		EngravingData data = gem.get(ModComponents.ENGRAVING);
+		if (data == null) {
+			return 0;
+		}
+		Holder.Reference<Pattern> pattern = Patterns.get(registries, data.pattern());
+		int base = pattern != null ? pattern.value().cooldown() : Balance.COOLDOWN_DEFAULT_BASE;
+		double multiplier = 1.0 + Balance.COOLDOWN_MOD_SURCHARGE * data.modifiers().size();
+		return (int) Math.round(base * multiplier);
 	}
 
 	private Cooldowns() {

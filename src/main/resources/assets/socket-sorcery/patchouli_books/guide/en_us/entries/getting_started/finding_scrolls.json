@@ -6,12 +6,17 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "Pattern scrolls are the mod's knowledge: each teaches exactly one symbol. They cannot be crafted — adventurers before you left them in $(thing)dungeons$(), $(thing)mineshafts$(), $(thing)desert and jungle temples$(), $(thing)strongholds$(), $(thing)woodland mansions$() and $(thing)buried treasure$()."
+      "text": "Pattern scrolls are the mod's knowledge: each teaches exactly one symbol. Most belong on gems; $(l:socket-sorcery:patterns/ring_triggers)Ring Trigger$() scrolls belong on rings. They cannot be crafted — adventurers before you left them in $(thing)dungeons$(), $(thing)mineshafts$(), $(thing)desert and jungle temples$(), $(thing)strongholds$(), $(thing)woodland mansions$() and $(thing)buried treasure$()."
     },
     {
       "type": "patchouli:spotlight",
       "item": "socket-sorcery:scroll_fire",
       "text": "A scroll is consumed when its pattern is successfully engraved, so spend them with care. Its tooltip names the pattern it teaches."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Transcribing scrolls",
+      "text": "Hold a $(item)Blank Scroll$() in your main hand and a coloured $(item)Scroll Ink$() in your offhand, then right-click to draw. Each painted cell spends one ink use. You can switch offhand inks while drawing: every mark keeps its own colour. The final stroke must use the pattern's required ink."
     }
   ]
 }
