@@ -16,7 +16,7 @@
     {
       "type": "patchouli:text",
       "title": "Lightning",
-      "text": "$(bold)Necklace:$() grants Speed.$(br2)$(bold)Bangle / Ring:$() calls a lightning bolt down on your target. Cut an aim into it and the strike walks onward in that direction, a bolt to every step.$(br2)$(bold)Cooldown:$() 5.0s per cast.$(br2)$(bold)Held by:$() Ruby*, Amethyst, Engravable Redstone. $(o)(* creative only)$()"
+      "text": "$(bold)Necklace:$() grants Speed.$(br2)$(bold)Bangle / Ring:$() calls a lightning bolt down on your target. Cut an aim into it and the strike walks onward in that direction, a bolt to every step.$(br2)$(bold)Cooldown:$() 5.0s per cast.$(br2)$(bold)Held by:$() Amethyst, Engravable Redstone."
     }
   ]
 }

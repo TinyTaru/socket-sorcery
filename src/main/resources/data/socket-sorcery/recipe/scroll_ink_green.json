@@ -4,7 +4,7 @@
   "pattern": ["GBG", "BWB", "GBG"],
   "key": {
     "G": "minecraft:glow_berries",
-    "B": "socket-sorcery:peridot_dust",
+    "B": "socket-sorcery:emerald_dust",
     "W": "socket-sorcery:ink_well"
   },
   "result": { "id": "socket-sorcery:scroll_ink_green", "count": 1 }

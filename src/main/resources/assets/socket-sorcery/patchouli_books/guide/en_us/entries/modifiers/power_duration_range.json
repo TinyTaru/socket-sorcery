@@ -1,7 +1,7 @@
 {
   "category": "socket-sorcery:modifiers",
   "name": "Power, Duration, Range",
-  "icon": "socket-sorcery:ruby",
+  "icon": "socket-sorcery:engravable_diamond",
   "sortnum": 1,
   "pages": [
     {

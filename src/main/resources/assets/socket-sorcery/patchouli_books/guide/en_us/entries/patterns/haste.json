@@ -16,7 +16,7 @@
     {
       "type": "patchouli:text",
       "title": "Haste",
-      "text": "$(bold)Necklace:$() grants Haste.$(br2)$(bold)Bangle / Ring:$() grants a long burst of Haste II and Luck.$(br2)$(bold)Cooldown:$() 2.5s per cast.$(br2)$(bold)Held by:$() Engravable Glowstone."
+      "text": "$(bold)Necklace:$() grants Haste.$(br2)$(bold)Bangle / Ring:$() grants a long burst of Haste III and Luck.$(br2)$(bold)Cooldown:$() 2.5s per cast.$(br2)$(bold)Held by:$() Engravable Glowstone."
     }
   ]
 }

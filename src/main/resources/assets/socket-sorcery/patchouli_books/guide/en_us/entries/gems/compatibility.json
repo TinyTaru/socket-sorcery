@@ -11,11 +11,6 @@
     },
     {
       "type": "patchouli:text",
-      "title": "Prestige stones",
-      "text": "$(item)Ruby$(): Fire, Lightning$(br)$(item)Sapphire$(): Frost, Healing$(br)$(item)Peridot$(): Healing, Leaping$(br)$(item)Topaz$(): Leaping, Fire$(br2)Every pattern has at least one craftable home, so the whole craft is open to survival play."
-    },
-    {
-      "type": "patchouli:text",
       "title": "Ring triggers",
       "text": "Ring Trigger scrolls are the exception: they engrave the $(l:socket-sorcery:socketing/ring)ring itself$(/l), not a gem. The engraved ring chooses $(italic)when$() to cast; its socketed gem chooses $(italic)what$() to cast."
     }

@@ -6,7 +6,7 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "Pattern scrolls are the mod's knowledge: each teaches exactly one symbol. Most belong on gems; $(l:socket-sorcery:patterns/ring_triggers)Ring Trigger$() scrolls belong on rings. They cannot be crafted — adventurers before you left them in $(thing)dungeons$(), $(thing)mineshafts$(), $(thing)desert and jungle temples$(), $(thing)strongholds$(), $(thing)woodland mansions$() and $(thing)buried treasure$()."
+      "text": "Pattern scrolls are the mod's knowledge: each teaches exactly one symbol. Most belong on gems; $(l:socket-sorcery:patterns/ring_triggers)Ring Trigger$() scrolls belong on rings. They cannot be made at a crafting table, but can be transcribed. Search the custom $(thing)Bunker$() and $(thing)Copper Tower$(), including the Gem Refinery rooms. Scrolls can also turn up in $(thing)dungeons$(), $(thing)mineshafts$(), $(thing)desert and jungle temples$(), $(thing)strongholds$(), $(thing)woodland mansions$() and $(thing)buried treasure$()."
     },
     {
       "type": "patchouli:spotlight",

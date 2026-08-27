@@ -3,6 +3,7 @@ package tinytaru.socketsorcery.config;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
+import me.shedaniel.autoconfig.annotation.ConfigEntry;
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
 import net.minecraft.util.Mth;
 import tinytaru.socketsorcery.Balance;
@@ -42,23 +43,39 @@ public class SocketSorceryConfig implements ConfigData {
 	// --- Crystal Lamp lighting ---
 
 	/** Default values are mirrored by the /lamplight reset command. */
+	@ConfigEntry.Gui.Excluded
 	public static final double DEFAULT_LAMP_LIGHT_BRIGHTNESS = 0.62;
+	@ConfigEntry.Gui.Excluded
 	public static final double DEFAULT_LAMP_LIGHT_BLUR_BASE = 0.0;
+	@ConfigEntry.Gui.Excluded
 	public static final double DEFAULT_LAMP_LIGHT_BLUR_PER_BLOCK = 0.0;
+	@ConfigEntry.Gui.Excluded
 	public static final double DEFAULT_LAMP_LIGHT_WIDE_BLUR_WEIGHT = 0.0;
+	@ConfigEntry.Gui.Excluded
 	public static final double DEFAULT_LAMP_LIGHT_MIN_OPACITY = 0.003;
+	@ConfigEntry.Gui.Excluded
 	public static final double DEFAULT_LAMP_LIGHT_CULL_MARGIN_FACTOR = 0.001;
+	@ConfigEntry.Gui.Excluded
 	public static final double DEFAULT_LAMP_LIGHT_CULL_MARGIN_BASE = 0.03;
+	@ConfigEntry.Gui.Excluded
 	public static final double DEFAULT_LAMP_LIGHT_LINEAR_FALLOFF = 0.045;
+	@ConfigEntry.Gui.Excluded
 	public static final double DEFAULT_LAMP_LIGHT_QUADRATIC_FALLOFF = 0.015;
+	@ConfigEntry.Gui.Excluded
 	public static final double DEFAULT_LAMP_LIGHT_RANGE_FADE_START = 0.78;
+	@ConfigEntry.Gui.Excluded
 	public static final double DEFAULT_LAMP_LIGHT_SHADOW_SOFTNESS = 0.020;
+	@ConfigEntry.Gui.Excluded
 	public static final int DEFAULT_LAMP_LIGHT_SHADOW_SAMPLES = 1;
+	@ConfigEntry.Gui.Excluded
 	public static final double DEFAULT_LAMP_LIGHT_CENTER_FLOOR = 0.03;
+	@ConfigEntry.Gui.Excluded
 	public static final double DEFAULT_LAMP_LIGHT_SAMPLES_PER_PATTERN_CELL = 1.0;
 
 	/** Reference softness used by /lamplight blur 1.0; defaults can still be fully crisp. */
+	@ConfigEntry.Gui.Excluded
 	public static final double LAMP_LIGHT_BLUR_REFERENCE_BASE = 0.0012;
+	@ConfigEntry.Gui.Excluded
 	public static final double LAMP_LIGHT_BLUR_REFERENCE_PER_BLOCK = 0.0004;
 
 	/** Overall projected-light strength. */

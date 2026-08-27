@@ -1,6 +1,6 @@
 {
   "name": "Gems",
   "description": "The stones that hold the magic.",
-  "icon": "socket-sorcery:ruby",
+  "icon": "socket-sorcery:engravable_diamond",
   "sortnum": 5
 }

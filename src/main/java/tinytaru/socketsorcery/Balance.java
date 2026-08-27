@@ -54,8 +54,12 @@ public final class Balance {
 
 	/** Per-chest chance for an accessory to appear in an applicable treasure table. */
 	public static final float LOOT_ACCESSORY_CHANCE = 0.10F;
-	/** Per-chest chance for the scroll pool to roll in an applicable structure table. */
-	public static final float LOOT_SCROLL_CHANCE = 0.5F;
+	/**
+	 * Chance for the scroll pool to roll in an applicable structure table. The pool has 28 weighted
+	 * scroll outcomes out of 38 total outcomes (the remaining weight is empty), so this value makes
+	 * the default chance of receiving any scroll approximately 50%.
+	 */
+	public static final float LOOT_SCROLL_CHANCE = 0.6785714F;
 
 	private Balance() {
 	}

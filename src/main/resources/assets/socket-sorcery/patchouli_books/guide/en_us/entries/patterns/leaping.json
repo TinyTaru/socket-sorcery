@@ -16,7 +16,7 @@
     {
       "type": "patchouli:text",
       "title": "Leaping",
-      "text": "$(bold)Necklace:$() grants Jump Boost.$(br2)$(bold)Bangle / Ring:$() dashes you forward and upward.$(br2)$(bold)Cooldown:$() 1.0s per cast.$(br2)$(bold)Held by:$() Peridot*, Topaz*, Engravable Lapis, Engravable Emerald. $(o)(* creative only)$()"
+      "text": "$(bold)Necklace:$() grants Jump Boost.$(br2)$(bold)Bangle / Ring:$() dashes you forward and upward.$(br2)$(bold)Cooldown:$() 1.0s per cast.$(br2)$(bold)Held by:$() Engravable Lapis, Engravable Emerald."
     }
   ]
 }

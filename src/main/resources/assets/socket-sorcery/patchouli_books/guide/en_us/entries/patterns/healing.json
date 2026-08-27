@@ -16,7 +16,7 @@
     {
       "type": "patchouli:text",
       "title": "Healing",
-      "text": "$(bold)Necklace:$() grants Regeneration.$(br2)$(bold)Bangle / Ring:$() heals the target (or yourself) and grants Regeneration. With an aim cut into it, the mending also runs as a line in that direction, tending everything standing along it.$(br2)$(bold)Cooldown:$() 3.0s per cast.$(br2)$(bold)Held by:$() Sapphire*, Peridot*, Engravable Diamond, Engravable Emerald, Engravable Glowstone. $(o)(* creative only)$()"
+      "text": "$(bold)Necklace:$() grants Regeneration.$(br2)$(bold)Bangle / Ring:$() heals the target (or yourself) and grants Regeneration. With an aim cut into it, the mending also runs as a line in that direction, tending everything standing along it.$(br2)$(bold)Cooldown:$() 3.0s per cast.$(br2)$(bold)Held by:$() Engravable Diamond, Engravable Emerald, Engravable Glowstone."
     }
   ]
 }
